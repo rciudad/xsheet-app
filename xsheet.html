@@ -5,6 +5,16 @@
       gap: 10px;
       align-items: center;
     }
+    #drawingTable {
+      border: 1px solid gray;
+    }
+    #top-tool-container {
+      width: 100%;
+      height: 40px;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
   </style>
   <body>
     <div class="toolbar">
@@ -12,8 +22,19 @@
       <input type="number" id="brushSize" />
       <!-- Also can be used -->
       <!--input type="range" min="1" max="30"-->
+      <label for="resolution">RES:</label>
+      <input list="resolutions" name="resolution" id="resolution" />
+      <datalist id="resolutions">
+        <option value="800x600"></option>
+        <option value="1280x720"></option>
+        <option value="1440x1080"></option>
+        <option value="1920x1080"></option>
+        <option value="1080x1440"></option>
+        <option value="1080x1920"></option>
+      </datalist>
     </div>
-    <canvas id="drawingTable" width="500" height="400"></canvas>
+
+    <canvas id="drawingTable" width="800" height="600"></canvas>
     <script>
       const canvas = document.getElementById("drawingTable");
       const ctx = canvas.getContext("2d");
@@ -21,13 +42,22 @@
 
       const colorInput = document.getElementById("selectedColor");
       const sizeInput = document.getElementById("brushSize");
+      const resolutionInput = document.getElementById("resolution");
+
+      resolutionInput.addEventListener("change", function (e) {
+        // 3. Extract the chosen value
+
+        const [newWidth, newHeight] = e.target.value.split("x");
+
+        // 4. Update the actual canvas dimensions (this clears the canvas)
+        canvas.width = parseInt(newWidth, 10);
+        canvas.height = parseInt(newHeight, 10);
+      });
 
       canvas.addEventListener("pointerdown", function (e) {
         dibujando = true;
-
         ctx.strokeStyle = colorInput.value;
         ctx.lineWidth = sizeInput.value;
-
         ctx.beginPath();
         ctx.moveTo(e.offsetX, e.offsetY);
         canvas.setPointerCapture(e.pointerId);
