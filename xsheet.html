@@ -1,0 +1,35 @@
+<html>
+  <style></style>
+  <body>
+    <canvas id="drawingTable" width="500" height="400"></canvas>
+    <script>
+      const canvas = document.getElementById("drawingTable");
+      const ctx = canvas.getContext("2d");
+      let dibujando = false;
+
+      canvas.addEventListener("pointerdown", function (e) {
+        dibujando = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+        canvas.setPointerCapture(e.pointerId);
+      });
+
+      canvas.addEventListener("pointermove", function (e) {
+        if (!dibujando) return;
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+      });
+
+      canvas.addEventListener("pointerup", function (e) {
+        if (!dibujando) return;
+        dibujando = false;
+        canvas.releasePointerCapture(e.pointerId);
+      });
+
+      canvas.addEventListener("pointercancel", function (e) {
+        dibujando = false;
+        canvas.releasePointerCapture(e.pointerId);
+      });
+    </script>
+  </body>
+</html>
