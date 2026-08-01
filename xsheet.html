@@ -1,14 +1,33 @@
 <html>
-  <style></style>
+  <style>
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+  </style>
   <body>
+    <div class="toolbar">
+      <input type="color" id="selectedColor" />
+      <input type="number" id="brushSize" />
+      <!-- Also can be used -->
+      <!--input type="range" min="1" max="30"-->
+    </div>
     <canvas id="drawingTable" width="500" height="400"></canvas>
     <script>
       const canvas = document.getElementById("drawingTable");
       const ctx = canvas.getContext("2d");
       let dibujando = false;
 
+      const colorInput = document.getElementById("selectedColor");
+      const sizeInput = document.getElementById("brushSize");
+
       canvas.addEventListener("pointerdown", function (e) {
         dibujando = true;
+
+        ctx.strokeStyle = colorInput.value;
+        ctx.lineWidth = sizeInput.value;
+
         ctx.beginPath();
         ctx.moveTo(e.offsetX, e.offsetY);
         canvas.setPointerCapture(e.pointerId);
