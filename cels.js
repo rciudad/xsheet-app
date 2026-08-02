@@ -27,6 +27,7 @@ function addFrame(L, position) {
   L.cels.splice(run.idx + 1, 0, makeCel());
   L.holds.splice(run.idx + 1, 0, 1);
   loadActiveFromStorage();
+  renderXSheet();
 }
 
 // let animales = ['perro', 'gato', 'pez'];
@@ -128,6 +129,7 @@ function selectTick(tick) {
     syncActiveToStorage();
     currentTick = tick;
     loadActiveFromStorage();
+    renderXSheet();
   }
 }
 
@@ -145,6 +147,7 @@ function selectLayer(li) {
   syncActiveToStorage();
   activeLayer = li;
   loadActiveFromStorage();
+  renderXSheet();
 }
 
 function addLayer() {
@@ -162,6 +165,7 @@ function addLayer() {
   activeLayer = insertAt;
   populateLayerSelector(layers, activeLayer);
   loadActiveFromStorage();
+  renderXSheet();
 }
 
 function sheetTotalTicks() {

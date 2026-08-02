@@ -15,6 +15,41 @@
       top: 0;
       left: 0;
     }
+    .xsheet {
+      display: grid;
+      position: fixed;
+      top: 0;
+      right: 0;
+      background-color: rgb(209, 209, 209);
+    }
+    .xsheet-th {
+      border: 1px solid gray;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .xsheet-th.active {
+      background-color: #ffe08a;
+    }
+    .xsheet-tick {
+      border: 1px solid gray;
+      text-align: right;
+      padding-right: 4px;
+      font-size: 12px;
+    }
+    .xsheet-cell {
+      border: 1px solid gray;
+      background-color: whitesmoke;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: center;
+    }
+    .xsheet-cell.active-col {
+      background-color: #f0f0f0;
+    }
+    .xsheet-cell.current {
+      background-color: #8ac6ff;
+    }
   </style>
   <body>
     <div class="toolbar">
@@ -42,7 +77,9 @@
       </select>
     </div>
     <canvas id="drawingTable" width="800" height="600"></canvas>
+    <div class="xsheet" id="xsheet"></div>
     <script src="dibujo.js"></script>
     <script src="cels.js"></script>
+    <script src="xsheet.js"></script>
   </body>
 </html>
