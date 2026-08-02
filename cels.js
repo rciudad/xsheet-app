@@ -1,6 +1,8 @@
 const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 const newFrameBtn = document.getElementById("new-frame");
+const newLayerBtn = document.getElementById("new-layer");
+const layerSelector = document.getElementById("layers");
 
 prevBtn.addEventListener("click", function () {
   selectTick(currentTick - 1);
@@ -9,15 +11,21 @@ nextBtn.addEventListener("click", function () {
   selectTick(currentTick + 1);
 });
 newFrameBtn.addEventListener("click", function () {
-  addFrame(currentTick);
+  addFrame(layers[activeLayer], currentTick);
+});
+newLayerBtn.addEventListener("click", function () {
+  addLayer();
+});
+layerSelector.addEventListener("change", function () {
+  selectLayer(Number(layerSelector.value));
 });
 
-function addFrame(position) {
+function addFrame(L, position) {
   syncActiveToStorage();
-  const run = celAtTick(position);
-  currentTick = run.runStart + run.runLen;
-  cels.splice(run.idx + 1, 0, makeCel());
-  holds.splice(run.idx + 1, 0, 1);
+  const run = layerCelAtTick(L, position);
+  currentTick = run.localStart + run.runLen;
+  L.cels.splice(run.idx + 1, 0, makeCel());
+  L.holds.splice(run.idx + 1, 0, 1);
   loadActiveFromStorage();
 }
 
@@ -36,18 +44,44 @@ function makeCel() {
 
 //Cels and holds are two paralel arrays, always sync
 //Insert/Delete makes cels.splice(i, 0, x) and holds.splice(i, 0, y) always together
-var cels = [makeCel()]; // uno por frame
-var holds = [1]; // holds[i] = cuántos ticks dura cels[i]
+//var cels = [makeCel()]; // uno por frame
+//var holds = [1]; // holds[i] = cuántos ticks dura cels[i]
+//var currentTick = 0;
+
+var layers = [
+  { name: "Layer 1", visible: true, opacity: 1, cels: [makeCel()], holds: [1] },
+];
+var activeLayer = 0;
 var currentTick = 0;
-var totalFrames = calcTotalFrames(holds);
+//var totalFrames = calcTotalFrames(layers[activeLayer].holds);
 
 function calcTotalFrames(input_holds) {
   return input_holds.reduce((a, b) => a + b, 0);
 }
 
+function populateLayerSelector(layers, newSelection) {
+  const select = document.getElementById("layers");
+  select.innerHTML = "";
+  layers.forEach(function (layer, index) {
+    // Crear la etiqueta <option>
+    const nuevaLayer = document.createElement("option");
+    console.log("index: " + index);
+    // Asignar los atributos
+    nuevaLayer.value = index;
+    nuevaLayer.textContent = layer.name;
+
+    console.log("nuevaLayer: " + nuevaLayer.innerHTML);
+    // Insertar la opción dentro del <select>
+    select.appendChild(nuevaLayer);
+  });
+  select.value = newSelection;
+}
+
+populateLayerSelector(layers, activeLayer);
+
 // "guarda lo que hay en pantalla en el cel activo"
 function syncActiveToStorage() {
-  var c = cels[activeIdx()];
+  var c = activeCel(); //cels[activeIdx()];
   c.ctx.clearRect(0, 0, W, H);
   c.ctx.drawImage(canvas, 0, 0);
 }
@@ -55,10 +89,11 @@ function syncActiveToStorage() {
 // "trae el cel activo a pantalla"
 function loadActiveFromStorage() {
   ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(cels[activeIdx()].canvas, 0, 0);
+  ctx.drawImage(activeCel().canvas, 0, 0);
 }
 
 //Resolver tick → índice de cel (esto es lo que hace posible el "hold")
+/*
 function celAtTick(tick) {
   totalFrames = calcTotalFrames(holds);
   var t = ((tick % totalFrames) + totalFrames) % totalFrames; // wrap
@@ -69,12 +104,25 @@ function celAtTick(tick) {
     acc += h;
   }
 }
+*/
+
+function layerCelAtTick(L, tick) {
+  const totalFrames = calcTotalFrames(L.holds);
+  var t = ((tick % totalFrames) + totalFrames) % totalFrames; // wrap
+  var acc = 0;
+  for (var i = 0; i < L.cels.length; i++) {
+    var h = L.holds[i];
+    if (t < acc + h)
+      return { idx: i, runStart: tick - (t - acc), localStart: acc, runLen: h };
+    acc += h;
+  }
+}
 
 //runStart/runLen sirven para saber "en qué tick empezó este frame sostenido" — se usa al insertar/borrar para no dejar currentTick apuntando a la mitad de un hold.
 
 //Un único punto de entrada para cambiar de tick
 function selectTick(tick) {
-  if (tick < 0 || tick >= totalFrames) return;
+  if (tick < 0 || tick >= sheetTotalTicks()) return;
   if (dibujando) endStroke(); // no cambies de frame a mitad de un trazo
   if (tick !== currentTick) {
     syncActiveToStorage();
@@ -83,12 +131,49 @@ function selectTick(tick) {
   }
 }
 
-//function activeRunIdx() {
-//  return layerCelAtTick(layers[activeLayer], currentTick).idx;
-//}
+function activeRunIdx() {
+  return layerCelAtTick(layers[activeLayer], currentTick).idx;
+}
+
+function activeCel() {
+  return layers[activeLayer].cels[activeRunIdx()];
+}
+
+function selectLayer(li) {
+  if (li < 0 || li >= layers.length || li === activeLayer) return;
+  if (dibujando) endStroke();
+  syncActiveToStorage();
+  activeLayer = li;
+  loadActiveFromStorage();
+}
+
+function addLayer() {
+  syncActiveToStorage();
+  var L = {
+    name: "Layer " + (layers.length + 1),
+    visible: true,
+    opacity: 1,
+    cels: [makeCel()],
+    holds: [1],
+  };
+  var insertAt = activeLayer + 1;
+  layers.splice(insertAt, 0, L);
+
+  activeLayer = insertAt;
+  populateLayerSelector(layers, activeLayer);
+  loadActiveFromStorage();
+}
+
+function sheetTotalTicks() {
+  return layers.reduce(function (max, L) {
+    return Math.max(max, calcTotalFrames(L.holds));
+  }, 0);
+}
 
 //Que depende de layers[activeLayer], algo que vos todavía no tenés. Como en tu versión (sin capas todavía) tenés directamente cels/holds sueltos, tu equivalente sería:
 
+/*
 function activeIdx() {
   return celAtTick(currentTick).idx;
 }
+*/
