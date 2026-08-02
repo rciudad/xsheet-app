@@ -87,16 +87,32 @@
       </select>
       <button type="button" id="play">PLAY</button>
     </div>
-    <canvas id="drawingTable" width="800" height="600"></canvas>
-    <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
-    <canvas
-      id="playCanvas"
-      width="800"
-      height="600"
-      style="display: none"
-    ></canvas>
+
+    <div style="position: relative; width: 800px; height: 600px">
+      <canvas
+        id="onion"
+        width="800"
+        height="600"
+        style="position: absolute; top: 0; left: 0; pointer-events: none"
+      ></canvas>
+      <canvas
+        id="drawingTable"
+        width="800"
+        height="600"
+        style="position: absolute; top: 0; left: 0"
+      ></canvas>
+      <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
+      <canvas
+        id="playCanvas"
+        width="800"
+        height="600"
+        style="position: absolute; top: 0; left: 0; display: none"
+      ></canvas>
+    </div>
+
     <div class="xsheet" id="xsheet"></div>
     <script src="dibujo.js"></script>
+    <script src="onion.js"></script>
     <script src="cels.js"></script>
     <script src="xsheet.js"></script>
     <script src="playback.js"></script>

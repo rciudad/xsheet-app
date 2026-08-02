@@ -97,6 +97,7 @@ function setFrameHold(li, celIdx, value) {
   currentTick = Math.min(currentTick, sheetTotalTicks() - 1);
   loadActiveFromStorage();
   renderXSheet();
+  updateOnion();
 }
 
 renderXSheet();

@@ -1,4 +1,5 @@
 //Una variante de layerCelAtTick que no da la vuelta
+
 const playCanvas = document.getElementById("playCanvas");
 const playCtx = playCanvas.getContext("2d");
 
@@ -35,6 +36,7 @@ function startPlay() {
   if (!sheetTotalTicks()) return;
   syncActiveToStorage();
   playing = true;
+  onionEl.style.display = "none";
   canvas.style.display = "none";
   playCanvas.style.display = "block";
   playTickPos = currentTick;
@@ -47,10 +49,12 @@ function stopPlay() {
   playing = false;
   clearInterval(playTimer);
   playTimer = null;
+  onionEl.style.display = "block";
   canvas.style.display = "block";
   playCanvas.style.display = "none";
   playBtn.textContent = "PLAY";
   loadActiveFromStorage();
+  updateOnion();
 }
 
 function togglePlay() {

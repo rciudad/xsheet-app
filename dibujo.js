@@ -14,10 +14,20 @@ resolutionInput.addEventListener("change", function (e) {
   const [newWidth, newHeight] = e.target.value.split("x");
 
   // Update the actual canvas dimensions (this clears the canvas)
-  canvas.width = parseInt(newWidth, 10);
-  canvas.height = parseInt(newHeight, 10);
-  W = canvas.width;
-  H = canvas.height;
+  W = parseInt(newWidth, 10);
+  H = parseInt(newHeight, 10);
+
+  canvas.width = W;
+  canvas.height = H;
+
+  onionEl.width = W;
+  onionEl.height = H;
+  flattenCanvas.width = W;
+  flattenCanvas.height = H;
+  tintCanvas.width = W;
+  tintCanvas.height = H;
+  playCanvas.width = W;
+  playCanvas.height = H;
 });
 
 canvas.addEventListener("pointerdown", function (e) {

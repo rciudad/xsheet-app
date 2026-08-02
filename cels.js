@@ -28,6 +28,7 @@ function addFrame(L, position) {
   L.holds.splice(run.idx + 1, 0, 1);
   loadActiveFromStorage();
   renderXSheet();
+  updateOnion();
 }
 
 // let animales = ['perro', 'gato', 'pez'];
@@ -130,6 +131,7 @@ function selectTick(tick) {
     currentTick = tick;
     loadActiveFromStorage();
     renderXSheet();
+    updateOnion();
   }
 }
 
@@ -148,6 +150,7 @@ function selectLayer(li) {
   activeLayer = li;
   loadActiveFromStorage();
   renderXSheet();
+  updateOnion();
 }
 
 function addLayer() {
@@ -166,6 +169,7 @@ function addLayer() {
   populateLayerSelector(layers, activeLayer);
   loadActiveFromStorage();
   renderXSheet();
+  updateOnion();
 }
 
 function sheetTotalTicks() {
