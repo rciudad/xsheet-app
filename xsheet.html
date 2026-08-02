@@ -5,7 +5,8 @@
       gap: 10px;
       align-items: center;
     }
-    #drawingTable {
+    #drawingTable,
+    #playCanvas {
       border: 1px solid gray;
     }
     #top-tool-container {
@@ -50,6 +51,15 @@
     .xsheet-cell.current {
       background-color: #8ac6ff;
     }
+    .xsheet-cell input {
+      width: 50px;
+      position: relative;
+      left: 30px;
+      top: 5px;
+    }
+    .xsheet-tick.current {
+      background-color: #8ac6ff;
+    }
   </style>
   <body>
     <div class="toolbar">
@@ -75,11 +85,20 @@
       <select id="layers">
         <option value="0">Selecciona una opción...</option>
       </select>
+      <button type="button" id="play">PLAY</button>
     </div>
     <canvas id="drawingTable" width="800" height="600"></canvas>
+    <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
+    <canvas
+      id="playCanvas"
+      width="800"
+      height="600"
+      style="display: none"
+    ></canvas>
     <div class="xsheet" id="xsheet"></div>
     <script src="dibujo.js"></script>
     <script src="cels.js"></script>
     <script src="xsheet.js"></script>
+    <script src="playback.js"></script>
   </body>
 </html>

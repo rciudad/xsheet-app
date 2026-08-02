@@ -4,8 +4,8 @@ function renderXSheet() {
   const rows = sheetTotalTicks();
 
   xsheetEl.style.gridTemplateColumns =
-    "40px repeat(" + layers.length + ", 80px)";
-  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 24px)";
+    "40px repeat(" + layers.length + ", 128px)";
+  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 40px)";
 
   const corner = document.createElement("div");
   corner.style.gridColumn = "1";
@@ -26,7 +26,7 @@ function renderXSheet() {
 
   for (let t = 0; t < rows; t++) {
     const tickEl = document.createElement("div");
-    tickEl.className = "xsheet-tick";
+    tickEl.className = "xsheet-tick" + (t === currentTick ? " current" : "");
     tickEl.textContent = t + 1;
     tickEl.style.gridColumn = "1";
     tickEl.style.gridRow = String(t + 2);
@@ -42,7 +42,22 @@ function renderXSheet() {
       const runStart = t;
       const runLen = Math.min(rem, rows - t);
 
+      const celIdx = idx;
+
+      const holdInput = document.createElement("input");
+      holdInput.type = "number";
+      holdInput.min = "1";
+      holdInput.value = L.holds[celIdx];
+      holdInput.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+      });
+      holdInput.addEventListener("change", function () {
+        setFrameHold(li, celIdx, holdInput.value);
+      });
+
       const cell = document.createElement("div");
+      cell.appendChild(holdInput);
+
       cell.className =
         "xsheet-cell" +
         (li === activeLayer ? " active-col" : "") +
@@ -53,7 +68,10 @@ function renderXSheet() {
           : "");
       cell.style.gridColumn = String(li + 2);
       cell.style.gridRow = runStart + 2 + " / span " + runLen;
-      cell.textContent = runStart + 1;
+
+      const numEl = document.createElement("span");
+      numEl.textContent = runStart + 1;
+      cell.appendChild(numEl);
 
       (function (li, runStart) {
         cell.addEventListener("click", function () {
@@ -73,4 +91,12 @@ function renderXSheet() {
     }
   });
 }
+function setFrameHold(li, celIdx, value) {
+  const v = Math.max(1, Math.round(+value) || 1);
+  layers[li].holds[celIdx] = v;
+  currentTick = Math.min(currentTick, sheetTotalTicks() - 1);
+  loadActiveFromStorage();
+  renderXSheet();
+}
+
 renderXSheet();
