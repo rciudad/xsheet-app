@@ -41,3 +41,67 @@ document
     };
     img.src = url;
   });
+
+//Batch images import
+
+document
+  .getElementById("import-batch")
+  .addEventListener("change", function (e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!files.length) return;
+
+    files.sort(function (a, b) {
+      return a.name.localeCompare(b.name, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
+
+    syncActiveToStorage();
+
+    const loaders = files.map(function (file) {
+      return new Promise(function (resolve) {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = function () {
+          URL.revokeObjectURL(url);
+          const nc = makeCel();
+          drawImageFitted(nc.ctx, img);
+          resolve(nc);
+        };
+        img.onerror = function () {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+        img.src = url;
+      });
+    });
+
+    Promise.all(loaders).then(function (cels) {
+      cels = cels.filter(function (c) {
+        return c;
+      });
+      if (!cels.length) {
+        alert("No se pudieron abrir esas imágenes.");
+        return;
+      }
+      const L = {
+        name: "Layer " + (layers.length + 1),
+        visible: true,
+        opacity: 1,
+        cels: cels,
+        holds: cels.map(function () {
+          return 1;
+        }),
+      };
+      const insertAt = activeLayer + 1;
+      layers.splice(insertAt, 0, L);
+      activeLayer = insertAt;
+      currentTick = 0;
+      populateLayerSelector(layers, activeLayer);
+      loadActiveFromStorage();
+      renderXSheet();
+      updateOnion();
+    });
+  });
