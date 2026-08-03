@@ -5,6 +5,12 @@
       gap: 10px;
       align-items: center;
     }
+    .bottom-toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+    }
     #drawingTable,
     #playCanvas {
       border: 1px solid gray;
@@ -91,6 +97,33 @@
       <input type="file" id="import-image" accept="image/*" />
       <input type="file" id="import-batch" accept="image/*" multiple />
     </div>
+    <div class="bottom-toolbar">
+      <div class="toolbar">
+        <label
+          >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
+            type="number"
+            id="peg1y"
+            value="430" />
+          w<input type="number" id="peg1w" value="90" /> h<input
+            type="number"
+            id="peg1h"
+            value="60"
+        /></label>
+        <label
+          >Región 2: x<input type="number" id="peg2x" value="570" /> y<input
+            type="number"
+            id="peg2y"
+            value="430" />
+          w<input type="number" id="peg2w" value="90" /> h<input
+            type="number"
+            id="peg2h"
+            value="60"
+        /></label>
+        <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
+        <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
+        <button type="button" id="peg-align-layer">ALINEAR CAPA ACTUAL</button>
+      </div>
+    </div>
 
     <div style="position: relative; width: 800px; height: 600px">
       <canvas
@@ -112,6 +145,14 @@
         height="600"
         style="position: absolute; top: 0; left: 0; display: none"
       ></canvas>
+      <div
+        id="pegOverlay1"
+        style="position: absolute; border: 2px solid red; pointer-events: none"
+      ></div>
+      <div
+        id="pegOverlay2"
+        style="position: absolute; border: 2px solid blue; pointer-events: none"
+      ></div>
     </div>
 
     <div class="xsheet" id="xsheet"></div>
@@ -122,5 +163,6 @@
     <script src="playback.js"></script>
     <script src="export.js"></script>
     <script src="import.js"></script>
+    <script src="pegholereg.js"></script>
   </body>
 </html>
