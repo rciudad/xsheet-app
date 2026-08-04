@@ -13,7 +13,7 @@
       padding: 20px;
       font-family: sans-serif;
       border: 1px solid gray;
-      height: 100px;
+      height: auto;
     }
     .bottom-toolbar input {
       width: 55px;
@@ -126,54 +126,56 @@
     </div>
     <audio id="audioPlayer"></audio>
     <div class="bottom-toolbar">
-      <div class="toolbar">
-        <label
-          >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
-            type="number"
-            id="peg1y"
-            value="430" />
-          w<input type="number" id="peg1w" value="90" /> h<input
-            type="number"
-            id="peg1h"
-            value="60"
-        /></label>
-        <label
-          >Región 2: x<input type="number" id="peg2x" value="570" /> y<input
-            type="number"
-            id="peg2y"
-            value="430" />
-          w<input type="number" id="peg2w" value="90" /> h<input
-            type="number"
-            id="peg2h"
-            value="60"
-        /></label>
-        <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
-        <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
-        <button type="button" id="peg-align-layer">ALINEAR CAPA ACTUAL</button>
-        <button type="button" id="prev"><</button>
-        <button type="button" id="next">></button>
-        <button type="button" id="new-frame">ADD FRAME</button>
-        <button type="button" id="new-layer">ADD LAYER</button>
-        <label for="layers">LAYER:</label>
-        <select id="layers">
-          <option value="0">Selecciona una opción...</option>
-        </select>
-        <button type="button" id="play">PLAY</button>
-        <label for="fps">FPS:</label>
-        <input type="number" id="fps" min="1" max="30" value="12" />
-        <button type="button" id="clear-drawing">BORRAR DIBUJO</button>
-        <button type="button" id="delete-frame">ELIMINAR FRAME</button>
-        <label for="layer-hold-all">HOLD CAPA:</label>
-        <input type="number" id="layer-hold-all" min="1" value="1" />
-        <button type="button" id="apply-layer-hold">APLICAR</button>
-        <button type="button" id="duplicate-frame">DUPLICAR</button>
-        <label for="move-origin">Origen:</label>
-        <input type="number" id="move-origin" min="1" value="1" />
-        <label for="move-dest">Destino:</label>
-        <input type="number" id="move-dest" min="1" value="1" />
-        <button type="button" id="move-frame">MOVER</button>
-        <button type="button" id="copy-frame">COPIAR</button>
-      </div>
+      <label
+        >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
+          type="number"
+          id="peg1y"
+          value="430" />
+        w<input type="number" id="peg1w" value="90" /> h<input
+          type="number"
+          id="peg1h"
+          value="60"
+      /></label>
+      <label
+        >Región 2: x<input type="number" id="peg2x" value="570" /> y<input
+          type="number"
+          id="peg2y"
+          value="430" />
+        w<input type="number" id="peg2w" value="90" /> h<input
+          type="number"
+          id="peg2h"
+          value="60"
+      /></label>
+      <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
+      <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
+      <button type="button" id="peg-align-layer">ALINEAR CAPA ACTUAL</button>
+      <button type="button" id="prev"><</button>
+      <button type="button" id="next">></button>
+      <button type="button" id="new-frame">ADD FRAME</button>
+      <button type="button" id="new-layer">ADD LAYER</button><br />
+      <label for="layers">LAYER:</label>
+      <select id="layers">
+        <option value="0">Selecciona una opción...</option>
+      </select>
+      <button type="button" id="play">PLAY</button>
+      <label for="fps">FPS:</label>
+      <input type="number" id="fps" min="1" max="30" value="12" />
+      <button type="button" id="clear-drawing">BORRAR DIBUJO</button>
+      <button type="button" id="delete-frame">ELIMINAR FRAME</button><br />
+      <label for="layer-hold-all">HOLD CAPA:</label>
+      <input type="number" id="layer-hold-all" min="1" value="1" />
+      <button type="button" id="apply-layer-hold">APLICAR</button>
+      <button type="button" id="duplicate-frame">DUPLICAR</button>
+      <label for="move-origin">Origen:</label>
+      <input type="number" id="move-origin" min="1" value="1" />
+      <label for="move-dest">Destino:</label>
+      <input type="number" id="move-dest" min="1" value="1" />
+      <button type="button" id="move-frame">MOVER</button>
+      <button type="button" id="copy-frame">COPIAR</button>
+      <label for="range-start">REPRODUCIR/EXPORTAR Desde:</label>
+      <input type="number" id="range-start" min="1" value="1" />
+      <label for="range-end">Hasta:</label>
+      <input type="number" id="range-end" min="1" value="1" />
     </div>
 
     <div style="position: relative; width: 800px; height: 600px">
@@ -211,8 +213,8 @@
     <script src="onion.js"></script>
     <script src="cels.js"></script>
     <script src="audio.js"></script>
-    <script src="xsheet.js"></script>
     <script src="playback.js"></script>
+    <script src="xsheet.js"></script>
     <script src="export.js"></script>
     <script src="import.js"></script>
     <script src="pegholereg.js"></script>

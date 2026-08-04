@@ -1,4 +1,5 @@
 function renderXSheet() {
+  clampRange();
   const xsheetEl = document.getElementById("xsheet");
   xsheetEl.innerHTML = "";
   const rows = sheetTotalTicks();

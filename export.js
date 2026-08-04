@@ -13,6 +13,7 @@ document.getElementById("export-png").addEventListener("click", function () {
   a.click();
 });
 
+/*
 document
   .getElementById("export-sequence")
   .addEventListener("click", function () {
@@ -22,6 +23,20 @@ document
       const a = document.createElement("a");
       a.href = flattenAt(t).toDataURL("image/png");
       a.download = "frame-" + padNum(t + 1, total) + ".png";
+      a.click();
+    }
+  });
+  */
+
+document
+  .getElementById("export-sequence")
+  .addEventListener("click", function () {
+    syncActiveToStorage();
+    const total = rangeEnd - rangeStart + 1;
+    for (let t = rangeStart; t <= rangeEnd; t++) {
+      const a = document.createElement("a");
+      a.href = flattenAt(t).toDataURL("image/png");
+      a.download = "frame-" + padNum(t - rangeStart + 1, total) + ".png";
       a.click();
     }
   });
