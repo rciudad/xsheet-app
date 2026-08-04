@@ -128,4 +128,102 @@ function setLayerHoldAll(li, value) {
   updateOnion();
 }
 
+//La pieza clave son dos funciones de conversión entre "número de frame que ve el usuario" (1-based) e "índice dentro de cels/holds" — necesarias porque mover un frame no es lo mismo
+//  que mover un tick (un frame puede ocupar varios ticks por su hold):
+
+function tickNumberToRunIdx(L, tickNumber) {
+  var tick = Math.max(0, Math.round(tickNumber) - 1);
+  var acc = 0;
+  for (var i = 0; i < L.cels.length; i++) {
+    var h = L.holds[i] || 1;
+    if (tick < acc + h) return i;
+    acc += h;
+  }
+  return L.cels.length;
+}
+
+function runStartForIdx(L, idx) {
+  var acc = 0;
+  for (var i = 0; i < idx; i++) acc += L.holds[i] || 1;
+  return acc;
+}
+
+//Duplicar (variante de tu addFrame, pero copiando el dibujo en vez de dejarlo en blanco):
+
+function duplicateFrame() {
+  syncActiveToStorage();
+  var L = layers[activeLayer];
+  var run = layerCelAtTick(L, currentTick);
+  var nc = makeCel();
+  nc.ctx.drawImage(L.cels[run.idx].canvas, 0, 0);
+  L.cels.splice(run.idx + 1, 0, nc);
+  L.holds.splice(run.idx + 1, 0, 1);
+  currentTick = run.localStart + run.runLen;
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+//Mover (saca el run de una posición y lo reinserta en otra):
+function moveFrameToPosition(sourceNumber, destNumber) {
+  var L = layers[activeLayer];
+  syncActiveToStorage();
+  var sourceIdx = tickNumberToRunIdx(L, sourceNumber);
+  sourceIdx = Math.max(0, Math.min(sourceIdx, L.cels.length - 1));
+  var destIdx = tickNumberToRunIdx(L, destNumber);
+
+  var cel = L.cels.splice(sourceIdx, 1)[0];
+  var hold = L.holds.splice(sourceIdx, 1)[0];
+  var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
+  L.cels.splice(insertAt, 0, cel);
+  L.holds.splice(insertAt, 0, hold);
+
+  currentTick = runStartForIdx(L, insertAt);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+//Ojo con el orden: primero splice para sacar, y destIdx se calculó antes de sacar el original — el comentario del original explica que, aunque parezca que habría que ajustar el índice
+//en ±1 tras el splice de salida, no hace falta (verificado a mano).
+
+//Copiar (igual, pero sin sacar el original, solo duplicando en el destino):
+function copyFrameToPosition(sourceNumber, destNumber) {
+  var L = layers[activeLayer];
+  syncActiveToStorage();
+  var sourceIdx = Math.max(
+    0,
+    Math.min(tickNumberToRunIdx(L, sourceNumber), L.cels.length - 1)
+  );
+  var destIdx = tickNumberToRunIdx(L, destNumber);
+  var nc = makeCel();
+  nc.ctx.drawImage(L.cels[sourceIdx].canvas, 0, 0);
+  var hold = L.holds[sourceIdx];
+  var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
+  L.cels.splice(insertAt, 0, nc);
+  L.holds.splice(insertAt, 0, hold);
+  currentTick = runStartForIdx(L, insertAt);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+//Las tres terminan igual que tus otras funciones mutadoras: loadActiveFromStorage(); renderXSheet(); updateOnion();
+
+document
+  .getElementById("duplicate-frame")
+  .addEventListener("click", duplicateFrame);
+document.getElementById("move-frame").addEventListener("click", function () {
+  moveFrameToPosition(
+    document.getElementById("move-origin").value,
+    document.getElementById("move-dest").value
+  );
+});
+document.getElementById("copy-frame").addEventListener("click", function () {
+  copyFrameToPosition(
+    document.getElementById("move-origin").value,
+    document.getElementById("move-dest").value
+  );
+});
+
 renderXSheet();

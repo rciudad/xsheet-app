@@ -102,6 +102,9 @@
     <div class="toolbar">
       <input type="color" id="selectedColor" />
       <input type="number" id="brushSize" />
+      <button type="button" id="tool-pencil">LÁPIZ</button>
+      <button type="button" id="tool-eraser">GOMA</button>
+
       <!-- Also can be used -->
       <!--input type="range" min="1" max="30"-->
       <label for="resolution">RES:</label>
@@ -163,6 +166,13 @@
         <label for="layer-hold-all">HOLD CAPA:</label>
         <input type="number" id="layer-hold-all" min="1" value="1" />
         <button type="button" id="apply-layer-hold">APLICAR</button>
+        <button type="button" id="duplicate-frame">DUPLICAR</button>
+        <label for="move-origin">Origen:</label>
+        <input type="number" id="move-origin" min="1" value="1" />
+        <label for="move-dest">Destino:</label>
+        <input type="number" id="move-dest" min="1" value="1" />
+        <button type="button" id="move-frame">MOVER</button>
+        <button type="button" id="copy-frame">COPIAR</button>
       </div>
     </div>
 

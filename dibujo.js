@@ -1,6 +1,7 @@
 const canvas = document.getElementById("drawingTable");
 const ctx = canvas.getContext("2d");
 let dibujando = false;
+let tool = "pencil";
 
 const colorInput = document.getElementById("selectedColor");
 const sizeInput = document.getElementById("brushSize");
@@ -32,6 +33,8 @@ resolutionInput.addEventListener("change", function (e) {
 
 canvas.addEventListener("pointerdown", function (e) {
   dibujando = true;
+  ctx.globalCompositeOperation =
+    tool === "eraser" ? "destination-out" : "source-over";
   ctx.strokeStyle = colorInput.value;
   ctx.lineWidth = sizeInput.value;
   ctx.beginPath();
@@ -54,9 +57,19 @@ canvas.addEventListener("pointercancel", function (e) {
   endStroke();
   canvas.releasePointerCapture(e.pointerId);
 });
+document.getElementById("tool-pencil").addEventListener("click", function () {
+  setTool("pencil");
+});
+document.getElementById("tool-eraser").addEventListener("click", function () {
+  setTool("eraser");
+});
 
 function endStroke() {
   if (!dibujando) return;
   dibujando = false;
   syncActiveToStorage();
+}
+
+function setTool(name) {
+  tool = name;
 }
