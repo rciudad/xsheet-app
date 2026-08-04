@@ -1,9 +1,11 @@
 <html>
   <style>
     .toolbar {
-      display: flex;
+      /*display: flex;
       gap: 10px;
-      align-items: center;
+      align-items: center;*/
+      height: auto;
+      border-bottom: 1px solid gray;
     }
     .bottom-toolbar {
       position: fixed;
@@ -117,7 +119,7 @@
         <option value="1080x1440"></option>
         <option value="1080x1920"></option>
       </datalist>
-
+      <br />
       <button type="button" id="export-png">EXPORT PNG</button>
       <button type="button" id="export-sequence">EXPORT SEQUENCE</button>
       <input type="file" id="import-image" accept="image/*" />
@@ -176,6 +178,8 @@
       <input type="number" id="range-start" min="1" value="1" />
       <label for="range-end">Hasta:</label>
       <input type="number" id="range-end" min="1" value="1" />
+      <button type="button" id="save-project">GUARDAR PROYECTO</button>
+      <input type="file" id="import-project" accept="application/json,.json" />
     </div>
 
     <div style="position: relative; width: 800px; height: 600px">
@@ -218,5 +222,6 @@
     <script src="export.js"></script>
     <script src="import.js"></script>
     <script src="pegholereg.js"></script>
+    <script src="project.js"></script>
   </body>
 </html>

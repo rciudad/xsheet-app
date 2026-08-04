@@ -11,16 +11,15 @@ var W = 800;
 var H = 600;
 
 resolutionInput.addEventListener("change", function (e) {
-  // Extract the chosen value
   const [newWidth, newHeight] = e.target.value.split("x");
-
-  // Update the actual canvas dimensions (this clears the canvas)
   W = parseInt(newWidth, 10);
   H = parseInt(newHeight, 10);
+  applyStageSize();
+});
 
+function applyStageSize() {
   canvas.width = W;
   canvas.height = H;
-
   onionEl.width = W;
   onionEl.height = H;
   flattenCanvas.width = W;
@@ -29,7 +28,7 @@ resolutionInput.addEventListener("change", function (e) {
   tintCanvas.height = H;
   playCanvas.width = W;
   playCanvas.height = H;
-});
+}
 
 canvas.addEventListener("pointerdown", function (e) {
   dibujando = true;
