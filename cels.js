@@ -201,6 +201,7 @@ function activeIdx() {
 */
 
 function clearDrawing() {
+  takeUndoSnapshot();
   ctx.clearRect(0, 0, W, H);
   syncActiveToStorage();
   updateOnion();

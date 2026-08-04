@@ -45,6 +45,10 @@ function playTick() {
 function startPlay() {
   if (!sheetTotalTicks()) return;
   syncActiveToStorage();
+  if (gradePreviewEnabled) {
+    gradePreviewEnabled = false;
+    gradePreviewToggle.checked = false;
+  }
   playing = true;
   onionEl.style.display = "none";
   canvas.style.display = "none";

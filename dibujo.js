@@ -17,19 +17,6 @@ resolutionInput.addEventListener("change", function (e) {
   applyStageSize();
 });
 
-function applyStageSize() {
-  canvas.width = W;
-  canvas.height = H;
-  onionEl.width = W;
-  onionEl.height = H;
-  flattenCanvas.width = W;
-  flattenCanvas.height = H;
-  tintCanvas.width = W;
-  tintCanvas.height = H;
-  playCanvas.width = W;
-  playCanvas.height = H;
-}
-
 /*
 canvas.addEventListener("pointerdown", function (e) {
   dibujando = true;
@@ -50,6 +37,7 @@ canvas.addEventListener("pointerdown", function (e) {
     return;
   }
   dibujando = true;
+  takeUndoSnapshot();
   ctx.globalCompositeOperation =
     tool === "eraser" ? "destination-out" : "source-over";
   ctx.strokeStyle = colorInput.value;
@@ -95,12 +83,26 @@ document.getElementById("tool-eraser").addEventListener("click", function () {
   setTool("eraser");
 });
 
+function setTool(name) {
+  tool = name;
+}
+
+function applyStageSize() {
+  canvas.width = W;
+  canvas.height = H;
+  onionEl.width = W;
+  onionEl.height = H;
+  flattenCanvas.width = W;
+  flattenCanvas.height = H;
+  tintCanvas.width = W;
+  tintCanvas.height = H;
+  playCanvas.width = W;
+  playCanvas.height = H;
+  resetCropToFullFrame();
+}
 function endStroke() {
   if (!dibujando) return;
   dibujando = false;
   syncActiveToStorage();
-}
-
-function setTool(name) {
-  tool = name;
+  refreshGradePreview();
 }

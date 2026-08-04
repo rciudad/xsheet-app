@@ -44,4 +44,5 @@ function updateOnion() {
     tintDraw(flattenAt(currentTick - 1), "#46c2b0", onionOpacity);
   if (currentTick + 1 < sheetTotalTicks())
     tintDraw(flattenAt(currentTick + 1), "#9b8cff", onionOpacity);
+  refreshGradePreview();
 }
