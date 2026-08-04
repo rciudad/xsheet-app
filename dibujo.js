@@ -30,6 +30,7 @@ function applyStageSize() {
   playCanvas.height = H;
 }
 
+/*
 canvas.addEventListener("pointerdown", function (e) {
   dibujando = true;
   ctx.globalCompositeOperation =
@@ -40,12 +41,43 @@ canvas.addEventListener("pointerdown", function (e) {
   ctx.moveTo(e.offsetX, e.offsetY);
   canvas.setPointerCapture(e.pointerId);
 });
+*/
 
+canvas.addEventListener("pointerdown", function (e) {
+  if (tool === "pan" || e.button === 1) {
+    e.preventDefault(); // evita el autoscroll que Chrome/Firefox activan con el botón central
+    startPan(e);
+    return;
+  }
+  dibujando = true;
+  ctx.globalCompositeOperation =
+    tool === "eraser" ? "destination-out" : "source-over";
+  ctx.strokeStyle = colorInput.value;
+  ctx.lineWidth = sizeInput.value;
+  ctx.beginPath();
+  const p = getPos(e);
+  ctx.moveTo(p.x, p.y);
+  canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener("pointermove", function (e) {
+  if (panning) {
+    doPan(e);
+    return;
+  }
+  if (!dibujando) return;
+  const p = getPos(e);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+});
+
+/*
 canvas.addEventListener("pointermove", function (e) {
   if (!dibujando) return;
   ctx.lineTo(e.offsetX, e.offsetY);
   ctx.stroke();
 });
+*/
 
 canvas.addEventListener("pointerup", function (e) {
   endStroke();

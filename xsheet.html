@@ -179,37 +179,66 @@
       <label for="range-end">Hasta:</label>
       <input type="number" id="range-end" min="1" value="1" />
       <button type="button" id="save-project">GUARDAR PROYECTO</button>
-      <input type="file" id="import-project" accept="application/json,.json" />
+      <input
+        type="file"
+        id="import-project"
+        accept="application/json,.json"
+      /><br />
+      <button type="button" id="tool-pan">MANO</button>
+      <button type="button" id="zoom-out">−</button>
+      <span id="zoomReadout">100%</span>
+      <button type="button" id="zoom-in">+</button>
+      <button type="button" id="rotate-left">⟲</button>
+      <span id="rotateReadout">0°</span>
+      <button type="button" id="rotate-right">⟳</button>
+      <button type="button" id="zoom-reset">RESET VISTA</button>
     </div>
 
-    <div style="position: relative; width: 800px; height: 600px">
-      <canvas
-        id="onion"
-        width="800"
-        height="600"
-        style="position: absolute; top: 0; left: 0; pointer-events: none"
-      ></canvas>
-      <canvas
-        id="drawingTable"
-        width="800"
-        height="600"
-        style="position: absolute; top: 0; left: 0"
-      ></canvas>
-      <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
-      <canvas
-        id="playCanvas"
-        width="800"
-        height="600"
-        style="position: absolute; top: 0; left: 0; display: none"
-      ></canvas>
+    <div
+      id="stageViewport"
+      style="width: 800px; height: 600px; overflow: hidden; position: relative"
+    >
       <div
-        id="pegOverlay1"
-        style="position: absolute; border: 2px solid red; pointer-events: none"
-      ></div>
-      <div
-        id="pegOverlay2"
-        style="position: absolute; border: 2px solid blue; pointer-events: none"
-      ></div>
+        id="stage"
+        style="position: absolute; top: 0; left: 0; width: 800px; height: 600px"
+      >
+        <canvas
+          id="onion"
+          width="800"
+          height="600"
+          style="position: absolute; top: 0; left: 0; pointer-events: none"
+        ></canvas>
+        <canvas
+          id="drawingTable"
+          width="800"
+          height="600"
+          style="position: absolute; top: 0; left: 0"
+        ></canvas>
+        <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
+        <canvas
+          id="playCanvas"
+          width="800"
+          height="600"
+          style="position: absolute; top: 0; left: 0; display: none"
+        ></canvas>
+
+        <div
+          id="pegOverlay1"
+          style="
+            position: absolute;
+            border: 2px solid red;
+            pointer-events: none;
+          "
+        ></div>
+        <div
+          id="pegOverlay2"
+          style="
+            position: absolute;
+            border: 2px solid blue;
+            pointer-events: none;
+          "
+        ></div>
+      </div>
     </div>
 
     <div class="xsheet" id="xsheet"></div>
@@ -223,5 +252,6 @@
     <script src="import.js"></script>
     <script src="pegholereg.js"></script>
     <script src="project.js"></script>
+    <script src="view.js"></script>
   </body>
 </html>
