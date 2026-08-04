@@ -28,8 +28,10 @@ var fps = 12;
 
 function playTick() {
   const total = sheetTotalTicks();
-  playTickPos = playTickPos + 1 >= total ? 0 : playTickPos + 1;
+  const looped = playTickPos + 1 >= total;
+  playTickPos = looped ? 0 : playTickPos + 1;
   renderPlayFrame();
+  if (looped) syncAudioToTick(0);
 }
 
 function startPlay() {
@@ -41,6 +43,11 @@ function startPlay() {
   playCanvas.style.display = "block";
   playTickPos = currentTick;
   renderPlayFrame();
+  if (audioDataURL && !audioMuted) {
+    syncAudioToTick(playTickPos);
+    audioPlayerEl.play();
+  }
+
   playTimer = setInterval(playTick, 1000 / fps);
   playBtn.textContent = "PAUSE";
 }
@@ -53,6 +60,7 @@ function stopPlay() {
   canvas.style.display = "block";
   playCanvas.style.display = "none";
   playBtn.textContent = "PLAY";
+  if (audioDataURL) audioPlayerEl.pause();
   loadActiveFromStorage();
   updateOnion();
 }

@@ -82,6 +82,19 @@
     .xsheet-tick.current {
       background-color: #8ac6ff;
     }
+    #audioPlayer {
+      display: none;
+    }
+    .xsheet-audio-cell {
+      border: 1px solid gray;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .xsheet-audio-bar {
+      width: 80%;
+      background: teal;
+    }
   </style>
   <body>
     <div class="toolbar">
@@ -99,20 +112,14 @@
         <option value="1080x1440"></option>
         <option value="1080x1920"></option>
       </datalist>
-      <button type="button" id="prev"><</button>
-      <button type="button" id="next">></button>
-      <button type="button" id="new-frame">ADD FRAME</button>
-      <button type="button" id="new-layer">ADD LAYER</button>
-      <label for="layers">LAYER:</label>
-      <select id="layers">
-        <option value="0">Selecciona una opción...</option>
-      </select>
-      <button type="button" id="play">PLAY</button>
+
       <button type="button" id="export-png">EXPORT PNG</button>
       <button type="button" id="export-sequence">EXPORT SEQUENCE</button>
       <input type="file" id="import-image" accept="image/*" />
       <input type="file" id="import-batch" accept="image/*" multiple />
+      <input type="file" id="import-audio" accept="audio/*" />
     </div>
+    <audio id="audioPlayer"></audio>
     <div class="bottom-toolbar">
       <div class="toolbar">
         <label
@@ -138,6 +145,15 @@
         <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
         <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
         <button type="button" id="peg-align-layer">ALINEAR CAPA ACTUAL</button>
+        <button type="button" id="prev"><</button>
+        <button type="button" id="next">></button>
+        <button type="button" id="new-frame">ADD FRAME</button>
+        <button type="button" id="new-layer">ADD LAYER</button>
+        <label for="layers">LAYER:</label>
+        <select id="layers">
+          <option value="0">Selecciona una opción...</option>
+        </select>
+        <button type="button" id="play">PLAY</button>
       </div>
     </div>
 
@@ -175,6 +191,7 @@
     <script src="dibujo.js"></script>
     <script src="onion.js"></script>
     <script src="cels.js"></script>
+    <script src="audio.js"></script>
     <script src="xsheet.js"></script>
     <script src="playback.js"></script>
     <script src="export.js"></script>

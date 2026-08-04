@@ -4,7 +4,7 @@ function renderXSheet() {
   const rows = sheetTotalTicks();
 
   xsheetEl.style.gridTemplateColumns =
-    "40px repeat(" + layers.length + ", 128px)";
+    "40px 50px repeat(" + layers.length + ", 128px)";
   xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 40px)";
 
   const corner = document.createElement("div");
@@ -16,13 +16,31 @@ function renderXSheet() {
     const th = document.createElement("div");
     th.className = "xsheet-th" + (li === activeLayer ? " active" : "");
     th.textContent = layer.name;
-    th.style.gridColumn = String(li + 2);
+    th.style.gridColumn = String(li + 3);
     th.style.gridRow = "1";
     th.addEventListener("click", function () {
       selectLayer(li);
     });
     xsheetEl.appendChild(th);
   });
+
+  function createAudioCell(t) {
+    const audioCell = document.createElement("div");
+    audioCell.className = "xsheet-audio-cell";
+    audioCell.style.gridColumn = "2";
+    audioCell.style.gridRow = String(t + 2);
+    if (audioBuffer) {
+      const amp = audioAmplitudeAtTick(t);
+      const bar = document.createElement("div");
+      bar.className = "xsheet-audio-bar";
+      bar.style.height = Math.max(2, Math.round(amp * 15)) + "px";
+      audioCell.appendChild(bar);
+    }
+    audioCell.addEventListener("click", function () {
+      selectTick(t);
+    });
+    xsheetEl.appendChild(audioCell);
+  }
 
   for (let t = 0; t < rows; t++) {
     const tickEl = document.createElement("div");
@@ -31,6 +49,7 @@ function renderXSheet() {
     tickEl.style.gridColumn = "1";
     tickEl.style.gridRow = String(t + 2);
     xsheetEl.appendChild(tickEl);
+    createAudioCell(t);
   }
 
   layers.forEach(function (L, li) {
@@ -66,7 +85,7 @@ function renderXSheet() {
         currentTick < runStart + runLen
           ? " current"
           : "");
-      cell.style.gridColumn = String(li + 2);
+      cell.style.gridColumn = String(li + 3);
       cell.style.gridRow = runStart + 2 + " / span " + runLen;
 
       const numEl = document.createElement("span");
