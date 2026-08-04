@@ -12,6 +12,8 @@
       width: 100%;
       padding: 20px;
       font-family: sans-serif;
+      border: 1px solid gray;
+      height: 100px;
     }
     .bottom-toolbar input {
       width: 55px;
@@ -154,6 +156,13 @@
           <option value="0">Selecciona una opción...</option>
         </select>
         <button type="button" id="play">PLAY</button>
+        <label for="fps">FPS:</label>
+        <input type="number" id="fps" min="1" max="30" value="12" />
+        <button type="button" id="clear-drawing">BORRAR DIBUJO</button>
+        <button type="button" id="delete-frame">ELIMINAR FRAME</button>
+        <label for="layer-hold-all">HOLD CAPA:</label>
+        <input type="number" id="layer-hold-all" min="1" value="1" />
+        <button type="button" id="apply-layer-hold">APLICAR</button>
       </div>
     </div>
 

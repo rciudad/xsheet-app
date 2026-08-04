@@ -19,6 +19,20 @@ newLayerBtn.addEventListener("click", function () {
 layerSelector.addEventListener("change", function () {
   selectLayer(Number(layerSelector.value));
 });
+document
+  .getElementById("clear-drawing")
+  .addEventListener("click", clearDrawing);
+document.getElementById("delete-frame").addEventListener("click", function () {
+  deleteFrame(layers[activeLayer]);
+});
+document
+  .getElementById("apply-layer-hold")
+  .addEventListener("click", function () {
+    setLayerHoldAll(
+      activeLayer,
+      document.getElementById("layer-hold-all").value
+    );
+  });
 
 function addFrame(L, position) {
   syncActiveToStorage();
@@ -185,3 +199,26 @@ function activeIdx() {
   return celAtTick(currentTick).idx;
 }
 */
+
+function clearDrawing() {
+  ctx.clearRect(0, 0, W, H);
+  syncActiveToStorage();
+  updateOnion();
+}
+
+function deleteFrame(L) {
+  syncActiveToStorage();
+  if (L.cels.length === 1) {
+    L.cels[0].ctx.clearRect(0, 0, W, H);
+    L.holds[0] = 1;
+    currentTick = 0;
+  } else {
+    const run = layerCelAtTick(L, currentTick);
+    L.cels.splice(run.idx, 1);
+    L.holds.splice(run.idx, 1);
+    currentTick = Math.min(currentTick, sheetTotalTicks() - 1);
+  }
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}

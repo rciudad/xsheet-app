@@ -118,5 +118,14 @@ function setFrameHold(li, celIdx, value) {
   renderXSheet();
   updateOnion();
 }
+function setLayerHoldAll(li, value) {
+  const L = layers[li];
+  const v = Math.max(1, Math.round(+value) || 1);
+  for (let i = 0; i < L.holds.length; i++) L.holds[i] = v;
+  currentTick = Math.min(currentTick, sheetTotalTicks() - 1);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
 
 renderXSheet();

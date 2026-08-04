@@ -71,3 +71,15 @@ function togglePlay() {
 
 const playBtn = document.getElementById("play");
 playBtn.addEventListener("click", togglePlay);
+
+const fpsInput = document.getElementById("fps");
+fpsInput.addEventListener("change", function () {
+  const v = Math.max(1, Math.min(30, +fpsInput.value || 12));
+  fps = v;
+  fpsInput.value = v;
+  if (playing) {
+    clearInterval(playTimer);
+    playTimer = setInterval(playTick, 1000 / fps);
+  }
+  renderXSheet(); // porque fps también cambia la ventana de audioAmplitudeAtTick, así que las barras de la forma de onda quedan desactualizadas si no se vuelve a dibujar
+});
