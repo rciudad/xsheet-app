@@ -37,12 +37,31 @@ function tintDraw(srcCanvas, tint, alpha) {
 }
 
 var onionOpacity = 0.35;
+var onionEnabled = true;
 
 function updateOnion() {
   onionCtx.clearRect(0, 0, W, H);
-  if (currentTick - 1 >= 0)
-    tintDraw(flattenAt(currentTick - 1), "#46c2b0", onionOpacity);
-  if (currentTick + 1 < sheetTotalTicks())
-    tintDraw(flattenAt(currentTick + 1), "#9b8cff", onionOpacity);
+  if (onionEnabled) {
+    if (currentTick - 1 >= 0)
+      tintDraw(flattenAt(currentTick - 1), "#46c2b0", onionOpacity);
+    if (currentTick + 1 < sheetTotalTicks())
+      tintDraw(flattenAt(currentTick + 1), "#9b8cff", onionOpacity);
+  }
   refreshGradePreview();
 }
+
+var onionToggleInput = document.getElementById("onion-toggle");
+var onionOpacityInput = document.getElementById("onion-opacity");
+
+onionToggleInput.addEventListener("change", function () {
+  onionEnabled = onionToggleInput.checked;
+  updateOnion();
+});
+
+onionOpacityInput.addEventListener("change", function () {
+  var v = Math.min(1, Math.max(0, parseFloat(onionOpacityInput.value)));
+  if (!isFinite(v)) v = onionOpacity;
+  onionOpacity = v;
+  onionOpacityInput.value = v;
+  updateOnion();
+});

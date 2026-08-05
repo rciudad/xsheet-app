@@ -34,6 +34,16 @@ document
     );
   });
 
+var layerOpacityInput = document.getElementById("layer-opacity");
+layerOpacityInput.addEventListener("change", function () {
+  var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
+  if (!isFinite(v)) v = 1;
+  layers[activeLayer].opacity = v;
+  layerOpacityInput.value = v;
+  updateOnion();
+  refreshGradePreview();
+});
+
 function addFrame(L, position) {
   syncActiveToStorage();
   const run = layerCelAtTick(L, position);
@@ -93,8 +103,13 @@ function populateLayerSelector(layers, newSelection) {
   select.value = newSelection;
 }
 
+function syncLayerOpacityInput() {
+  layerOpacityInput.value = layers[activeLayer].opacity;
+}
+
 populateLayerSelector(layers, activeLayer);
 
+syncLayerOpacityInput();
 // "guarda lo que hay en pantalla en el cel activo"
 function syncActiveToStorage() {
   var c = activeCel(); //cels[activeIdx()];
@@ -149,9 +164,13 @@ function selectLayer(li) {
   syncActiveToStorage();
   activeLayer = li;
   loadActiveFromStorage();
+  syncLayerOpacityInput();
   renderXSheet();
   updateOnion();
 }
+
+//¿Por qué en tres lugares "syncLayerOpacityInput();" y no uno solo? Porque activeLayer cambia en esos tres puntos (inicio, selección manual, capa nueva) y el input HTML no se actualiza solo — si no lo sincronizás ahí, se queda
+//  mostrando el valor de la capa anterior aunque cambies de capa.
 
 function addLayer() {
   syncActiveToStorage();
@@ -167,6 +186,7 @@ function addLayer() {
 
   activeLayer = insertAt;
   populateLayerSelector(layers, activeLayer);
+  syncLayerOpacityInput();
   loadActiveFromStorage();
   renderXSheet();
   updateOnion();
