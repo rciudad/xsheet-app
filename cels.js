@@ -108,20 +108,6 @@ function loadActiveFromStorage() {
   ctx.drawImage(activeCel().canvas, 0, 0);
 }
 
-//Resolver tick → índice de cel (esto es lo que hace posible el "hold")
-/*
-function celAtTick(tick) {
-  totalFrames = calcTotalFrames(holds);
-  var t = ((tick % totalFrames) + totalFrames) % totalFrames; // wrap
-  var acc = 0;
-  for (var i = 0; i < cels.length; i++) {
-    var h = holds[i];
-    if (t < acc + h) return { idx: i, runStart: tick - (t - acc), runLen: h };
-    acc += h;
-  }
-}
-*/
-
 function layerCelAtTick(L, tick) {
   const totalFrames = calcTotalFrames(L.holds);
   var t = ((tick % totalFrames) + totalFrames) % totalFrames; // wrap

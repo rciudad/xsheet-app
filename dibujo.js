@@ -103,6 +103,7 @@ function applyStageSize() {
 function endStroke() {
   if (!dibujando) return;
   dibujando = false;
+  ctx.globalCompositeOperation = "source-over";
   syncActiveToStorage();
   refreshGradePreview();
 }

@@ -79,14 +79,17 @@ stageViewport.addEventListener(
   { passive: false }
 );
 
-document.getElementById("zoom-in").addEventListener("click", function () {
+function zoomIn() {
   var vr = stageViewport.getBoundingClientRect();
   zoomAt(viewZoom * 1.2, vr.left + vr.width / 2, vr.top + vr.height / 2);
-});
-document.getElementById("zoom-out").addEventListener("click", function () {
+}
+function zoomOut() {
   var vr = stageViewport.getBoundingClientRect();
   zoomAt(viewZoom / 1.2, vr.left + vr.width / 2, vr.top + vr.height / 2);
-});
+}
+document.getElementById("zoom-in").addEventListener("click", zoomIn);
+document.getElementById("zoom-out").addEventListener("click", zoomOut);
+
 document.getElementById("rotate-left").addEventListener("click", function () {
   setRotation(viewRotation - 15);
 });

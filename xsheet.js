@@ -5,8 +5,8 @@ function renderXSheet() {
   const rows = sheetTotalTicks();
 
   xsheetEl.style.gridTemplateColumns =
-    "40px 50px repeat(" + layers.length + ", 128px)";
-  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 40px)";
+    "40px 50px repeat(" + layers.length + ", 88px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
+  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 40px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
 
   const corner = document.createElement("div");
   corner.style.gridColumn = "1";
@@ -111,6 +111,7 @@ function renderXSheet() {
     }
   });
 }
+
 function setFrameHold(li, celIdx, value) {
   const v = Math.max(1, Math.round(+value) || 1);
   layers[li].holds[celIdx] = v;
@@ -119,6 +120,7 @@ function setFrameHold(li, celIdx, value) {
   renderXSheet();
   updateOnion();
 }
+
 function setLayerHoldAll(li, value) {
   const L = layers[li];
   const v = Math.max(1, Math.round(+value) || 1);
