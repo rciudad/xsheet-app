@@ -160,6 +160,7 @@
       <button type="button" id="prev"><</button>
       <button type="button" id="next">></button>
       <button type="button" id="new-frame">ADD FRAME</button>
+      <button type="button" id="insert-frame-left">INSERTAR IZQUIERDA</button>
       <button type="button" id="new-layer">ADD LAYER</button><br />
       <label for="layers">LAYER:</label>
       <select id="layers">
@@ -198,8 +199,12 @@
       <button type="button" id="duplicate-frame">DUPLICAR</button>
       <label for="move-origin">Origen:</label>
       <input type="number" id="move-origin" min="1" value="1" />
+      <label for="move-origin-end">Origen hasta:</label>
+      <input type="number" id="move-origin-end" min="1" value="1" />
+
       <label for="move-dest">Destino:</label>
       <input type="number" id="move-dest" min="1" value="1" />
+
       <button type="button" id="move-frame">MOVER</button>
       <button type="button" id="copy-frame">COPIAR</button>
       <label for="range-start">REPRODUCIR/EXPORTAR Desde:</label>

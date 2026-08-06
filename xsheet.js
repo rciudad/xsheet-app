@@ -167,19 +167,32 @@ function duplicateFrame() {
   updateOnion();
 }
 
-//Mover (saca el run de una posición y lo reinserta en otra):
-function moveFrameToPosition(sourceNumber, destNumber) {
+//Mover (saca el bloque [sourceStart..sourceEnd] de una posición y lo reinserta en
+//otra):
+//Cuando sourceStart === sourceEnd, count es 1 y el cálculo de insertAt es idéntico al
+//original — mismo comportamiento de siempre para mover un solo frame.
+function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
   var L = layers[activeLayer];
   syncActiveToStorage();
-  var sourceIdx = tickNumberToRunIdx(L, sourceNumber);
-  sourceIdx = Math.max(0, Math.min(sourceIdx, L.cels.length - 1));
+
+  var startIdx = tickNumberToRunIdx(L, sourceStart);
+  var endIdx = tickNumberToRunIdx(L, sourceEnd);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+  var count = endIdx - startIdx + 1;
+
   var destIdx = tickNumberToRunIdx(L, destNumber);
 
-  var cel = L.cels.splice(sourceIdx, 1)[0];
-  var hold = L.holds.splice(sourceIdx, 1)[0];
+  var cels = L.cels.splice(startIdx, count);
+  var holds = L.holds.splice(startIdx, count);
   var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
-  L.cels.splice(insertAt, 0, cel);
-  L.holds.splice(insertAt, 0, hold);
+  L.cels.splice.apply(L.cels, [insertAt, 0].concat(cels));
+  L.holds.splice.apply(L.holds, [insertAt, 0].concat(holds));
 
   currentTick = runStartForIdx(L, insertAt);
   loadActiveFromStorage();
@@ -190,21 +203,35 @@ function moveFrameToPosition(sourceNumber, destNumber) {
 //Ojo con el orden: primero splice para sacar, y destIdx se calculó antes de sacar el original — el comentario del original explica que, aunque parezca que habría que ajustar el índice
 //en ±1 tras el splice de salida, no hace falta (verificado a mano).
 
-//Copiar (igual, pero sin sacar el original, solo duplicando en el destino):
-function copyFrameToPosition(sourceNumber, destNumber) {
+//Copiar (igual, pero sin sacar el bloque original, solo duplicándolo en el destino):
+function copyFrameToPosition(sourceStart, sourceEnd, destNumber) {
   var L = layers[activeLayer];
   syncActiveToStorage();
-  var sourceIdx = Math.max(
-    0,
-    Math.min(tickNumberToRunIdx(L, sourceNumber), L.cels.length - 1)
-  );
+
+  var startIdx = tickNumberToRunIdx(L, sourceStart);
+  var endIdx = tickNumberToRunIdx(L, sourceEnd);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+
+  var newCels = [];
+  var newHolds = [];
+  for (var i = startIdx; i <= endIdx; i++) {
+    var nc = makeCel();
+    nc.ctx.drawImage(L.cels[i].canvas, 0, 0);
+    newCels.push(nc);
+    newHolds.push(L.holds[i]);
+  }
+
   var destIdx = tickNumberToRunIdx(L, destNumber);
-  var nc = makeCel();
-  nc.ctx.drawImage(L.cels[sourceIdx].canvas, 0, 0);
-  var hold = L.holds[sourceIdx];
   var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
-  L.cels.splice(insertAt, 0, nc);
-  L.holds.splice(insertAt, 0, hold);
+  L.cels.splice.apply(L.cels, [insertAt, 0].concat(newCels));
+  L.holds.splice.apply(L.holds, [insertAt, 0].concat(newHolds));
+
   currentTick = runStartForIdx(L, insertAt);
   loadActiveFromStorage();
   renderXSheet();
@@ -216,15 +243,18 @@ function copyFrameToPosition(sourceNumber, destNumber) {
 document
   .getElementById("duplicate-frame")
   .addEventListener("click", duplicateFrame);
+
 document.getElementById("move-frame").addEventListener("click", function () {
   moveFrameToPosition(
     document.getElementById("move-origin").value,
+    document.getElementById("move-origin-end").value,
     document.getElementById("move-dest").value
   );
 });
 document.getElementById("copy-frame").addEventListener("click", function () {
   copyFrameToPosition(
     document.getElementById("move-origin").value,
+    document.getElementById("move-origin-end").value,
     document.getElementById("move-dest").value
   );
 });

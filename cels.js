@@ -13,6 +13,13 @@ nextBtn.addEventListener("click", function () {
 newFrameBtn.addEventListener("click", function () {
   addFrame(layers[activeLayer], currentTick);
 });
+
+document
+  .getElementById("insert-frame-left")
+  .addEventListener("click", function () {
+    insertFrameLeft(layers[activeLayer], currentTick);
+  });
+
 newLayerBtn.addEventListener("click", function () {
   addLayer();
 });
@@ -50,6 +57,17 @@ function addFrame(L, position) {
   currentTick = run.localStart + run.runLen;
   L.cels.splice(run.idx + 1, 0, makeCel());
   L.holds.splice(run.idx + 1, 0, 1);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+function insertFrameLeft(L, position) {
+  syncActiveToStorage();
+  const run = layerCelAtTick(L, position);
+  currentTick = run.localStart;
+  L.cels.splice(run.idx, 0, makeCel());
+  L.holds.splice(run.idx, 0, 1);
   loadActiveFromStorage();
   renderXSheet();
   updateOnion();
