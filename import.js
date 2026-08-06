@@ -13,6 +13,18 @@ function insertFrameWithImage(img) {
   syncActiveToStorage();
   const L = layers[activeLayer];
   const run = layerCelAtTick(L, currentTick);
+  const replace = document.getElementById("import-replace").checked;
+
+  if (replace) {
+    const cel = L.cels[run.idx];
+    cel.ctx.clearRect(0, 0, W, H);
+    drawImageFitted(cel.ctx, img);
+    loadActiveFromStorage();
+    renderXSheet();
+    updateOnion();
+    return;
+  }
+
   const nc = makeCel();
   drawImageFitted(nc.ctx, img);
   L.cels.splice(run.idx + 1, 0, nc);

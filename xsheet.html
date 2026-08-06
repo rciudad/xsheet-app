@@ -128,9 +128,32 @@
 
       <button type="button" id="export-png">EXPORT PNG</button>
       <button type="button" id="export-sequence">EXPORT SEQUENCE</button>
-      <input type="file" id="import-image" accept="image/*" />
-      <input type="file" id="import-batch" accept="image/*" multiple />
-      <input type="file" id="import-audio" accept="audio/*" />
+      <button type="button" id="import-image-btn">IMPORTAR IMAGEN</button>
+      <input
+        type="file"
+        id="import-image"
+        accept="image/*"
+        style="display: none"
+      />
+      <label
+        ><input type="checkbox" id="import-replace" /> Reemplazar frame actual
+        (en vez de insertar uno nuevo)</label
+      >
+      <button type="button" id="import-batch-btn">IMPORTAR BATCH</button>
+      <input
+        type="file"
+        id="import-batch"
+        accept="image/*"
+        multiple
+        style="display: none"
+      />
+      <button type="button" id="import-audio-btn">IMPORTAR AUDIO</button>
+      <input
+        type="file"
+        id="import-audio"
+        accept="audio/*"
+        style="display: none"
+      />
     </div>
     <audio id="audioPlayer"></audio>
     <div class="bottom-toolbar">
@@ -211,12 +234,16 @@
       <input type="number" id="range-start" min="1" value="1" />
       <label for="range-end">Hasta:</label>
       <input type="number" id="range-end" min="1" value="1" />
+
       <button type="button" id="save-project">GUARDAR PROYECTO</button>
+      <button type="button" id="import-project-btn">ABRIR PROYECTO</button>
       <input
         type="file"
         id="import-project"
         accept="application/json,.json"
+        style="display: none"
       /><br />
+
       <button type="button" id="tool-pan">MANO</button>
       <button type="button" id="zoom-out">−</button>
       <span id="zoomReadout">100%</span>
@@ -312,6 +339,56 @@
             pointer-events: none;
           "
         ></div>
+      </div>
+    </div>
+
+    <div
+      id="folder-browse-overlay"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div
+        style="
+          background: #fff;
+          color: #000;
+          padding: 12px;
+          width: 420px;
+          max-width: 90vw;
+          max-height: 80vh;
+          display: flex;
+          flex-direction: column;
+        "
+      >
+        <strong id="folder-browse-title">Elegir archivo</strong>
+        <small id="folder-browse-path" style="margin-bottom: 8px"></small>
+        <div
+          id="folder-browse-list"
+          style="
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #999;
+            margin-bottom: 8px;
+            min-height: 120px;
+          "
+        ></div>
+        <div>
+          <button type="button" id="folder-browse-up">↑ SUBIR</button>
+          <button type="button" id="folder-browse-elsewhere">
+            BUSCAR EN OTRO LADO...
+          </button>
+          <button type="button" id="folder-browse-confirm">IMPORTAR</button>
+          <button type="button" id="folder-browse-cancel">CANCELAR</button>
+        </div>
       </div>
     </div>
 
