@@ -245,4 +245,7 @@ document
   .addEventListener("click", function () {
     var bar = document.getElementById("adjust-bar");
     bar.hidden = !bar.hidden;
+    document.getElementById("cropOverlay").style.display = bar.hidden
+      ? "none"
+      : "block";
   });

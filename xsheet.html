@@ -456,6 +456,38 @@
                 style="display: none"
               />
             </div>
+            <div class="file-menu-section">
+              <span class="file-menu-heading">Exportar</span>
+              <label for="export-prefix">Prefijo:</label>
+              <input type="text" id="export-prefix" value="frame" />
+              <label
+                ><input type="checkbox" id="export-bg-toggle" /> Fondo</label
+              >
+              <input type="color" id="export-bg-color" value="#ffffff" />
+              <button type="button" id="export-png">EXPORT PNG</button>
+              <label
+                ><input type="checkbox" id="export-zip-toggle" /> Zip</label
+              >
+              <label
+                ><input type="checkbox" id="export-expand-toggle" checked /> Por
+                hold</label
+              >
+              <button type="button" id="export-sequence">
+                EXPORT SEQUENCE
+              </button>
+              <button type="button" id="export-video">EXPORT WEBM</button>
+              <span id="export-video-status"></span>
+              <button type="button" id="ffmpeg-cmd-btn">COMANDO FFMPEG</button>
+              <div id="ffmpeg-cmd-box" style="display: none">
+                <input
+                  type="text"
+                  id="ffmpeg-cmd-input"
+                  readonly
+                  style="width: 500px"
+                />
+                <div id="ffmpeg-cmd-hint" style="font-size: 12px"></div>
+              </div>
+            </div>
           </div>
         </div>
         <label for="resolution">RES:</label>
@@ -623,6 +655,7 @@
                 position: absolute;
                 border: 2px solid red;
                 pointer-events: none;
+                display: none;
               "
             ></div>
             <div
@@ -631,6 +664,7 @@
                 position: absolute;
                 border: 2px solid blue;
                 pointer-events: none;
+                display: none;
               "
             ></div>
             <div
@@ -639,6 +673,7 @@
                 position: absolute;
                 border: 2px dashed lime;
                 pointer-events: none;
+                display: none;
               "
             ></div>
           </div>
@@ -735,29 +770,6 @@
         <input type="number" id="range-start" min="1" value="1" />
         <label for="range-end">Hasta:</label>
         <input type="number" id="range-end" min="1" value="1" />
-        <label for="export-prefix">Prefijo:</label>
-        <input type="text" id="export-prefix" value="frame" />
-        <label><input type="checkbox" id="export-bg-toggle" /> Fondo</label>
-        <input type="color" id="export-bg-color" value="#ffffff" />
-        <button type="button" id="export-png">EXPORT PNG</button>
-        <label><input type="checkbox" id="export-zip-toggle" /> Zip</label>
-        <label
-          ><input type="checkbox" id="export-expand-toggle" checked /> Por
-          hold</label
-        >
-        <button type="button" id="export-sequence">EXPORT SEQUENCE</button>
-        <button type="button" id="export-video">EXPORT WEBM</button>
-        <span id="export-video-status"></span>
-        <button type="button" id="ffmpeg-cmd-btn">COMANDO FFMPEG</button>
-        <div id="ffmpeg-cmd-box" style="display: none">
-          <input
-            type="text"
-            id="ffmpeg-cmd-input"
-            readonly
-            style="width: 500px"
-          />
-          <div id="ffmpeg-cmd-hint" style="font-size: 12px"></div>
-        </div>
       </footer>
     </div>
     <script src="dibujo.js"></script>

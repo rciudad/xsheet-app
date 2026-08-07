@@ -281,4 +281,7 @@ document
   .addEventListener("click", function () {
     var bar = document.getElementById("peg-bar");
     bar.hidden = !bar.hidden;
+    var display = bar.hidden ? "none" : "block";
+    document.getElementById("pegOverlay1").style.display = display;
+    document.getElementById("pegOverlay2").style.display = display;
   });
