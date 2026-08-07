@@ -233,9 +233,15 @@ var exportBgColorInput = document.getElementById("export-bg-color");
 
 exportBgToggleInput.addEventListener("change", function () {
   exportBgEnabled = exportBgToggleInput.checked;
+  document.getElementById("stage").style.backgroundColor = exportBgEnabled
+    ? exportBgColor
+    : "";
 });
 exportBgColorInput.addEventListener("change", function () {
   exportBgColor = exportBgColorInput.value;
+  if (exportBgEnabled) {
+    document.getElementById("stage").style.backgroundColor = exportBgColor;
+  }
 });
 
 updateCropOverlay();

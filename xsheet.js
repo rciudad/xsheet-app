@@ -260,3 +260,17 @@ document.getElementById("copy-frame").addEventListener("click", function () {
 });
 
 renderXSheet();
+
+document
+  .getElementById("frames-bar-toggle")
+  .addEventListener("click", function () {
+    document.getElementById("frames-bar").hidden =
+      !document.getElementById("frames-bar").hidden;
+  });
+
+document
+  .getElementById("edit-frames-bar-toggle")
+  .addEventListener("click", function () {
+    var bar = document.getElementById("edit-frames-bar");
+    bar.hidden = !bar.hidden;
+  });
