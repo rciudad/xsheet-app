@@ -89,12 +89,12 @@ function applyColorAdjustments(ctx, w, h) {
 var exportCropCanvas = document.createElement("canvas");
 var exportCropCtx = exportCropCanvas.getContext("2d");
 
-function drawExportFrame(destCtx, tick) {
+function drawExportFrame(destCtx, tick, forceOpaqueBg) {
   var src = flattenAt(tick);
   exportCropCanvas.width = cropRect.w;
   exportCropCanvas.height = cropRect.h;
-  if (exportBgEnabled) {
-    exportCropCtx.fillStyle = exportBgColor;
+  if (exportBgEnabled || forceOpaqueBg) {
+    exportCropCtx.fillStyle = exportBgEnabled ? exportBgColor : "#ffffff";
     exportCropCtx.fillRect(0, 0, cropRect.w, cropRect.h);
   } else {
     exportCropCtx.clearRect(0, 0, cropRect.w, cropRect.h);

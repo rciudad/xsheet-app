@@ -204,3 +204,98 @@ document
       });
     });
   });
+
+var exportVideoBtn = document.getElementById("export-video");
+var exportVideoStatusEl = document.getElementById("export-video-status");
+
+exportVideoBtn.addEventListener("click", function () {
+  if (playing) stopPlay();
+  syncActiveToStorage();
+  if (!("MediaRecorder" in window)) {
+    exportVideoStatusEl.textContent = "Vídeo no soportado en este navegador.";
+    return;
+  }
+
+  var rec = document.createElement("canvas");
+  rec.width = cropRect.w;
+  rec.height = cropRect.h;
+  var rctx = rec.getContext("2d");
+
+  var tick = rangeStart;
+  function compositeExportFrame() {
+    drawExportFrame(rctx, tick, true);
+  }
+  compositeExportFrame();
+
+  // Preferimos capturar cuadro a cuadro a mano (requestFrame()) en vez de
+  // dejar que captureStream(fps) muestree con su propio reloj: si el reloj
+  // del muestreo y el setTimeout de abajo se desincronizan (máquina lenta,
+  // pestaña en segundo plano), el video puede terminar con menos frames
+  // efectivos que los ticks reales. Pedir un frame exacto por tick compuesto
+  // garantiza esa correspondencia 1 a 1.
+  var stream, track;
+  var manualCapture = false;
+  try {
+    stream = rec.captureStream(0);
+    track = stream.getVideoTracks()[0];
+    manualCapture = !!(track && typeof track.requestFrame === "function");
+    if (!manualCapture) stream = rec.captureStream(fps);
+  } catch (err) {
+    exportVideoStatusEl.textContent = "Vídeo no soportado en este navegador.";
+    return;
+  }
+
+  var mime =
+    window.MediaRecorder.isTypeSupported &&
+    MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+      ? "video/webm;codecs=vp9"
+      : "video/webm";
+  var recorder;
+  try {
+    recorder = new MediaRecorder(stream, { mimeType: mime });
+  } catch (err) {
+    exportVideoStatusEl.textContent = "Vídeo no soportado en este navegador.";
+    return;
+  }
+
+  var chunks = [];
+  recorder.ondataavailable = function (e) {
+    if (e.data && e.data.size) chunks.push(e.data);
+  };
+  var stopped = new Promise(function (resolve) {
+    recorder.onstop = resolve;
+  });
+
+  exportVideoBtn.disabled = true;
+  exportVideoStatusEl.textContent = "Grabando...";
+  recorder.start();
+  if (manualCapture) track.requestFrame();
+
+  var frameDelay = 1000 / fps;
+  function step() {
+    if (tick < rangeEnd) {
+      tick++;
+      compositeExportFrame();
+      if (manualCapture) track.requestFrame();
+      setTimeout(step, frameDelay);
+    } else {
+      setTimeout(function () {
+        recorder.stop();
+        stopped.then(function () {
+          var blob = new Blob(chunks, { type: "video/webm" });
+          deliverFile(exportPrefix() + "-animation.webm", blob)
+            .then(function () {
+              exportVideoBtn.disabled = false;
+              exportVideoStatusEl.textContent = "";
+            })
+            .catch(function (err) {
+              exportVideoBtn.disabled = false;
+              exportVideoStatusEl.textContent =
+                "Error al exportar vídeo: " + err.message;
+            });
+        });
+      }, frameDelay);
+    }
+  }
+  step();
+});
