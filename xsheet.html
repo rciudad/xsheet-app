@@ -54,7 +54,7 @@
       flex: 1 1 auto;
       min-height: 0;
       display: flex;
-      overflow: auto;
+      overflow: hidden;
       background: var(--ink-950);
     }
     .bottom-toolbar {
@@ -328,9 +328,34 @@
     }
     .xsheet {
       display: grid;
-      flex: 1 1 auto;
+      flex: 0 0 auto;
+      width: 320px;
+      min-width: 160px;
+      max-width: 70vw;
+      min-height: 0;
+      overflow: auto;
       background-color: var(--ink-900);
       color: var(--text);
+    }
+    .xsheet-resizer {
+      flex: 0 0 auto;
+      width: 6px;
+      cursor: col-resize;
+      background: var(--ink-700);
+    }
+    .xsheet-resizer:hover {
+      background: var(--accent);
+    }
+    .canvas-area {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+    }
+    #stageViewport {
+      flex-shrink: 0;
     }
     .xsheet-th {
       border: 1px solid var(--ink-700);
@@ -606,75 +631,81 @@
           <button type="button" id="frames-bar-toggle">FRAMES</button>
           <button type="button" id="edit-frames-bar-toggle">EDITAR</button>
         </aside>
-        <div
-          id="stageViewport"
-          style="
-            width: 800px;
-            height: 600px;
-            overflow: hidden;
-            position: relative;
-          "
-        >
+        <div class="canvas-area">
           <div
-            id="stage"
+            id="stageViewport"
             style="
-              position: absolute;
-              top: 0;
-              left: 0;
               width: 800px;
               height: 600px;
+              overflow: hidden;
+              position: relative;
             "
           >
-            <canvas
-              id="onion"
-              width="800"
-              height="600"
-              style="position: absolute; top: 0; left: 0; pointer-events: none"
-            ></canvas>
-            <canvas
-              id="drawingTable"
-              width="800"
-              height="600"
-              style="position: absolute; top: 0; left: 0"
-            ></canvas>
-            <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
-            <canvas
-              id="playCanvas"
-              width="800"
-              height="600"
-              style="position: absolute; top: 0; left: 0; display: none"
-            ></canvas>
+            <div
+              id="stage"
+              style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 800px;
+                height: 600px;
+              "
+            >
+              <canvas
+                id="onion"
+                width="800"
+                height="600"
+                style="
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  pointer-events: none;
+                "
+              ></canvas>
+              <canvas
+                id="drawingTable"
+                width="800"
+                height="600"
+                style="position: absolute; top: 0; left: 0"
+              ></canvas>
+              <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
+              <canvas
+                id="playCanvas"
+                width="800"
+                height="600"
+                style="position: absolute; top: 0; left: 0; display: none"
+              ></canvas>
 
-            <div
-              id="pegOverlay1"
-              style="
-                position: absolute;
-                border: 2px solid red;
-                pointer-events: none;
-                display: none;
-              "
-            ></div>
-            <div
-              id="pegOverlay2"
-              style="
-                position: absolute;
-                border: 2px solid blue;
-                pointer-events: none;
-                display: none;
-              "
-            ></div>
-            <div
-              id="cropOverlay"
-              style="
-                position: absolute;
-                border: 2px dashed lime;
-                pointer-events: none;
-                display: none;
-              "
-            ></div>
+              <div
+                id="pegOverlay1"
+                style="
+                  position: absolute;
+                  border: 2px solid red;
+                  pointer-events: none;
+                  display: none;
+                "
+              ></div>
+              <div
+                id="pegOverlay2"
+                style="
+                  position: absolute;
+                  border: 2px solid blue;
+                  pointer-events: none;
+                  display: none;
+                "
+              ></div>
+              <div
+                id="cropOverlay"
+                style="
+                  position: absolute;
+                  border: 2px dashed lime;
+                  pointer-events: none;
+                  display: none;
+                "
+              ></div>
+            </div>
           </div>
         </div>
-
         <div
           id="folder-browse-overlay"
           style="
@@ -725,6 +756,7 @@
           </div>
         </div>
 
+        <div class="xsheet-resizer" id="xsheet-resizer"></div>
         <div class="xsheet" id="xsheet"></div>
         <aside class="right-panel">
           <button type="button" id="new-layer">ADD LAYER</button>

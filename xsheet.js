@@ -274,3 +274,31 @@ document
     var bar = document.getElementById("edit-frames-bar");
     bar.hidden = !bar.hidden;
   });
+
+(function () {
+  var resizer = document.getElementById("xsheet-resizer");
+  var xsheetEl = document.getElementById("xsheet");
+  var dragging = false;
+  var startX = 0;
+  var startWidth = 0;
+
+  resizer.addEventListener("pointerdown", function (e) {
+    dragging = true;
+    startX = e.clientX;
+    startWidth = xsheetEl.getBoundingClientRect().width;
+    resizer.setPointerCapture(e.pointerId);
+  });
+  resizer.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    var delta = e.clientX - startX;
+    var newWidth = startWidth - delta;
+    var clamped = Math.max(160, Math.min(newWidth, window.innerWidth * 0.7));
+    xsheetEl.style.width = clamped + "px";
+  });
+  resizer.addEventListener("pointerup", function () {
+    dragging = false;
+  });
+  resizer.addEventListener("pointercancel", function () {
+    dragging = false;
+  });
+})();
