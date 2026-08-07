@@ -190,6 +190,50 @@
       color: var(--text-dim);
       font-size: 12px;
     }
+    .floating-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 70px;
+      transform: translateX(-50%);
+      z-index: 500;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      max-width: 90vw;
+      padding: 10px 14px;
+      background: var(--ink-900);
+      border: 1px solid var(--ink-700);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    .floating-bar[hidden] {
+      display: none;
+    }
+    .floating-bar input:not([type="checkbox"]),
+    .floating-bar select {
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 13px;
+      padding: 0 6px;
+    }
+    .floating-bar button {
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 12px;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+    .floating-bar label {
+      color: var(--text-dim);
+      font-size: 12px;
+    }
 
     .bottom-toolbar input {
       width: 55px;
@@ -377,35 +421,6 @@
 
       <div class="bottom-toolbar">
         <details open>
-          <summary>Peg holes</summary>
-          <label
-            >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
-              type="number"
-              id="peg1y"
-              value="430" />
-            w<input type="number" id="peg1w" value="90" /> h<input
-              type="number"
-              id="peg1h"
-              value="60"
-          /></label>
-          <label
-            >Región 2: x<input type="number" id="peg2x" value="570" /> y<input
-              type="number"
-              id="peg2y"
-              value="430" />
-            w<input type="number" id="peg2w" value="90" /> h<input
-              type="number"
-              id="peg2h"
-              value="60"
-          /></label>
-          <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
-          <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
-          <button type="button" id="peg-align-layer">
-            ALINEAR CAPA ACTUAL
-          </button>
-        </details>
-
-        <details open>
           <summary>Frames y capas</summary>
           <button type="button" id="prev"><</button>
           <button type="button" id="next">></button>
@@ -442,52 +457,67 @@
             style="display: none"
           />
         </details>
-
-        <details>
-          <summary>Ajustes de color</summary>
-          <label
-            >Crop: x<input type="number" id="cropX" value="0" /> y<input
-              type="number"
-              id="cropY"
-              value="0" />
-            w<input type="number" id="cropW" value="800" /> h<input
-              type="number"
-              id="cropH"
-              value="600"
-          /></label>
-          <label
-            >Bright.<input
-              type="number"
-              id="adjBrightness"
-              value="0"
-              step="0.05"
-          /></label>
-          <label
-            >Contraste<input
-              type="number"
-              id="adjContrast"
-              value="1"
-              step="0.05"
-          /></label>
-          <label
-            >Saturación<input
-              type="number"
-              id="adjSaturation"
-              value="1"
-              step="0.05"
-          /></label>
-          <label
-            >WB R<input type="number" id="adjWbR" value="1" step="0.05"
-          /></label>
-          <label
-            >WB B<input type="number" id="adjWbB" value="1" step="0.05"
-          /></label>
-          <button type="button" id="adjust-reset">RESET AJUSTES</button>
-          <label
-            ><input type="checkbox" id="grade-preview-toggle" /> Vista
-            previa</label
-          >
-        </details>
+      </div>
+      <div class="floating-bar" id="peg-bar" hidden>
+        <label
+          >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
+            type="number"
+            id="peg1y"
+            value="430" />
+          w<input type="number" id="peg1w" value="90" /> h<input
+            type="number"
+            id="peg1h"
+            value="60"
+        /></label>
+        <label
+          >Región 2: x<input type="number" id="peg2x" value="570" /> y<input
+            type="number"
+            id="peg2y"
+            value="430" />
+          w<input type="number" id="peg2w" value="90" /> h<input
+            type="number"
+            id="peg2h"
+            value="60"
+        /></label>
+        <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
+        <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
+        <button type="button" id="peg-align-layer">ALINEAR CAPA ACTUAL</button>
+      </div>
+      <div class="floating-bar" id="adjust-bar" hidden>
+        <label
+          >Crop: x<input type="number" id="cropX" value="0" /> y<input
+            type="number"
+            id="cropY"
+            value="0" />
+          w<input type="number" id="cropW" value="800" /> h<input
+            type="number"
+            id="cropH"
+            value="600"
+        /></label>
+        <label
+          >Bright.<input type="number" id="adjBrightness" value="0" step="0.05"
+        /></label>
+        <label
+          >Contraste<input type="number" id="adjContrast" value="1" step="0.05"
+        /></label>
+        <label
+          >Saturación<input
+            type="number"
+            id="adjSaturation"
+            value="1"
+            step="0.05"
+        /></label>
+        <label
+          >WB R<input type="number" id="adjWbR" value="1" step="0.05"
+        /></label>
+        <label
+          >WB B<input type="number" id="adjWbB" value="1" step="0.05"
+        /></label>
+        <button type="button" id="adjust-reset">RESET AJUSTES</button>
+        <label
+          ><input type="checkbox" id="grade-preview-toggle" /> Vista
+          previa</label
+        >
       </div>
       <div class="main-row">
         <aside class="rail">
@@ -495,6 +525,8 @@
           <input type="number" id="brushSize" />
           <button type="button" id="tool-pencil">LÁPIZ</button>
           <button type="button" id="tool-eraser">GOMA</button>
+          <button type="button" id="peg-bar-toggle">PEG</button>
+          <button type="button" id="adjust-bar-toggle">AJUSTES</button>
         </aside>
         <div
           id="stageViewport"

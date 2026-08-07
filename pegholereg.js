@@ -275,3 +275,10 @@ function updatePegOverlays() {
   o2.style.width = pegRegion2.w + "px";
   o2.style.height = pegRegion2.h + "px";
 }
+
+document
+  .getElementById("peg-bar-toggle")
+  .addEventListener("click", function () {
+    var bar = document.getElementById("peg-bar");
+    bar.hidden = !bar.hidden;
+  });

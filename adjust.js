@@ -239,3 +239,10 @@ exportBgColorInput.addEventListener("change", function () {
 });
 
 updateCropOverlay();
+
+document
+  .getElementById("adjust-bar-toggle")
+  .addEventListener("click", function () {
+    var bar = document.getElementById("adjust-bar");
+    bar.hidden = !bar.hidden;
+  });
