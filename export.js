@@ -95,6 +95,16 @@ function buildZip(entries) {
   });
 }
 
+function framesEqual(a, b) {
+  if (a.length !== b.length) return false;
+  var ai = new Uint32Array(a.buffer, a.byteOffset, a.byteLength >> 2);
+  var bi = new Uint32Array(b.buffer, b.byteOffset, b.byteLength >> 2);
+  for (var i = 0; i < ai.length; i++) {
+    if (ai[i] !== bi[i]) return false;
+  }
+  return true;
+}
+
 function padNum(n, total) {
   const width = String(total).length;
   let s = String(n);
@@ -118,40 +128,79 @@ document.getElementById("export-png").addEventListener("click", function () {
   });
 });
 
+function buildSequenceJobs(expand) {
+  const total = rangeEnd - rangeStart + 1;
+  const prefix = exportPrefix();
+  const jobs = [];
+
+  if (expand) {
+    for (let t = rangeStart; t <= rangeEnd; t++) {
+      jobs.push({
+        tick: t,
+        name: prefix + "-" + padNum(t - rangeStart + 1, total) + ".png",
+      });
+    }
+    return jobs;
+  }
+
+  const dedupeCanvas = document.createElement("canvas");
+  dedupeCanvas.width = cropRect.w;
+  dedupeCanvas.height = cropRect.h;
+  const dedupeCtx = dedupeCanvas.getContext("2d");
+  let prevPixels = null;
+
+  for (let t = rangeStart; t <= rangeEnd; t++) {
+    const isBoundary =
+      t === rangeStart ||
+      layers.some(function (L) {
+        if (!L.visible) return false;
+        const layerTotal = calcTotalFrames(L.holds);
+        if (t === layerTotal) return true; // la capa se quedó sin cels y pasa a blanco
+        return t < layerTotal && layerCelAtTick(L, t).runStart === t; // arranca un run nuevo
+      });
+    if (!isBoundary) continue;
+
+    drawExportFrame(dedupeCtx, t);
+    const pixels = dedupeCtx.getImageData(0, 0, cropRect.w, cropRect.h).data;
+    if (prevPixels && framesEqual(pixels, prevPixels)) continue;
+    prevPixels = pixels;
+
+    jobs.push({
+      tick: t,
+      name: prefix + "-" + padNum(t - rangeStart + 1, total) + ".png",
+    });
+  }
+  return jobs;
+}
+
 document
   .getElementById("export-sequence")
   .addEventListener("click", function () {
     syncActiveToStorage();
-    const total = rangeEnd - rangeStart + 1;
-    const prefix = exportPrefix();
+    const expand = document.getElementById("export-expand-toggle").checked;
     const zip = document.getElementById("export-zip-toggle").checked;
+    const jobs = buildSequenceJobs(expand);
+    if (!jobs.length) return;
 
     if (zip) {
-      const entries = [];
-      for (let t = rangeStart; t <= rangeEnd; t++) {
-        let tmp = document.createElement("canvas");
+      const entries = jobs.map(function (job) {
+        const tmp = document.createElement("canvas");
         tmp.width = cropRect.w;
         tmp.height = cropRect.h;
-        drawExportFrame(tmp.getContext("2d"), t);
-        entries.push({
-          name: prefix + "-" + padNum(t - rangeStart + 1, total) + ".png",
-          bytes: pngBytesFromCanvas(tmp),
-        });
-      }
-      deliverFile(prefix + "-sequence.zip", buildZip(entries));
+        drawExportFrame(tmp.getContext("2d"), job.tick);
+        return { name: job.name, bytes: pngBytesFromCanvas(tmp) };
+      });
+      deliverFile(exportPrefix() + "-sequence.zip", buildZip(entries));
       return;
     }
 
-    for (let t = rangeStart; t <= rangeEnd; t++) {
-      let tmp = document.createElement("canvas");
+    jobs.forEach(function (job) {
+      const tmp = document.createElement("canvas");
       tmp.width = cropRect.w;
       tmp.height = cropRect.h;
-      drawExportFrame(tmp.getContext("2d"), t);
+      drawExportFrame(tmp.getContext("2d"), job.tick);
       tmp.toBlob(function (blob) {
-        deliverFile(
-          prefix + "-" + padNum(t - rangeStart + 1, total) + ".png",
-          blob
-        );
+        deliverFile(job.name, blob);
       });
-    }
+    });
   });
