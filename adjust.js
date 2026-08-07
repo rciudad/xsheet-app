@@ -1,4 +1,6 @@
 var cropRect = { x: 0, y: 0, w: W, h: H };
+var exportBgEnabled = false;
+var exportBgColor = "#ffffff";
 var colorAdj = { brightness: 0, contrast: 1, saturation: 1, wbR: 1, wbB: 1 };
 var gradePreviewEnabled = false;
 
@@ -91,7 +93,12 @@ function drawExportFrame(destCtx, tick) {
   var src = flattenAt(tick);
   exportCropCanvas.width = cropRect.w;
   exportCropCanvas.height = cropRect.h;
-  exportCropCtx.clearRect(0, 0, cropRect.w, cropRect.h);
+  if (exportBgEnabled) {
+    exportCropCtx.fillStyle = exportBgColor;
+    exportCropCtx.fillRect(0, 0, cropRect.w, cropRect.h);
+  } else {
+    exportCropCtx.clearRect(0, 0, cropRect.w, cropRect.h);
+  }
   exportCropCtx.drawImage(
     src,
     cropRect.x,
@@ -219,6 +226,16 @@ document
 gradePreviewToggle.addEventListener("change", function () {
   gradePreviewEnabled = gradePreviewToggle.checked;
   updateStageVisibility();
+});
+
+var exportBgToggleInput = document.getElementById("export-bg-toggle");
+var exportBgColorInput = document.getElementById("export-bg-color");
+
+exportBgToggleInput.addEventListener("change", function () {
+  exportBgEnabled = exportBgToggleInput.checked;
+});
+exportBgColorInput.addEventListener("change", function () {
+  exportBgColor = exportBgColorInput.value;
 });
 
 updateCropOverlay();
