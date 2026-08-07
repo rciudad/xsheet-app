@@ -135,6 +135,40 @@
       background: var(--ink-900);
       border-bottom: 1px solid var(--ink-700);
     }
+    .file-menu {
+      position: relative;
+    }
+    .file-menu-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 260px;
+      padding: 12px;
+      background: var(--ink-900);
+      border: 1px solid var(--ink-700);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    .file-menu-dropdown[hidden] {
+      display: none;
+    }
+    .file-menu-section {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .file-menu-heading {
+      width: 100%;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+    }
     .wordmark {
       font-weight: 800;
       font-size: 16px;
@@ -363,8 +397,69 @@
   <body>
     <div class="app">
       <header class="titlebar">
-        <span class="wordmark">Xsheet</span>
+        <div class="file-menu">
+          <button type="button" id="file-menu-btn">ARCHIVO ▾</button>
+          <div class="file-menu-dropdown" id="file-menu-dropdown" hidden>
+            <div class="file-menu-section">
+              <span class="file-menu-heading">Carpeta</span>
+              <button type="button" id="choose-folder">CARPETA</button>
+              <span id="folder-status"></span>
+              <button type="button" id="clear-folder" style="display: none">
+                QUITAR CARPETA
+              </button>
+            </div>
+            <div class="file-menu-section">
+              <span class="file-menu-heading">Proyecto</span>
+              <button type="button" id="save-project">GUARDAR PROYECTO</button>
+              <button type="button" id="import-project-btn">
+                ABRIR PROYECTO
+              </button>
+              <input
+                type="file"
+                id="import-project"
+                accept="application/json,.json"
+                style="display: none"
+              />
+            </div>
+            <div class="file-menu-section">
+              <span class="file-menu-heading">Importar</span>
+              <button type="button" id="import-image-btn">
+                IMPORTAR IMAGEN
+              </button>
+              <input
+                type="file"
+                id="import-image"
+                accept="image/*"
+                style="display: none"
+              />
+              <label
+                ><input type="checkbox" id="import-replace" /> Reemplazar frame
+                actual (en vez de insertar uno nuevo)</label
+              >
+              <button type="button" id="import-batch-btn">
+                IMPORTAR BATCH
+              </button>
+              <input
+                type="file"
+                id="import-batch"
+                accept="image/*"
+                multiple
+                style="display: none"
+              />
+              <button type="button" id="import-audio-btn">
+                IMPORTAR AUDIO
+              </button>
+              <input
+                type="file"
+                id="import-audio"
+                accept="audio/*"
+                style="display: none"
+              />
+            </div>
+          </div>
+        </div>
         <label for="resolution">RES:</label>
+
         <input list="resolutions" name="resolution" id="resolution" />
         <datalist id="resolutions">
           <option value="800x600"></option>
@@ -383,40 +478,7 @@
         <button type="button" id="rotate-right">⟳</button>
         <button type="button" id="zoom-reset">RESET VISTA</button>
       </header>
-      <div class="toolbar">
-        <button type="button" id="choose-folder">CARPETA</button>
-        <span id="folder-status"></span>
-        <button type="button" id="clear-folder" style="display: none">
-          QUITAR CARPETA
-        </button>
 
-        <button type="button" id="import-image-btn">IMPORTAR IMAGEN</button>
-        <input
-          type="file"
-          id="import-image"
-          accept="image/*"
-          style="display: none"
-        />
-        <label
-          ><input type="checkbox" id="import-replace" /> Reemplazar frame actual
-          (en vez de insertar uno nuevo)</label
-        >
-        <button type="button" id="import-batch-btn">IMPORTAR BATCH</button>
-        <input
-          type="file"
-          id="import-batch"
-          accept="image/*"
-          multiple
-          style="display: none"
-        />
-        <button type="button" id="import-audio-btn">IMPORTAR AUDIO</button>
-        <input
-          type="file"
-          id="import-audio"
-          accept="audio/*"
-          style="display: none"
-        />
-      </div>
       <audio id="audioPlayer"></audio>
 
       <div class="bottom-toolbar">
@@ -444,18 +506,6 @@
           <input type="number" id="move-dest" min="1" value="1" />
           <button type="button" id="move-frame">MOVER</button>
           <button type="button" id="copy-frame">COPIAR</button>
-        </details>
-
-        <details open>
-          <summary>Proyecto</summary>
-          <button type="button" id="save-project">GUARDAR PROYECTO</button>
-          <button type="button" id="import-project-btn">ABRIR PROYECTO</button>
-          <input
-            type="file"
-            id="import-project"
-            accept="application/json,.json"
-            style="display: none"
-          />
         </details>
       </div>
       <div class="floating-bar" id="peg-bar" hidden>

@@ -334,3 +334,21 @@ triggerImportPick(
     extensions: [".json"],
   }
 );
+
+var fileMenuBtn = document.getElementById("file-menu-btn");
+var fileMenuDropdown = document.getElementById("file-menu-dropdown");
+
+fileMenuBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  fileMenuDropdown.hidden = !fileMenuDropdown.hidden;
+});
+
+document.addEventListener("click", function (e) {
+  if (
+    !fileMenuDropdown.hidden &&
+    !fileMenuDropdown.contains(e.target) &&
+    e.target !== fileMenuBtn
+  ) {
+    fileMenuDropdown.hidden = true;
+  }
+});
