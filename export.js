@@ -299,3 +299,60 @@ exportVideoBtn.addEventListener("click", function () {
   }
   step();
 });
+
+var ffmpegCmdBtn = document.getElementById("ffmpeg-cmd-btn");
+var ffmpegCmdBox = document.getElementById("ffmpeg-cmd-box");
+var ffmpegCmdInput = document.getElementById("ffmpeg-cmd-input");
+var ffmpegCmdHint = document.getElementById("ffmpeg-cmd-hint");
+
+// Alternativa a EXPORT WEBM sin restricción de tiempo real: exportá la
+// secuencia (con "Por hold" tildado, numeración contigua) y corré esto.
+function buildFfmpegCommand() {
+  var total = Math.max(1, rangeEnd - rangeStart + 1);
+  var digits = String(total).length;
+  var prefix = exportPrefix();
+  var pattern = prefix + "-%0" + digits + "d.png";
+  var total = Math.max(1, rangeEnd - rangeStart + 1);
+  var digits = String(total).length;
+  var prefix = exportPrefix();
+  var pattern = prefix + "-%0" + digits + "d.png";
+  var bg = exportBgColor.replace("#", "0x");
+  return (
+    "ffmpeg -framerate " +
+    fps +
+    ' -i "' +
+    pattern +
+    '" -f lavfi -i "color=c=' +
+    bg +
+    ":s=" +
+    cropRect.w +
+    "x" +
+    cropRect.h +
+    '" -filter_complex "[1:v][0:v]overlay=shortest=1,format=yuv420p" -c:v libx264 -pix_fmt yuv420p "' +
+    prefix +
+    '-animation.mp4"'
+  );
+}
+
+function refreshFfmpegCmd() {
+  if (ffmpegCmdBox.style.display === "none") return;
+  ffmpegCmdInput.value = buildFfmpegCommand();
+  var holdChecked = document.getElementById("export-expand-toggle").checked;
+  ffmpegCmdHint.textContent = holdChecked
+    ? 'Exportá la secuencia (con "Por hold" tildado) y después corré esto.'
+    : '"Por hold" está destildado: ffmpeg va a usar solo el primer PNG e ignorar el resto. Tildalo antes de exportar la secuencia.';
+}
+
+ffmpegCmdBtn.addEventListener("click", function () {
+  var open = ffmpegCmdBox.style.display === "none";
+  ffmpegCmdBox.style.display = open ? "block" : "none";
+  if (open) {
+    refreshFfmpegCmd();
+    ffmpegCmdInput.focus();
+    ffmpegCmdInput.select();
+  }
+});
+
+document
+  .getElementById("export-expand-toggle")
+  .addEventListener("change", refreshFfmpegCmd);
