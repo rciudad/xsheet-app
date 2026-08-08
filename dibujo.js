@@ -31,6 +31,8 @@ canvas.addEventListener("pointerdown", function (e) {
 */
 
 canvas.addEventListener("pointerdown", function (e) {
+  if (e.button === 2) return;
+  if (!quickDialog.hidden) return;
   if (tool === "pan" || e.button === 1) {
     e.preventDefault(); // evita el autoscroll que Chrome/Firefox activan con el botón central
     startPan(e);

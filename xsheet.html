@@ -453,6 +453,100 @@
       width: 80%;
       background: var(--teal);
     }
+    .mode-toggle-btn {
+      position: fixed;
+      top: 8px;
+      right: 8px;
+      z-index: 700;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 6px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .mode-toggle-btn:hover {
+      background: var(--ink-800);
+    }
+    .quick-dialog {
+      position: fixed;
+      z-index: 800;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px;
+      background: var(--ink-900);
+      border: 1px solid var(--ink-700);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .quick-dialog[hidden] {
+      display: none;
+    }
+    .quick-dialog button {
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 12px;
+      padding: 0 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .quick-dialog button:hover {
+      background: var(--ink-800);
+    }
+    .mini-xsheet {
+      display: flex;
+      flex-direction: column;
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--ink-700);
+      border-radius: 6px;
+    }
+    .mini-xsheet-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      color: var(--text);
+      cursor: pointer;
+      border-bottom: 1px solid var(--ink-800);
+    }
+    .mini-xsheet-row:last-child {
+      border-bottom: none;
+    }
+    .mini-xsheet-row:hover {
+      background: var(--ink-850);
+    }
+    .mini-xsheet-row.current {
+      background: var(--accent);
+      color: var(--ink-950);
+    }
+    .mini-xsheet-row input {
+      width: 50px;
+      height: 22px;
+      border-radius: 4px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 11px;
+    }
+
+    .app.drawing-mode .titlebar,
+    .app.drawing-mode .transport,
+    .app.drawing-mode .rail,
+    .app.drawing-mode .right-panel,
+    .app.drawing-mode .xsheet-resizer,
+    .app.drawing-mode .xsheet,
+    .app.drawing-mode .floating-bar {
+      display: none !important;
+    }
   </style>
   <body>
     <div class="app">
@@ -831,11 +925,25 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
         <input type="number" id="range-end" min="1" value="1" />
       </footer>
     </div>
+    <button type="button" id="drawing-mode-toggle" class="mode-toggle-btn">
+      MODO DIBUJO
+    </button>
+    <div class="quick-dialog" id="quick-dialog" hidden>
+      <button type="button" id="qd-pencil">LÁPIZ</button>
+      <button type="button" id="qd-eraser">GOMA</button>
+      <button type="button" id="qd-add-frame">AGREGAR FRAME</button>
+      <button type="button" id="qd-delete-frame">BORRAR FRAME</button>
+      <label for="qd-range">Rango:</label>
+      <input type="number" id="qd-range" min="1" value="5" />
+      <div class="mini-xsheet" id="mini-xsheet"></div>
+    </div>
     <script src="dibujo.js"></script>
+
     <script src="onion.js"></script>
     <script src="adjust.js"></script>
     <script src="cels.js"></script>
     <script src="undo.js"></script>
+    <script src="shortcuts.js"></script>
     <script src="audio.js"></script>
     <script src="playback.js"></script>
     <script src="xsheet.js"></script>

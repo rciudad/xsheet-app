@@ -60,6 +60,9 @@ function addFrame(L, position) {
   loadActiveFromStorage();
   renderXSheet();
   updateOnion();
+  if (!quickDialog.hidden) {
+    renderMiniXsheet();
+  }
 }
 
 function insertFrameLeft(L, position) {
@@ -156,6 +159,7 @@ function layerCelAtTick(L, tick) {
 //runStart/runLen sirven para saber "en qué tick empezó este frame sostenido" — se usa al insertar/borrar para no dejar currentTick apuntando a la mitad de un hold.
 
 //Un único punto de entrada para cambiar de tick
+
 function selectTick(tick) {
   if (tick < 0 || tick >= sheetTotalTicks()) return;
   if (dibujando) endStroke(); // no cambies de frame a mitad de un trazo
@@ -165,6 +169,9 @@ function selectTick(tick) {
     loadActiveFromStorage();
     renderXSheet();
     updateOnion();
+    if (!quickDialog.hidden) {
+      renderMiniXsheet();
+    }
   }
 }
 

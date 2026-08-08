@@ -136,3 +136,128 @@ function endPan() {
 }
 canvas.addEventListener("pointerup", endPan);
 canvas.addEventListener("pointercancel", endPan);
+
+var appEl = document.querySelector(".app");
+var drawingModeToggleBtn = document.getElementById("drawing-mode-toggle");
+
+function setDrawingMode(on) {
+  appEl.classList.toggle("drawing-mode", on);
+  drawingModeToggleBtn.textContent = on ? "SALIR" : "MODO DIBUJO";
+}
+
+function toggleDrawingMode() {
+  setDrawingMode(!appEl.classList.contains("drawing-mode"));
+}
+
+drawingModeToggleBtn.addEventListener("click", toggleDrawingMode);
+
+var lastMouseX = 0;
+var lastMouseY = 0;
+window.addEventListener("pointermove", function (e) {
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+});
+
+var quickDialog = document.getElementById("quick-dialog");
+
+var MINI_XSHEET_RANGE = 5;
+
+function renderMiniXsheet() {
+  var container = document.getElementById("mini-xsheet");
+  container.innerHTML = "";
+  var L = layers[activeLayer];
+  var run = layerCelAtTick(L, currentTick);
+  var activeIdx = run.idx;
+  var lo = Math.max(0, activeIdx - MINI_XSHEET_RANGE);
+  var hi = Math.min(L.cels.length - 1, activeIdx + MINI_XSHEET_RANGE);
+  for (var i = lo; i <= hi; i++) {
+    (function (i) {
+      var row = document.createElement("div");
+      row.className = "mini-xsheet-row" + (i === activeIdx ? " current" : "");
+
+      var numEl = document.createElement("span");
+      numEl.textContent = runStartForIdx(L, i) + 1;
+      row.appendChild(numEl);
+
+      var holdInput = document.createElement("input");
+      holdInput.type = "number";
+      holdInput.min = "1";
+      holdInput.value = L.holds[i];
+      holdInput.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+      });
+      holdInput.addEventListener("change", function () {
+        setFrameHold(activeLayer, i, holdInput.value);
+        renderMiniXsheet();
+      });
+      row.appendChild(holdInput);
+
+      row.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        selectTick(runStartForIdx(L, i));
+        renderMiniXsheet();
+      });
+
+      container.appendChild(row);
+    })(i);
+  }
+}
+
+document.getElementById("qd-range").addEventListener("change", function (e) {
+  var v = Math.max(1, Math.round(+e.target.value) || 5);
+  MINI_XSHEET_RANGE = v;
+  e.target.value = v;
+  renderMiniXsheet();
+});
+
+function openQuickDialog(x, y) {
+  renderMiniXsheet();
+  var margin = 8;
+  quickDialog.hidden = false;
+  quickDialog.style.left = x + "px";
+  quickDialog.style.top = y + "px";
+  var rect = quickDialog.getBoundingClientRect();
+  var left = Math.min(x, window.innerWidth - rect.width - margin);
+  var top = Math.min(y, window.innerHeight - rect.height - margin);
+  quickDialog.style.left = Math.max(margin, left) + "px";
+  quickDialog.style.top = Math.max(margin, top) + "px";
+}
+
+function closeQuickDialog() {
+  quickDialog.hidden = true;
+}
+
+canvas.addEventListener("contextmenu", function (e) {
+  if (!appEl.classList.contains("drawing-mode")) return;
+  e.preventDefault();
+  if (!quickDialog.hidden) {
+    closeQuickDialog();
+  } else {
+    openQuickDialog(e.clientX, e.clientY);
+  }
+});
+
+document.addEventListener("click", function (e) {
+  if (!quickDialog.hidden && !quickDialog.contains(e.target)) {
+    closeQuickDialog();
+  }
+});
+
+document.getElementById("qd-pencil").addEventListener("click", function () {
+  setTool("pencil");
+  closeQuickDialog();
+});
+document.getElementById("qd-eraser").addEventListener("click", function () {
+  setTool("eraser");
+  closeQuickDialog();
+});
+document.getElementById("qd-add-frame").addEventListener("click", function () {
+  addFrame(layers[activeLayer], currentTick);
+  closeQuickDialog();
+});
+document
+  .getElementById("qd-delete-frame")
+  .addEventListener("click", function () {
+    deleteFrame(layers[activeLayer]);
+    closeQuickDialog();
+  });
