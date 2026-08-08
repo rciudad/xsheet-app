@@ -158,10 +158,10 @@ var wbBInput = document.getElementById("adjWbB");
 var gradePreviewToggle = document.getElementById("grade-preview-toggle");
 
 function updateCropOverlay() {
-  cropOverlayEl.style.left = cropRect.x + "px";
-  cropOverlayEl.style.top = cropRect.y + "px";
-  cropOverlayEl.style.width = cropRect.w + "px";
-  cropOverlayEl.style.height = cropRect.h + "px";
+  cropOverlayEl.style.left = (cropRect.x / W) * 100 + "%";
+  cropOverlayEl.style.top = (cropRect.y / H) * 100 + "%";
+  cropOverlayEl.style.width = (cropRect.w / W) * 100 + "%";
+  cropOverlayEl.style.height = (cropRect.h / H) * 100 + "%";
 }
 
 function syncAdjustInputs() {

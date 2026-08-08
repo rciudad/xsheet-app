@@ -264,16 +264,16 @@ document
 
 function updatePegOverlays() {
   const o1 = document.getElementById("pegOverlay1");
-  o1.style.left = pegRegion1.x + "px";
-  o1.style.top = pegRegion1.y + "px";
-  o1.style.width = pegRegion1.w + "px";
-  o1.style.height = pegRegion1.h + "px";
+  o1.style.left = (pegRegion1.x / W) * 100 + "%";
+  o1.style.top = (pegRegion1.y / H) * 100 + "%";
+  o1.style.width = (pegRegion1.w / W) * 100 + "%";
+  o1.style.height = (pegRegion1.h / H) * 100 + "%";
 
   const o2 = document.getElementById("pegOverlay2");
-  o2.style.left = pegRegion2.x + "px";
-  o2.style.top = pegRegion2.y + "px";
-  o2.style.width = pegRegion2.w + "px";
-  o2.style.height = pegRegion2.h + "px";
+  o2.style.left = (pegRegion2.x / W) * 100 + "%";
+  o2.style.top = (pegRegion2.y / H) * 100 + "%";
+  o2.style.width = (pegRegion2.w / W) * 100 + "%";
+  o2.style.height = (pegRegion2.h / H) * 100 + "%";
 }
 
 document

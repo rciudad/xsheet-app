@@ -27,6 +27,7 @@ function applyViewTransform() {
 
 // Convierte clientX/clientY a coordenadas locales del canvas, deshaciendo
 // pan + rotación + zoom actuales (en ese orden inverso al que se aplican).
+
 function getPos(e) {
   var vr = stageViewport.getBoundingClientRect();
   var cx = vr.left + vr.width / 2;
@@ -38,8 +39,17 @@ function getPos(e) {
   var dy = e.clientY - cy - viewPanY;
   var lx = (dx * cos + dy * sin) / viewZoom;
   var ly = (-dx * sin + dy * cos) / viewZoom;
-  return { x: lx + vr.width / 2, y: ly + vr.height / 2 };
+  return {
+    x: (lx + vr.width / 2) * (W / vr.width),
+    y: (ly + vr.height / 2) * (H / vr.height),
+  };
 }
+
+//Por qué hace falta: vr.width/vr.height ahora son el tamaño real en pantalla del marco (que puede ser
+//distinto de W/H, la resolución real del canvas). Como ctx.moveTo/lineTo esperan coordenadas en el
+//espacio de la resolución real, hay que reescalar el resultado por W/vr.width y H/vr.height — si el
+//marco se ve más chico en pantalla que la resolución real, esto "agranda" la coordenada de vuelta a su
+//equivalente real, y viceversa.
 
 function zoomAt(newZoom, clientX, clientY) {
   newZoom = Math.min(8, Math.max(0.2, newZoom));

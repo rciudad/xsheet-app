@@ -42,9 +42,20 @@ canvas.addEventListener("pointerdown", function (e) {
     tool === "eraser" ? "destination-out" : "source-over";
   ctx.strokeStyle = colorInput.value;
   ctx.lineWidth = sizeInput.value;
-  ctx.beginPath();
+
   const p = getPos(e);
-  ctx.moveTo(p.x, p.y);
+  if (tool === "pencil" && brushStyle === "stamp") {
+    stampCarry = 0;
+    lastStampPos = p;
+    var dp = dabParams(e);
+    stampAt(p, dp.diameter, dp.alpha, (Math.random() - 0.5) * 0.6);
+  } else if (tool === "pencil" && brushStyle === "bristles") {
+    lastStampPos = p;
+    initBristleStroke(p, e);
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
   canvas.setPointerCapture(e.pointerId);
 });
 
@@ -54,9 +65,18 @@ canvas.addEventListener("pointermove", function (e) {
     return;
   }
   if (!dibujando) return;
+
   const p = getPos(e);
-  ctx.lineTo(p.x, p.y);
-  ctx.stroke();
+  if (tool === "pencil" && brushStyle === "stamp") {
+    strokeSegmentStamped(lastStampPos, p, e);
+    lastStampPos = p;
+  } else if (tool === "pencil" && brushStyle === "bristles") {
+    strokeSegmentBristles(lastStampPos, p, e);
+    lastStampPos = p;
+  } else {
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
 });
 
 /*
@@ -98,12 +118,233 @@ function applyStageSize() {
   tintCanvas.height = H;
   playCanvas.width = W;
   playCanvas.height = H;
+  stageViewport.style.aspectRatio = W + " / " + H;
   resetCropToFullFrame();
 }
 function endStroke() {
   if (!dibujando) return;
   dibujando = false;
   ctx.globalCompositeOperation = "source-over";
+  ctx.lineCap = "butt";
+  ctx.lineJoin = "miter";
+  bristleStrands = null;
   syncActiveToStorage();
   refreshGradePreview();
 }
+
+var BRUSH_SIZE_SCALE = 2.6;
+var STAMP_SPACING_RATIO = 0.01;
+var BRISTLE_STRAND_COUNT = 7;
+var BRISTLE_SPREAD_RATIO = 0.5; // separación máxima entre cerdas, relativa al diámetro
+var BRISTLE_WIDTH_RATIO = 0.06; // grosor de cada cerda, relativo al diámetro
+
+var brushStyle = "hard";
+var brushTextures = []; // Images cargadas por el usuario
+var brushTexture = null; // la activa, o null (usa círculo de respaldo)
+var brushTintCache = {};
+
+function renderTextureGallery() {
+  var gallery = document.getElementById("texture-gallery");
+  gallery.innerHTML = "";
+  brushTextures.forEach(function (img) {
+    var thumb = document.createElement("img");
+    thumb.src = img.src;
+    thumb.className = "texture-thumb" + (img === brushTexture ? " active" : "");
+    thumb.addEventListener("click", function () {
+      brushTexture = img;
+      brushTintCache = {};
+      renderTextureGallery();
+    });
+    gallery.appendChild(thumb);
+  });
+}
+
+var stampCarry = 0;
+var lastStampPos = null;
+var bristleStrands = null;
+var bristleDist = 0;
+
+function pressureFactor(e) {
+  return e && e.pointerType === "pen" && e.pressure > 0 ? e.pressure : 1;
+}
+
+function dabParams(e) {
+  var pf = pressureFactor(e);
+  var size = parseFloat(sizeInput.value) || 4;
+  return {
+    diameter: size * BRUSH_SIZE_SCALE,
+    alpha: Math.min(1, 0.25 + 0.75 * pf),
+  };
+}
+
+function getTintedBrush(hexColor) {
+  if (!brushTexture || !brushTexture.complete || !brushTexture.naturalWidth)
+    return null;
+  var cached = brushTintCache[hexColor];
+  if (cached) return cached;
+  var c = document.createElement("canvas");
+  c.width = brushTexture.naturalWidth;
+  c.height = brushTexture.naturalHeight;
+  var cx = c.getContext("2d");
+  cx.drawImage(brushTexture, 0, 0);
+  cx.globalCompositeOperation = "source-in";
+  cx.fillStyle = hexColor;
+  cx.fillRect(0, 0, c.width, c.height);
+  cx.globalCompositeOperation = "source-over";
+  brushTintCache[hexColor] = c;
+  return c;
+}
+
+function stampAt(p, diameter, alpha, angle) {
+  var tinted = getTintedBrush(colorInput.value);
+  ctx.globalAlpha = alpha;
+  if (!tinted) {
+    ctx.fillStyle = colorInput.value;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, diameter / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    return;
+  }
+  var ratio = tinted.height / tinted.width;
+  var w = diameter;
+  var h = diameter * ratio;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  if (angle) ctx.rotate(angle);
+  ctx.drawImage(tinted, -w / 2, -h / 2, w, h);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function strokeSegmentStamped(from, to, e) {
+  var dp = dabParams(e);
+  var dx = to.x - from.x;
+  var dy = to.y - from.y;
+  var segLen = Math.sqrt(dx * dx + dy * dy);
+  if (segLen === 0) return;
+  var spacing = Math.max(1.2, dp.diameter * STAMP_SPACING_RATIO);
+  var ux = dx / segLen;
+  var uy = dy / segLen;
+  var pos = 0;
+  while (segLen - pos >= stampCarry) {
+    pos += stampCarry;
+    stampAt(
+      { x: from.x + ux * pos, y: from.y + uy * pos },
+      dp.diameter,
+      dp.alpha,
+      (Math.random() - 0.5) * 0.6
+    );
+    stampCarry = spacing;
+  }
+  stampCarry -= segLen - pos;
+}
+
+// Cada cerda tiene un offset perpendicular fijo al trazo (con un poco de
+// jitter para que no queden todas parejitas), su propio ancho/alfa, y
+// oscila levemente (wobble) mientras avanza — así se lee como cerdas
+// individuales, no como puntos repetidos.
+function initBristleStroke(p, e) {
+  var dp = dabParams(e);
+  var spread = dp.diameter * BRISTLE_SPREAD_RATIO;
+  var n = BRISTLE_STRAND_COUNT;
+  bristleStrands = [];
+  for (var i = 0; i < n; i++) {
+    var t = n === 1 ? 0 : i / (n - 1) - 0.5;
+    var jitter = (Math.random() - 0.5) * spread * 0.15;
+    bristleStrands.push({
+      offset: t * 2 * spread + jitter,
+      widthScale: 0.6 + Math.random() * 0.7,
+      alphaScale: 0.55 + Math.random() * 0.45,
+      wobbleFreq: 0.02 + Math.random() * 0.008,
+      wobblePhase: Math.random() * 0.8,
+      lastX: p.x,
+      lastY: p.y,
+    });
+  }
+  bristleDist = 0;
+  var baseW = Math.max(0.8, dp.diameter * BRISTLE_WIDTH_RATIO);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = colorInput.value;
+  bristleStrands.forEach(function (s) {
+    ctx.globalAlpha = dp.alpha * s.alphaScale;
+    ctx.lineWidth = baseW * s.widthScale;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + 0.01, p.y + 0.01);
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function strokeSegmentBristles(from, to, e) {
+  if (!bristleStrands) return;
+  var dx = to.x - from.x;
+  var dy = to.y - from.y;
+  var segLen = Math.sqrt(dx * dx + dy * dy);
+  if (segLen === 0) return;
+  var ux = dx / segLen;
+  var uy = dy / segLen;
+  var px = -uy;
+  var py = ux;
+  bristleDist += segLen;
+  var dp = dabParams(e);
+  var baseW = Math.max(0.8, dp.diameter * BRISTLE_WIDTH_RATIO);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.lineCap = "butt";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = colorInput.value;
+  bristleStrands.forEach(function (s) {
+    var wobble =
+      Math.sin(bristleDist * s.wobbleFreq + s.wobblePhase) * dp.diameter * 0.02;
+    var tx = to.x + px * (s.offset + wobble);
+    var ty = to.y + py * (s.offset + wobble);
+    ctx.globalAlpha = dp.alpha * s.alphaScale;
+    ctx.lineWidth = baseW * s.widthScale;
+    ctx.beginPath();
+    ctx.moveTo(s.lastX, s.lastY);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+    s.lastX = tx;
+    s.lastY = ty;
+  });
+  ctx.globalAlpha = 1;
+}
+
+var brushStyleSelect = document.getElementById("brush-style");
+brushStyleSelect.addEventListener("change", function () {
+  brushStyle = brushStyleSelect.value;
+});
+
+var brushTextureBtn = document.getElementById("brush-texture-btn");
+var brushTextureInput = document.getElementById("brush-texture-input");
+brushTextureBtn.addEventListener("click", function () {
+  brushTextureInput.click();
+});
+
+brushTextureInput.addEventListener("change", function (e) {
+  var files = Array.prototype.slice.call(e.target.files || []);
+  brushTextureInput.value = "";
+  files.forEach(function (file) {
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function () {
+      brushTextures.push(img);
+      if (!brushTexture) {
+        brushTexture = img;
+        brushTintCache = {};
+      }
+      renderTextureGallery();
+    };
+    img.src = url;
+  });
+});
+
+document
+  .getElementById("texture-bar-toggle")
+  .addEventListener("click", function () {
+    var bar = document.getElementById("texture-bar");
+    bar.hidden = !bar.hidden;
+  });
