@@ -27,7 +27,8 @@ function renderXSheet() {
 
   function createAudioCell(t) {
     const audioCell = document.createElement("div");
-    audioCell.className = "xsheet-audio-cell";
+    audioCell.className =
+      "xsheet-audio-cell" + (t === currentTick ? " current" : "");
     audioCell.style.gridColumn = "2";
     audioCell.style.gridRow = String(t + 2);
     if (audioBuffer) {
@@ -97,6 +98,18 @@ function renderXSheet() {
         cell.addEventListener("click", function () {
           selectLayer(li);
           selectTick(runStart);
+        });
+        cell.addEventListener("contextmenu", function (ev) {
+          ev.preventDefault();
+          selectLayer(li);
+          var frameNumber = runStart + 1;
+          document.getElementById("move-origin").value = frameNumber;
+          document.getElementById("move-origin-end").value = frameNumber;
+          openFloatingBarAt(
+            document.getElementById("edit-frames-bar"),
+            ev.clientX,
+            ev.clientY
+          );
         });
       })(li, runStart);
 
@@ -171,6 +184,7 @@ function duplicateFrame() {
 //otra):
 //Cuando sourceStart === sourceEnd, count es 1 y el cálculo de insertAt es idéntico al
 //original — mismo comportamiento de siempre para mover un solo frame.
+
 function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
   var L = layers[activeLayer];
   syncActiveToStorage();
@@ -184,20 +198,40 @@ function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
   }
   startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
   endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
-  var count = endIdx - startIdx + 1;
+
+  // Guardamos los dibujos originales (los objetos reales, no copias) y
+  // dejamos frames en blanco en su lugar — el frame-slot de origen no se
+  // saca del arreglo, así que 2, 3, 4... nunca se corren de numeración.
+  var movedCels = L.cels.slice(startIdx, endIdx + 1);
+  var movedHolds = L.holds.slice(startIdx, endIdx + 1);
+  for (var i = startIdx; i <= endIdx; i++) {
+    L.cels[i] = makeCel();
+  }
 
   var destIdx = tickNumberToRunIdx(L, destNumber);
-
-  var cels = L.cels.splice(startIdx, count);
-  var holds = L.holds.splice(startIdx, count);
   var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
-  L.cels.splice.apply(L.cels, [insertAt, 0].concat(cels));
-  L.holds.splice.apply(L.holds, [insertAt, 0].concat(holds));
+
+  // Si el destino cae más allá del último tick ocupado, rellenamos el hueco
+  // extendiendo el hold del último frame — así el dibujo movido aterriza
+  // exactamente en el número pedido, no antes.
+  if (insertAt === L.cels.length) {
+    var currentTotal = calcTotalFrames(L.holds);
+    var gap = destNumber - 1 - currentTotal;
+    if (gap > 0 && L.holds.length > 0) {
+      L.holds[L.holds.length - 1] += gap;
+    }
+  }
+
+  L.cels.splice.apply(L.cels, [insertAt, 0].concat(movedCels));
+  L.holds.splice.apply(L.holds, [insertAt, 0].concat(movedHolds));
 
   currentTick = runStartForIdx(L, insertAt);
   loadActiveFromStorage();
   renderXSheet();
   updateOnion();
+  if (!quickDialog.hidden) {
+    renderMiniXsheet();
+  }
 }
 
 //Ojo con el orden: primero splice para sacar, y destIdx se calculó antes de sacar el original — el comentario del original explica que, aunque parezca que habría que ajustar el índice
@@ -272,7 +306,11 @@ document
   .getElementById("edit-frames-bar-toggle")
   .addEventListener("click", function () {
     var bar = document.getElementById("edit-frames-bar");
-    bar.hidden = !bar.hidden;
+    if (bar.hidden) {
+      centerFloatingBar(bar);
+    } else {
+      bar.hidden = true;
+    }
   });
 
 (function () {

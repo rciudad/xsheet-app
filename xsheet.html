@@ -50,7 +50,7 @@
       line-height: 2.4;
     }
     .main-row {
-      order: 4;
+      order: 2;
       flex: 1 1 auto;
       min-height: 0;
       display: flex;
@@ -68,7 +68,7 @@
     }
     .toolbar input:not([type="checkbox"]):not([type="color"]) {
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -77,7 +77,7 @@
     }
     .toolbar button {
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -96,12 +96,12 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      gap: 14px;
     }
     .titlebar input:not([type="checkbox"]):not([type="color"]),
     .transport input:not([type="checkbox"]):not([type="color"]) {
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -111,7 +111,7 @@
     .titlebar button,
     .transport button {
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -126,12 +126,18 @@
     .titlebar label,
     .transport label {
       color: var(--text-dim);
-      font-size: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .titlebar {
       order: 1;
       flex-shrink: 0;
-      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
       background: var(--ink-900);
       border-bottom: 1px solid var(--ink-700);
     }
@@ -151,7 +157,7 @@
       background: var(--ink-900);
       border: 1px solid var(--ink-700);
       border-radius: 10px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     }
     .file-menu-dropdown[hidden] {
       display: none;
@@ -176,9 +182,9 @@
       color: var(--text);
     }
     .transport {
-      order: 5;
+      order: 4;
       flex-shrink: 0;
-      padding: 10px 14px;
+      padding: 10px 16px;
       background: var(--ink-900);
       border-top: 1px solid var(--ink-700);
     }
@@ -188,8 +194,8 @@
       width: 90px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      padding: 10px;
+      gap: 14px;
+      padding: 14px 10px;
       background: var(--ink-900);
       border-right: 1px solid var(--ink-700);
       overflow-y: auto;
@@ -200,21 +206,22 @@
     }
     .right-panel {
       flex-shrink: 0;
-      width: 220px;
-      padding: 10px;
+      width: 240px;
+      padding: 12px 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       background: var(--ink-900);
       border-left: 1px solid var(--ink-700);
       overflow-y: auto;
     }
+
     .right-panel button,
     .right-panel select,
     .right-panel input:not([type="checkbox"]) {
       width: 100%;
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -222,7 +229,9 @@
     }
     .right-panel label {
       color: var(--text-dim);
-      font-size: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .floating-bar {
       position: fixed;
@@ -239,7 +248,7 @@
       background: var(--ink-900);
       border: 1px solid var(--ink-700);
       border-radius: 10px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     }
     .floating-bar[hidden] {
       display: none;
@@ -247,7 +256,7 @@
     .floating-bar input:not([type="checkbox"]),
     .floating-bar select {
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -256,7 +265,7 @@
     }
     .floating-bar button {
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -264,9 +273,12 @@
       padding: 0 10px;
       cursor: pointer;
     }
-    .floating-bar label {
+    .quick-dialog label,
+    .file-menu-section label {
       color: var(--text-dim);
-      font-size: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     .texture-gallery {
       display: flex;
@@ -280,17 +292,61 @@
       object-fit: contain;
       background: var(--ink-850);
       border: 2px solid var(--ink-700);
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
     }
     .texture-thumb.active {
       border-color: var(--accent);
     }
+    .docked-bar {
+      order: 3;
+      flex-shrink: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      gap: 14px;
+      padding: 8px 16px;
+      background: var(--ink-900);
+      border-top: 1px solid var(--ink-700);
+    }
+    .docked-bar[hidden] {
+      display: none;
+    }
+    .docked-bar input:not([type="checkbox"]),
+    .docked-bar select {
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 13px;
+      padding: 0 6px;
+    }
+    .docked-bar button {
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 12px;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+    .docked-bar button:hover {
+      background: var(--ink-800);
+    }
+    .docked-bar label {
+      color: var(--text-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
 
     .bottom-toolbar input {
       width: 55px;
       height: 30px;
-      border-radius: 7px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -299,7 +355,7 @@
     .bottom-toolbar button {
       width: auto;
       height: 30px;
-      border-radius: 7px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -311,7 +367,7 @@
     }
     .bottom-toolbar select {
       height: 30px;
-      border-radius: 7px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -393,15 +449,17 @@
     }
 
     .xsheet-th {
-      border: 1px solid var(--ink-700);
+      border: 1px solid var(--ink-800);
       text-align: center;
       cursor: pointer;
       font-size: 12px;
       background: var(--ink-850);
+      color: var(--text-faint);
+      text-transform: uppercase;
     }
     .xsheet-th.active {
-      background-color: var(--accent);
-      color: var(--ink-950);
+      background-color: var(--ink-700); /*accent*/
+      color: var(--text);
     }
     .xsheet-tick {
       border: 1px solid var(--ink-700);
@@ -422,22 +480,23 @@
       background-color: var(--ink-800);
     }
     .xsheet-cell.current {
-      background-color: var(--accent);
+      /*background-color: var(--accent);*/
       color: var(--ink-950);
+      border: 1px solid var(--accent);
     }
     .xsheet-cell input {
       width: 45px;
       position: relative;
-      left: 37px;
+      left: 19px;
       top: 4px;
-      background: var(--ink-900);
+      background: var(--ink-800);
       color: var(--text);
       border: 1px solid var(--ink-700);
-      border-radius: 4px;
+      border-radius: 3px;
     }
     .xsheet-tick.current {
-      background-color: var(--accent);
-      color: var(--ink-950);
+      /*background-color: var(--accent);
+      color: var(--ink-950);*/
     }
     #audioPlayer {
       display: none;
@@ -448,6 +507,9 @@
       align-items: flex-end;
       justify-content: center;
       background: var(--ink-850);
+    }
+    .xsheet-audio-cell.current {
+      border: 1px solid var(--accent);
     }
     .xsheet-audio-bar {
       width: 80%;
@@ -460,7 +522,7 @@
       z-index: 700;
       height: 28px;
       padding: 0 10px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -480,14 +542,14 @@
       background: var(--ink-900);
       border: 1px solid var(--ink-700);
       border-radius: 10px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     }
     .quick-dialog[hidden] {
       display: none;
     }
     .quick-dialog button {
       height: 30px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--ink-700);
       background: var(--ink-850);
       color: var(--text);
@@ -499,13 +561,43 @@
     .quick-dialog button:hover {
       background: var(--ink-800);
     }
+    .quick-dialog-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .quick-dialog-btn-square {
+      width: 56px;
+      height: 56px;
+      white-space: normal;
+      line-height: 1.15;
+      font-size: 10px;
+      padding: 2px;
+    }
+
+    .quick-dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: move;
+      padding-bottom: 6px;
+      margin-bottom: 2px;
+      border-bottom: 1px solid var(--ink-700);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+    }
     .mini-xsheet {
       display: flex;
       flex-direction: column;
       max-height: 260px;
       overflow-y: auto;
       border: 1px solid var(--ink-700);
-      border-radius: 6px;
+      border-radius: 8px;
     }
     .mini-xsheet-row {
       display: flex;
@@ -536,6 +628,15 @@
       background: var(--ink-850);
       color: var(--text);
       font-size: 11px;
+    }
+    .mini-xsheet-row input[type="checkbox"] {
+      width: auto;
+    }
+    .mini-xsheet-offset {
+      font-size: 10px;
+      color: var(--text-dim);
+      min-width: 22px;
+      text-align: right;
     }
 
     .app.drawing-mode .titlebar,
@@ -688,7 +789,7 @@
         <button type="button" id="copy-frame">COPIAR</button>
       </div>
 
-      <div class="floating-bar" id="peg-bar" hidden>
+      <div class="docked-bar" id="peg-bar" hidden>
         <label
           >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
             type="number"
@@ -713,7 +814,7 @@
         <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
         <button type="button" id="peg-align-layer">ALINEAR CAPA ACTUAL</button>
       </div>
-      <div class="floating-bar" id="adjust-bar" hidden>
+      <div class="docked-bar" id="adjust-bar" hidden>
         <label
           >Crop: x<input type="number" id="cropX" value="0" /> y<input
             type="number"
@@ -848,14 +949,16 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
         >
           <div
             style="
-              background: #fff;
-              color: #000;
-              padding: 12px;
+              background: var(--ink-900);
+              color: var(--text);
+              padding: 18px;
               width: 420px;
               max-width: 90vw;
               max-height: 80vh;
               display: flex;
               flex-direction: column;
+              border-radius: 12px;
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             "
           >
             <strong id="folder-browse-title">Elegir archivo</strong>
@@ -929,12 +1032,55 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
       MODO DIBUJO
     </button>
     <div class="quick-dialog" id="quick-dialog" hidden>
-      <button type="button" id="qd-pencil">LÁPIZ</button>
-      <button type="button" id="qd-eraser">GOMA</button>
-      <button type="button" id="qd-add-frame">AGREGAR FRAME</button>
-      <button type="button" id="qd-delete-frame">BORRAR FRAME</button>
+      <div class="quick-dialog-header" id="quick-dialog-drag-handle">
+        <span>Menú rápido</span>
+        <button type="button" id="qd-hide">OCULTAR</button>
+      </div>
+
+      <div class="quick-dialog-row">
+        <button type="button" id="qd-pencil" class="quick-dialog-btn-square">
+          LÁPIZ
+        </button>
+        <button type="button" id="qd-eraser" class="quick-dialog-btn-square">
+          GOMA
+        </button>
+        <button type="button" id="qd-add-frame" class="quick-dialog-btn-square">
+          AGREGAR FRAME
+        </button>
+        <button
+          type="button"
+          id="qd-delete-frame"
+          class="quick-dialog-btn-square"
+        >
+          BORRAR FRAME
+        </button>
+      </div>
       <label for="qd-range">Rango:</label>
       <input type="number" id="qd-range" min="1" value="5" />
+      <div class="quick-dialog-row">
+        <label
+          ><input type="checkbox" id="qd-onion-toggle" checked /> Onion</label
+        >
+        <input
+          type="number"
+          id="qd-onion-opacity"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.35"
+          title="Opacidad onion"
+        />
+        <input
+          type="number"
+          id="qd-onion-falloff"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.7"
+          title="Onion gradiente"
+        />
+      </div>
+
       <div class="mini-xsheet" id="mini-xsheet"></div>
     </div>
     <script src="dibujo.js"></script>

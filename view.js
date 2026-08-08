@@ -175,22 +175,42 @@ function renderMiniXsheet() {
       var row = document.createElement("div");
       row.className = "mini-xsheet-row" + (i === activeIdx ? " current" : "");
 
-      var numEl = document.createElement("span");
-      numEl.textContent = runStartForIdx(L, i) + 1;
-      row.appendChild(numEl);
+      var frameNumber = runStartForIdx(L, i) + 1;
 
-      var holdInput = document.createElement("input");
-      holdInput.type = "number";
-      holdInput.min = "1";
-      holdInput.value = L.holds[i];
-      holdInput.addEventListener("click", function (ev) {
+      var posInput = document.createElement("input");
+      posInput.type = "number";
+      posInput.min = "1";
+      posInput.value = frameNumber;
+      posInput.addEventListener("click", function (ev) {
         ev.stopPropagation();
       });
-      holdInput.addEventListener("change", function () {
-        setFrameHold(activeLayer, i, holdInput.value);
+      posInput.addEventListener("change", function () {
+        var dest = Math.max(1, Math.round(+posInput.value) || frameNumber);
+        moveFrameToPosition(frameNumber, frameNumber, dest);
         renderMiniXsheet();
       });
-      row.appendChild(holdInput);
+      row.appendChild(posInput);
+
+      var offset = i - activeIdx;
+      if (offset !== 0) {
+        var onionCb = document.createElement("input");
+        onionCb.type = "checkbox";
+        onionCb.checked = !!onionOffsets[offset];
+        onionCb.title = "Onion " + (offset > 0 ? "+" + offset : offset);
+        onionCb.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+        });
+        onionCb.addEventListener("change", function () {
+          onionOffsets[offset] = onionCb.checked;
+          updateOnion();
+        });
+        row.appendChild(onionCb);
+
+        var offsetLabel = document.createElement("span");
+        offsetLabel.className = "mini-xsheet-offset";
+        offsetLabel.textContent = (offset > 0 ? "+" : "") + offset;
+        row.appendChild(offsetLabel);
+      }
 
       row.addEventListener("click", function (ev) {
         ev.stopPropagation();
@@ -209,6 +229,16 @@ document.getElementById("qd-range").addEventListener("change", function (e) {
   e.target.value = v;
   renderMiniXsheet();
 });
+
+document
+  .getElementById("qd-onion-falloff")
+  .addEventListener("change", function (e) {
+    var v = Math.min(1, Math.max(0, parseFloat(e.target.value)));
+    if (!isFinite(v)) v = onionFalloff;
+    onionFalloff = v;
+    e.target.value = v;
+    updateOnion();
+  });
 
 function openQuickDialog(x, y) {
   renderMiniXsheet();
@@ -237,27 +267,70 @@ canvas.addEventListener("contextmenu", function (e) {
   }
 });
 
-document.addEventListener("click", function (e) {
-  if (!quickDialog.hidden && !quickDialog.contains(e.target)) {
-    closeQuickDialog();
-  }
+var quickDialogHandle = document.getElementById("quick-dialog-drag-handle");
+var qdDragging = false;
+var qdDragStart = null;
+
+quickDialogHandle.addEventListener("pointerdown", function (e) {
+  if (e.target.closest("button")) return;
+  qdDragging = true;
+  var rect = quickDialog.getBoundingClientRect();
+  qdDragStart = { x: e.clientX, y: e.clientY, left: rect.left, top: rect.top };
+  quickDialogHandle.setPointerCapture(e.pointerId);
 });
+
+quickDialogHandle.addEventListener("pointermove", function (e) {
+  if (!qdDragging) return;
+  var dx = e.clientX - qdDragStart.x;
+  var dy = e.clientY - qdDragStart.y;
+  quickDialog.style.left = qdDragStart.left + dx + "px";
+  quickDialog.style.top = qdDragStart.top + dy + "px";
+});
+quickDialogHandle.addEventListener("pointerup", function () {
+  qdDragging = false;
+});
+quickDialogHandle.addEventListener("pointercancel", function () {
+  qdDragging = false;
+});
+
+document.getElementById("qd-hide").addEventListener("click", closeQuickDialog);
 
 document.getElementById("qd-pencil").addEventListener("click", function () {
   setTool("pencil");
-  closeQuickDialog();
 });
 document.getElementById("qd-eraser").addEventListener("click", function () {
   setTool("eraser");
-  closeQuickDialog();
 });
 document.getElementById("qd-add-frame").addEventListener("click", function () {
   addFrame(layers[activeLayer], currentTick);
-  closeQuickDialog();
 });
 document
   .getElementById("qd-delete-frame")
   .addEventListener("click", function () {
     deleteFrame(layers[activeLayer]);
-    closeQuickDialog();
   });
+
+function openFloatingBarAt(el, x, y) {
+  var margin = 8;
+  el.hidden = false;
+  el.style.transform = "none";
+  el.style.bottom = "auto";
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  var rect = el.getBoundingClientRect();
+  var left = Math.min(x, window.innerWidth - rect.width - margin);
+  var top = Math.min(y, window.innerHeight - rect.height - margin);
+  el.style.left = Math.max(margin, left) + "px";
+  el.style.top = Math.max(margin, top) + "px";
+}
+
+function centerFloatingBar(el) {
+  el.hidden = false;
+  el.style.transform = "none";
+  el.style.bottom = "auto";
+  el.style.left = "0px";
+  el.style.top = "0px";
+  var rect = el.getBoundingClientRect();
+  el.style.left = Math.max(8, (window.innerWidth - rect.width) / 2) + "px";
+  el.style.top = Math.max(8, (window.innerHeight - rect.height) / 2) + "px";
+}

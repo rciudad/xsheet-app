@@ -38,14 +38,25 @@ function tintDraw(srcCanvas, tint, alpha) {
 
 var onionOpacity = 0.35;
 var onionEnabled = true;
+var onionOffsets = { "-1": true, 1: true }; // nivel relativo -> activado/no
+var onionFalloff = 0.7; // cuánto se multiplica la opacidad por cada nivel extra de distancia
 
 function updateOnion() {
   onionCtx.clearRect(0, 0, W, H);
   if (onionEnabled) {
-    if (currentTick - 1 >= 0)
-      tintDraw(flattenAt(currentTick - 1), "#46c2b0", onionOpacity);
-    if (currentTick + 1 < sheetTotalTicks())
-      tintDraw(flattenAt(currentTick + 1), "#9b8cff", onionOpacity);
+    var L = layers[activeLayer];
+    var run = layerCelAtTick(L, currentTick);
+    var activeIdx = run.idx;
+    Object.keys(onionOffsets).forEach(function (key) {
+      if (!onionOffsets[key]) return;
+      var offset = parseInt(key, 10);
+      var idx = activeIdx + offset;
+      if (idx < 0 || idx >= L.cels.length) return;
+      var tick = runStartForIdx(L, idx);
+      var color = offset < 0 ? "#46c2b0" : "#9b8cff";
+      var alpha = onionOpacity * Math.pow(onionFalloff, Math.abs(offset) - 1);
+      tintDraw(flattenAt(tick), color, alpha);
+    });
   }
   refreshGradePreview();
 }
@@ -55,6 +66,7 @@ var onionOpacityInput = document.getElementById("onion-opacity");
 
 onionToggleInput.addEventListener("change", function () {
   onionEnabled = onionToggleInput.checked;
+  qdOnionToggleInput.checked = onionEnabled;
   updateOnion();
 });
 
@@ -62,6 +74,25 @@ onionOpacityInput.addEventListener("change", function () {
   var v = Math.min(1, Math.max(0, parseFloat(onionOpacityInput.value)));
   if (!isFinite(v)) v = onionOpacity;
   onionOpacity = v;
+  onionOpacityInput.value = v;
+  qdOnionOpacityInput.value = v;
+  updateOnion();
+});
+
+var qdOnionToggleInput = document.getElementById("qd-onion-toggle");
+var qdOnionOpacityInput = document.getElementById("qd-onion-opacity");
+
+qdOnionToggleInput.addEventListener("change", function () {
+  onionEnabled = qdOnionToggleInput.checked;
+  onionToggleInput.checked = onionEnabled;
+  updateOnion();
+});
+
+qdOnionOpacityInput.addEventListener("change", function () {
+  var v = Math.min(1, Math.max(0, parseFloat(qdOnionOpacityInput.value)));
+  if (!isFinite(v)) v = onionOpacity;
+  onionOpacity = v;
+  qdOnionOpacityInput.value = v;
   onionOpacityInput.value = v;
   updateOnion();
 });
