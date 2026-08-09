@@ -54,6 +54,16 @@ function renderXSheet() {
     createAudioCell(t);
   }
 
+  var pickedLo = null;
+  var pickedHi = null;
+  if (frameAction) {
+    pickedLo = pickedHi = frameAction.originFrame;
+    if (frameAction.rangeEndFrame != null) {
+      pickedLo = Math.min(frameAction.originFrame, frameAction.rangeEndFrame);
+      pickedHi = Math.max(frameAction.originFrame, frameAction.rangeEndFrame);
+    }
+  }
+
   layers.forEach(function (L, li) {
     const ownTotal = calcTotalFrames(L.holds);
     let idx = 0;
@@ -72,9 +82,21 @@ function renderXSheet() {
       holdInput.addEventListener("click", function (ev) {
         ev.stopPropagation();
       });
+
       holdInput.addEventListener("change", function () {
         setFrameHold(li, celIdx, holdInput.value);
       });
+
+      const isActionLayer = !!frameAction && li === frameAction.originLi;
+      const isPicked =
+        isActionLayer &&
+        runStart <= pickedHi - 1 &&
+        runStart + runLen - 1 >= pickedLo - 1;
+      const isDest =
+        isActionLayer &&
+        frameAction.destFrame != null &&
+        runStart <= frameAction.destFrame - 1 &&
+        runStart + runLen - 1 >= frameAction.destFrame - 1;
 
       const cell = document.createElement("div");
       cell.appendChild(holdInput);
@@ -86,7 +108,9 @@ function renderXSheet() {
         currentTick >= runStart &&
         currentTick < runStart + runLen
           ? " current"
-          : "");
+          : "") +
+        (isPicked ? " action-picked" : "") +
+        (isDest ? " action-dest" : "");
       cell.style.gridColumn = String(li + 3);
       cell.style.gridRow = runStart + 2 + " / span " + runLen;
 
@@ -96,20 +120,17 @@ function renderXSheet() {
 
       (function (li, runStart) {
         cell.addEventListener("click", function () {
+          if (frameAction) {
+            pickFrameActionCell(li, runStart);
+            return;
+          }
           selectLayer(li);
           selectTick(runStart);
         });
         cell.addEventListener("contextmenu", function (ev) {
           ev.preventDefault();
           selectLayer(li);
-          var frameNumber = runStart + 1;
-          document.getElementById("move-origin").value = frameNumber;
-          document.getElementById("move-origin-end").value = frameNumber;
-          openFloatingBarAt(
-            document.getElementById("edit-frames-bar"),
-            ev.clientX,
-            ev.clientY
-          );
+          openFrameAction(li, runStart + 1, ev.clientX, ev.clientY);
         });
       })(li, runStart);
 
@@ -278,19 +299,192 @@ document
   .getElementById("duplicate-frame")
   .addEventListener("click", duplicateFrame);
 
-document.getElementById("move-frame").addEventListener("click", function () {
-  moveFrameToPosition(
-    document.getElementById("move-origin").value,
-    document.getElementById("move-origin-end").value,
-    document.getElementById("move-dest").value
-  );
+var frameAction = null;
+
+function positionFrameActionPopup(clientX, clientY) {
+  var popup = document.getElementById("frame-action-popup");
+  popup.style.transform = "none";
+  popup.style.bottom = "auto";
+  popup.style.left = "0px";
+  popup.style.top = "0px";
+  var rect = popup.getBoundingClientRect();
+  var xsheetRect = document.getElementById("xsheet").getBoundingClientRect();
+  var left = xsheetRect.left - rect.width - 8;
+  var top = Math.min(clientY, window.innerHeight - rect.height - 8);
+  popup.style.left = Math.max(8, left) + "px";
+  popup.style.top = Math.max(8, top) + "px";
+}
+
+function updateFrameActionConfirmState() {
+  var confirmBtn = document.getElementById("fa-confirm");
+  var summaryEl = document.getElementById("fa-summary");
+  if (!frameAction) {
+    confirmBtn.disabled = true;
+    summaryEl.hidden = true;
+    return;
+  }
+  var isRange = document.getElementById("fa-range-check").checked;
+  confirmBtn.textContent =
+    (frameAction.mode === "copy" ? "Copiar" : "Mover") +
+    (isRange ? " rango" : "");
+  confirmBtn.disabled =
+    frameAction.destFrame == null ||
+    (isRange && frameAction.rangeEndFrame == null);
+  if (
+    frameAction.destFrame != null &&
+    (!isRange || frameAction.rangeEndFrame != null)
+  ) {
+    var from = isRange
+      ? Math.min(frameAction.originFrame, frameAction.rangeEndFrame)
+      : frameAction.originFrame;
+    var to = isRange
+      ? Math.max(frameAction.originFrame, frameAction.rangeEndFrame)
+      : frameAction.originFrame;
+    summaryEl.hidden = false;
+    summaryEl.textContent =
+      (isRange ? "Frames " + from + "-" + to : "Frame " + from) +
+      " \u2192 " +
+      frameAction.destFrame;
+  } else {
+    summaryEl.hidden = true;
+  }
+}
+
+function setFrameActionMode(mode) {
+  if (!frameAction) return;
+  frameAction.mode = mode;
+  document
+    .getElementById("fa-move-btn")
+    .classList.toggle("active", mode === "move");
+  document
+    .getElementById("fa-copy-btn")
+    .classList.toggle("active", mode === "copy");
+  updateFrameActionConfirmState();
+}
+document.getElementById("fa-move-btn").addEventListener("click", function () {
+  setFrameActionMode("move");
 });
-document.getElementById("copy-frame").addEventListener("click", function () {
-  copyFrameToPosition(
-    document.getElementById("move-origin").value,
-    document.getElementById("move-origin-end").value,
-    document.getElementById("move-dest").value
-  );
+document.getElementById("fa-copy-btn").addEventListener("click", function () {
+  setFrameActionMode("copy");
+});
+
+function openFrameAction(li, frameNumber, clientX, clientY) {
+  frameAction = {
+    mode: "move",
+    originLi: li,
+    originFrame: frameNumber,
+    rangeEndFrame: null,
+    destFrame: null,
+  };
+  setFrameActionMode("move");
+  document.getElementById("fa-range-check").checked = false;
+  document.getElementById("fa-range-end-field").hidden = true;
+  document.getElementById("fa-origin").value = frameNumber;
+  document.getElementById("fa-range-end").value = "";
+  document.getElementById("fa-dest").value = "";
+  document.getElementById("frame-action-popup").hidden = false;
+  positionFrameActionPopup(clientX, clientY);
+  updateFrameActionConfirmState();
+  renderXSheet();
+}
+
+function closeFrameAction() {
+  if (!frameAction) return;
+  frameAction = null;
+  document.getElementById("frame-action-popup").hidden = true;
+  renderXSheet();
+}
+
+function pickFrameActionCell(li, runStart) {
+  if (li !== frameAction.originLi) return;
+  var frameNumber = runStart + 1;
+  if (
+    document.getElementById("fa-range-check").checked &&
+    frameAction.rangeEndFrame == null
+  ) {
+    frameAction.rangeEndFrame = frameNumber;
+    document.getElementById("fa-range-end").value = frameNumber;
+  } else {
+    frameAction.destFrame = frameNumber;
+    document.getElementById("fa-dest").value = frameNumber;
+  }
+  updateFrameActionConfirmState();
+  renderXSheet();
+}
+
+document
+  .getElementById("fa-range-check")
+  .addEventListener("change", function () {
+    if (!frameAction) return;
+    var checked = document.getElementById("fa-range-check").checked;
+    document.getElementById("fa-range-end-field").hidden = !checked;
+    if (!checked) {
+      frameAction.rangeEndFrame = null;
+      document.getElementById("fa-range-end").value = "";
+    }
+    updateFrameActionConfirmState();
+    renderXSheet();
+  });
+
+document.getElementById("fa-range-end").addEventListener("input", function (e) {
+  if (!frameAction) return;
+  var v = e.target.value;
+  frameAction.rangeEndFrame = v === "" ? null : Math.round(+v);
+  updateFrameActionConfirmState();
+  renderXSheet();
+});
+
+document.getElementById("fa-dest").addEventListener("input", function (e) {
+  if (!frameAction) return;
+  var v = e.target.value;
+  frameAction.destFrame = v === "" ? null : Math.round(+v);
+  updateFrameActionConfirmState();
+  renderXSheet();
+});
+
+document
+  .getElementById("fa-range-end")
+  .addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !document.getElementById("fa-confirm").disabled) {
+      document.getElementById("fa-confirm").click();
+    }
+  });
+document.getElementById("fa-dest").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && !document.getElementById("fa-confirm").disabled) {
+    document.getElementById("fa-confirm").click();
+  }
+});
+
+document.getElementById("fa-confirm").addEventListener("click", function () {
+  if (!frameAction) return;
+  var isRange = document.getElementById("fa-range-check").checked;
+  var mode = frameAction.mode;
+  var origin = frameAction.originFrame;
+  var dest = frameAction.destFrame;
+  var rangeEnd = frameAction.rangeEndFrame;
+  closeFrameAction();
+  var from = isRange ? Math.min(origin, rangeEnd) : origin;
+  var to = isRange ? Math.max(origin, rangeEnd) : origin;
+  if (mode === "copy") copyFrameToPosition(from, to, dest);
+  else moveFrameToPosition(from, to, dest);
+});
+document
+  .getElementById("fa-cancel")
+  .addEventListener("click", closeFrameAction);
+
+document
+  .getElementById("frame-action-popup")
+  .addEventListener("mousedown", function (e) {
+    e.stopPropagation();
+  });
+document.addEventListener("mousedown", function (e) {
+  if (!frameAction) return;
+  if (document.getElementById("frame-action-popup").contains(e.target)) return;
+  if (document.getElementById("xsheet").contains(e.target)) return;
+  closeFrameAction();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && frameAction) closeFrameAction();
 });
 
 renderXSheet();

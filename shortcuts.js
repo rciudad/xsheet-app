@@ -16,16 +16,18 @@ window.addEventListener("keydown", function (e) {
     undo();
     return;
   }
+
   if (!playing && e.key === "ArrowLeft") {
     e.preventDefault();
-    selectTick(currentTick - 1);
+    selectPrevFrame();
     return;
   }
   if (!playing && e.key === "ArrowRight") {
     e.preventDefault();
-    selectTick(currentTick + 1);
+    selectNextFrame();
     return;
   }
+
   if (e.key === "b" || e.key === "B") {
     setTool("pencil");
     return;

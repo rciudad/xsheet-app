@@ -1,5 +1,5 @@
 var cropRect = { x: 0, y: 0, w: W, h: H };
-var exportBgEnabled = false;
+var exportBgEnabled = true;
 var exportBgColor = "#ffffff";
 var colorAdj = { brightness: 0, contrast: 1, saturation: 1, wbR: 1, wbB: 1 };
 var gradePreviewEnabled = false;
@@ -237,6 +237,10 @@ exportBgToggleInput.addEventListener("change", function () {
     ? exportBgColor
     : "";
 });
+if (exportBgEnabled) {
+  document.getElementById("stage").style.backgroundColor = exportBgColor;
+}
+
 exportBgColorInput.addEventListener("change", function () {
   exportBgColor = exportBgColorInput.value;
   if (exportBgEnabled) {

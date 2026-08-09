@@ -98,8 +98,10 @@
       align-items: center;
       gap: 14px;
     }
+
     .titlebar input:not([type="checkbox"]):not([type="color"]),
-    .transport input:not([type="checkbox"]):not([type="color"]) {
+    .transport input:not([type="checkbox"]):not([type="color"]),
+    .titlebar select {
       height: 30px;
       border-radius: 8px;
       border: 1px solid var(--ink-700);
@@ -108,6 +110,7 @@
       padding: 0 6px;
       font-size: 13px;
     }
+
     .titlebar button,
     .transport button {
       height: 30px;
@@ -297,6 +300,68 @@
     }
     .texture-thumb.active {
       border-color: var(--accent);
+    }
+    .frame-action-dir-group {
+      display: flex;
+      gap: 4px;
+    }
+    .frame-action-dir-btn.active {
+      background: var(--accent);
+      color: var(--ink-950);
+      border-color: var(--accent);
+    }
+    .frame-action-field {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .frame-action-field[hidden] {
+      display: none;
+    }
+    .frame-action-summary {
+      width: 100%;
+      margin: 0;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .xsheet-cell.action-picked {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .xsheet-cell.action-dest {
+      outline: 2px dashed var(--teal);
+      outline-offset: -2px;
+    }
+    #frame-action-popup {
+      width: 220px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    #zoom-rotate-dialog {
+      width: 220px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+    #zoom-rotate-dialog input[type="range"] {
+      width: 100%;
+    }
+    .frame-action-field label {
+      flex: 0 0 auto;
+    }
+    .frame-action-field input {
+      flex: 1 1 0%;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .frame-action-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    .frame-action-buttons button {
+      flex: 1 1 auto;
     }
     .docked-bar {
       order: 3;
@@ -716,7 +781,8 @@
               <label for="export-prefix">Prefijo:</label>
               <input type="text" id="export-prefix" value="frame" />
               <label
-                ><input type="checkbox" id="export-bg-toggle" /> Fondo</label
+                ><input type="checkbox" id="export-bg-toggle" checked />
+                Fondo</label
               >
               <input type="color" id="export-bg-color" value="#ffffff" />
               <button type="button" id="export-png">EXPORT PNG</button>
@@ -745,17 +811,17 @@
             </div>
           </div>
         </div>
-        <label for="resolution">RES:</label>
 
-        <input list="resolutions" name="resolution" id="resolution" />
-        <datalist id="resolutions">
-          <option value="800x600"></option>
-          <option value="1280x720"></option>
-          <option value="1440x1080"></option>
-          <option value="1920x1080"></option>
-          <option value="1080x1440"></option>
-          <option value="1080x1920"></option>
-        </datalist>
+        <label for="resolution">RES:</label>
+        <select id="resolution">
+          <option value="800x600">800×600</option>
+          <option value="1280x720">1280×720</option>
+          <option value="1440x1080">1440×1080</option>
+          <option value="1920x1080">1920×1080</option>
+          <option value="1080x1440">1080×1440</option>
+          <option value="1080x1920">1080×1920</option>
+        </select>
+
         <button type="button" id="tool-pan">MANO</button>
         <button type="button" id="zoom-out">−</button>
         <span id="zoomReadout">100%</span>
@@ -774,21 +840,55 @@
         <button type="button" id="new-frame">ADD FRAME</button>
         <button type="button" id="insert-frame-left">INSERTAR IZQUIERDA</button>
       </div>
+
       <div class="floating-bar" id="edit-frames-bar" hidden>
         <label for="layer-hold-all">HOLD CAPA:</label>
         <input type="number" id="layer-hold-all" min="1" value="1" />
         <button type="button" id="apply-layer-hold">APLICAR</button>
         <button type="button" id="duplicate-frame">DUPLICAR</button>
-        <label for="move-origin">Origen:</label>
-        <input type="number" id="move-origin" min="1" value="1" />
-        <label for="move-origin-end">Origen hasta:</label>
-        <input type="number" id="move-origin-end" min="1" value="1" />
-        <label for="move-dest">Destino:</label>
-        <input type="number" id="move-dest" min="1" value="1" />
-        <button type="button" id="move-frame">MOVER</button>
-        <button type="button" id="copy-frame">COPIAR</button>
       </div>
-
+      <div class="floating-bar" id="frame-action-popup" hidden>
+        <div class="frame-action-dir-group">
+          <button
+            type="button"
+            id="fa-move-btn"
+            class="frame-action-dir-btn active"
+          >
+            Mover
+          </button>
+          <button type="button" id="fa-copy-btn" class="frame-action-dir-btn">
+            Copiar
+          </button>
+        </div>
+        <label><input type="checkbox" id="fa-range-check" /> Rango</label>
+        <div class="frame-action-field">
+          <label for="fa-origin">Frame</label>
+          <input type="number" id="fa-origin" min="1" readonly />
+        </div>
+        <div class="frame-action-field" id="fa-range-end-field" hidden>
+          <label for="fa-range-end">Hasta</label>
+          <input
+            type="number"
+            id="fa-range-end"
+            min="1"
+            placeholder="click un frame"
+          />
+        </div>
+        <div class="frame-action-field">
+          <label for="fa-dest">En</label>
+          <input
+            type="number"
+            id="fa-dest"
+            min="1"
+            placeholder="click un frame"
+          />
+        </div>
+        <p class="frame-action-summary" id="fa-summary" hidden></p>
+        <div class="frame-action-buttons">
+          <button type="button" id="fa-confirm" disabled>Mover</button>
+          <button type="button" id="fa-cancel">Cancelar</button>
+        </div>
+      </div>
       <div class="docked-bar" id="peg-bar" hidden>
         <label
           >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
@@ -849,6 +949,14 @@
           ><input type="checkbox" id="grade-preview-toggle" /> Vista
           previa</label
         >
+      </div>
+      <div class="floating-bar" id="zoom-rotate-dialog" hidden>
+        <label for="zr-zoom">Zoom</label>
+        <input type="range" id="zr-zoom" min="20" max="800" value="100" />
+        <span id="zr-zoom-readout">100%</span>
+        <label for="zr-rotate">Rotación</label>
+        <input type="range" id="zr-rotate" min="-180" max="180" value="0" />
+        <span id="zr-rotate-readout">0°</span>
       </div>
       <div class="floating-bar" id="texture-bar" hidden>
         <button type="button" id="brush-texture-btn">AGREGAR</button>

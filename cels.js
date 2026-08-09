@@ -5,11 +5,12 @@ const newLayerBtn = document.getElementById("new-layer");
 const layerSelector = document.getElementById("layers");
 
 prevBtn.addEventListener("click", function () {
-  selectTick(currentTick - 1);
+  selectPrevFrame();
 });
 nextBtn.addEventListener("click", function () {
-  selectTick(currentTick + 1);
+  selectNextFrame();
 });
+
 newFrameBtn.addEventListener("click", function () {
   addFrame(layers[activeLayer], currentTick);
 });
@@ -173,6 +174,22 @@ function selectTick(tick) {
       renderMiniXsheet();
     }
   }
+}
+
+function selectPrevFrame() {
+  var L = layers[activeLayer];
+  var run = layerCelAtTick(L, currentTick);
+  var prevIdx = run.idx - 1;
+  if (prevIdx < 0) return;
+  selectTick(runStartForIdx(L, prevIdx));
+}
+
+function selectNextFrame() {
+  var L = layers[activeLayer];
+  var run = layerCelAtTick(L, currentTick);
+  var nextIdx = run.idx + 1;
+  if (nextIdx >= L.cels.length) return;
+  selectTick(runStartForIdx(L, nextIdx));
 }
 
 function activeRunIdx() {

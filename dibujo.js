@@ -32,6 +32,18 @@ canvas.addEventListener("pointerdown", function (e) {
 
 canvas.addEventListener("pointerdown", function (e) {
   if (e.button === 2) return;
+  if (!quickDialog.hidden) return;
+
+  if (zoomKeyHeld) {
+    startZoomDrag(e);
+    return;
+  }
+
+  if (rotateKeyHeld) {
+    startRotateDrag(e);
+    return;
+  }
+
   if (tool === "pan" || e.button === 1) {
     e.preventDefault(); // evita el autoscroll que Chrome/Firefox activan con el botón central
     startPan(e);
@@ -61,6 +73,14 @@ canvas.addEventListener("pointerdown", function (e) {
 });
 
 canvas.addEventListener("pointermove", function (e) {
+  if (zoomDragging) {
+    doZoomDrag(e);
+    return;
+  }
+  if (rotateDragging) {
+    doRotateDrag(e);
+    return;
+  }
   if (panning) {
     doPan(e);
     return;
@@ -90,13 +110,18 @@ canvas.addEventListener("pointermove", function (e) {
 
 canvas.addEventListener("pointerup", function (e) {
   endStroke();
+  endZoomDrag();
+  endRotateDrag();
   canvas.releasePointerCapture(e.pointerId);
 });
 
 canvas.addEventListener("pointercancel", function (e) {
   endStroke();
+  endZoomDrag();
+  endRotateDrag();
   canvas.releasePointerCapture(e.pointerId);
 });
+
 document.getElementById("tool-pencil").addEventListener("click", function () {
   setTool("pencil");
 });

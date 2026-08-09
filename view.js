@@ -334,3 +334,104 @@ function centerFloatingBar(el) {
   el.style.left = Math.max(8, (window.innerWidth - rect.width) / 2) + "px";
   el.style.top = Math.max(8, (window.innerHeight - rect.height) / 2) + "px";
 }
+
+var zoomKeyHeld = false;
+var rotateKeyHeld = false;
+
+window.addEventListener("keydown", function (e) {
+  if (e.code === "NumpadDivide") zoomKeyHeld = true;
+  if (e.code === "NumpadMultiply" && !e.repeat) toggleZoomRotateDialog();
+});
+window.addEventListener("keyup", function (e) {
+  if (e.code === "NumpadDivide") zoomKeyHeld = false;
+});
+
+var zoomDragging = false;
+var zoomDragAnchorX = 0;
+var zoomDragAnchorY = 0;
+var zoomDragValue = 1;
+
+function startZoomDrag(e) {
+  zoomDragging = true;
+  zoomDragAnchorX = e.clientX;
+  zoomDragAnchorY = e.clientY;
+  zoomDragValue = viewZoom;
+  canvas.requestPointerLock();
+}
+
+function doZoomDrag(e) {
+  var factor = Math.pow(1.04, e.movementX);
+  zoomDragValue = Math.min(8, Math.max(0.2, zoomDragValue * factor));
+  zoomAt(zoomDragValue, zoomDragAnchorX, zoomDragAnchorY);
+}
+
+function endZoomDrag() {
+  if (zoomDragging && document.pointerLockElement === canvas) {
+    document.exitPointerLock();
+  }
+  zoomDragging = false;
+}
+
+var rotateDragging = false;
+var rotateDragValue = 0;
+
+function startRotateDrag(e) {
+  rotateDragging = true;
+  rotateDragValue = viewRotation;
+  canvas.requestPointerLock();
+}
+
+function doRotateDrag(e) {
+  rotateDragValue += e.movementX * 2;
+  setRotation(rotateDragValue);
+}
+
+function endRotateDrag() {
+  if (rotateDragging && document.pointerLockElement === canvas) {
+    document.exitPointerLock();
+  }
+  rotateDragging = false;
+}
+
+document.addEventListener("pointerlockchange", function () {
+  if (!document.pointerLockElement) {
+    zoomDragging = false;
+    rotateDragging = false;
+  }
+});
+var zoomRotateDialog = document.getElementById("zoom-rotate-dialog");
+var zrZoomInput = document.getElementById("zr-zoom");
+var zrZoomReadout = document.getElementById("zr-zoom-readout");
+var zrRotateInput = document.getElementById("zr-rotate");
+var zrRotateReadout = document.getElementById("zr-rotate-readout");
+
+function syncZoomRotateInputs() {
+  zrZoomInput.value = Math.round(viewZoom * 100);
+  zrZoomReadout.textContent = Math.round(viewZoom * 100) + "%";
+  zrRotateInput.value = Math.round(viewRotation);
+  zrRotateReadout.textContent = Math.round(viewRotation) + "°";
+}
+
+function toggleZoomRotateDialog() {
+  if (zoomRotateDialog.hidden) {
+    syncZoomRotateInputs();
+    openFloatingBarAt(zoomRotateDialog, lastMouseX, lastMouseY);
+  } else {
+    zoomRotateDialog.hidden = true;
+  }
+}
+
+zrZoomInput.addEventListener("input", function () {
+  var vr = stageViewport.getBoundingClientRect();
+  zoomAt(
+    zrZoomInput.value / 100,
+    vr.left + vr.width / 2,
+    vr.top + vr.height / 2
+  );
+  zrZoomReadout.textContent = zrZoomInput.value + "%";
+});
+
+zrRotateInput.addEventListener("input", function () {
+  setRotation(+zrRotateInput.value);
+  zrRotateReadout.textContent = zrRotateInput.value + "°";
+});
