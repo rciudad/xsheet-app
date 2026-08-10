@@ -43,6 +43,21 @@ canvas.addEventListener("pointerdown", function (e) {
     startRotateDrag(e);
     return;
   }
+  if (
+    tool === "move-transform" ||
+    tool === "scale-transform" ||
+    tool === "rotate-transform"
+  ) {
+    takeUndoSnapshot();
+    var mode =
+      tool === "move-transform"
+        ? "move"
+        : tool === "scale-transform"
+        ? "scale"
+        : "rotate";
+    startTransform(e, mode);
+    return;
+  }
 
   if (tool === "pan" || e.button === 1) {
     e.preventDefault(); // evita el autoscroll que Chrome/Firefox activan con el botón central
@@ -81,6 +96,10 @@ canvas.addEventListener("pointermove", function (e) {
     doRotateDrag(e);
     return;
   }
+  if (transformState) {
+    updateTransform(e);
+    return;
+  }
   if (panning) {
     doPan(e);
     return;
@@ -112,6 +131,7 @@ canvas.addEventListener("pointerup", function (e) {
   endStroke();
   endZoomDrag();
   endRotateDrag();
+  endTransform();
   canvas.releasePointerCapture(e.pointerId);
 });
 
@@ -119,6 +139,7 @@ canvas.addEventListener("pointercancel", function (e) {
   endStroke();
   endZoomDrag();
   endRotateDrag();
+  endTransform();
   canvas.releasePointerCapture(e.pointerId);
 });
 
@@ -129,8 +150,21 @@ document.getElementById("tool-eraser").addEventListener("click", function () {
   setTool("eraser");
 });
 
+var TOOL_BUTTON_IDS = {
+  pencil: "tool-pencil",
+  eraser: "tool-eraser",
+  pan: "tool-pan",
+  "move-transform": "tool-move-transform",
+  "scale-transform": "tool-scale-transform",
+  "rotate-transform": "tool-rotate-transform",
+};
+
 function setTool(name) {
   tool = name;
+  Object.keys(TOOL_BUTTON_IDS).forEach(function (key) {
+    var btn = document.getElementById(TOOL_BUTTON_IDS[key]);
+    if (btn) btn.classList.toggle("active", key === name);
+  });
 }
 
 function applyStageSize() {
@@ -373,4 +407,118 @@ document
   .addEventListener("click", function () {
     var bar = document.getElementById("texture-bar");
     bar.hidden = !bar.hidden;
+  });
+
+function computeContentCenter(canvasEl) {
+  var w = canvasEl.width;
+  var h = canvasEl.height;
+  var data = canvasEl.getContext("2d").getImageData(0, 0, w, h).data;
+  var minX = w,
+    minY = h,
+    maxX = -1,
+    maxY = -1;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      var alpha = data[(y * w + x) * 4 + 3];
+      if (alpha > 0) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return { x: w / 2, y: h / 2 }; // vacío, cae al centro del canvas
+  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+}
+
+var transformOriginal = null;
+var transformState = null;
+
+function startTransform(e, mode) {
+  transformOriginal = document.createElement("canvas");
+  transformOriginal.width = W;
+  transformOriginal.height = H;
+  transformOriginal.getContext("2d").drawImage(canvas, 0, 0);
+
+  var center = computeContentCenter(canvas);
+  var p = getPos(e);
+  transformState = {
+    mode: mode,
+    startX: p.x,
+    startY: p.y,
+    tx: 0,
+    ty: 0,
+    scale: 1,
+    rotation: 0,
+    centerX: center.x,
+    centerY: center.y,
+  };
+  canvas.setPointerCapture(e.pointerId);
+}
+
+function updateTransform(e) {
+  var p = getPos(e);
+  if (transformState.mode === "move") {
+    transformState.tx = p.x - transformState.startX;
+    transformState.ty = p.y - transformState.startY;
+  } else if (transformState.mode === "scale") {
+    var d0 =
+      Math.hypot(
+        transformState.startX - transformState.centerX,
+        transformState.startY - transformState.centerY
+      ) || 1;
+    var d1 = Math.hypot(
+      p.x - transformState.centerX,
+      p.y - transformState.centerY
+    );
+    transformState.scale = Math.max(0.1, d1 / d0);
+  } else if (transformState.mode === "rotate") {
+    var a0 = Math.atan2(
+      transformState.startY - transformState.centerY,
+      transformState.startX - transformState.centerX
+    );
+    var a1 = Math.atan2(
+      p.y - transformState.centerY,
+      p.x - transformState.centerX
+    );
+    transformState.rotation = a1 - a0;
+  }
+  renderTransformPreview();
+}
+
+function renderTransformPreview() {
+  ctx.save();
+  ctx.clearRect(0, 0, W, H);
+  ctx.translate(transformState.tx, transformState.ty);
+  ctx.translate(transformState.centerX, transformState.centerY);
+  ctx.rotate(transformState.rotation);
+  ctx.scale(transformState.scale, transformState.scale);
+  ctx.translate(-transformState.centerX, -transformState.centerY);
+  ctx.drawImage(transformOriginal, 0, 0);
+  ctx.restore();
+}
+
+function endTransform() {
+  if (!transformState) return;
+  transformState = null;
+  transformOriginal = null;
+  syncActiveToStorage();
+  updateOnion();
+}
+
+document
+  .getElementById("tool-move-transform")
+  .addEventListener("click", function () {
+    setTool("move-transform");
+  });
+document
+  .getElementById("tool-scale-transform")
+  .addEventListener("click", function () {
+    setTool("scale-transform");
+  });
+document
+  .getElementById("tool-rotate-transform")
+  .addEventListener("click", function () {
+    setTool("rotate-transform");
   });

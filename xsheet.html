@@ -207,6 +207,13 @@
     .rail input {
       width: 100%;
     }
+    .rail button.active,
+    .titlebar button.active {
+      background: var(--accent);
+      color: var(--ink-950);
+      border-color: var(--accent);
+    }
+
     .right-panel {
       flex-shrink: 0;
       width: 240px;
@@ -341,6 +348,14 @@
     }
     #zoom-rotate-dialog {
       width: 220px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      background: transparent;
+      box-shadow: none;
+    }
+    #onion-levels-dialog {
+      width: 338px;
       flex-direction: column;
       align-items: stretch;
       gap: 6px;
@@ -703,7 +718,19 @@
       min-width: 22px;
       text-align: right;
     }
-
+    .onion-levels-list {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+      width: 100%;
+    }
+    .onion-level-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
     .app.drawing-mode .titlebar,
     .app.drawing-mode .transport,
     .app.drawing-mode .rail,
@@ -958,6 +985,33 @@
         <input type="range" id="zr-rotate" min="-180" max="180" value="0" />
         <span id="zr-rotate-readout">0°</span>
       </div>
+      <div class="floating-bar" id="onion-levels-dialog" hidden>
+        <div class="onion-levels-list" id="onion-levels-list"></div>
+        <label for="ol-range">Rango:</label>
+        <input type="number" id="ol-range" min="1" value="5" />
+        <label
+          ><input type="checkbox" id="ol-onion-toggle" checked /> Onion</label
+        >
+        <input
+          type="number"
+          id="ol-onion-opacity"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.35"
+          title="Opacidad onion"
+        />
+        <input
+          type="number"
+          id="ol-onion-falloff"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.7"
+          title="Onion gradiente"
+        />
+      </div>
+
       <div class="floating-bar" id="texture-bar" hidden>
         <button type="button" id="brush-texture-btn">AGREGAR</button>
         <input
@@ -975,6 +1029,9 @@
           <input type="number" id="brushSize" value="4" min="1" />
           <button type="button" id="tool-pencil">LÁPIZ</button>
           <button type="button" id="tool-eraser">GOMA</button>
+          <button type="button" id="tool-move-transform">MOVER DIB.</button>
+          <button type="button" id="tool-scale-transform">ESCALAR</button>
+          <button type="button" id="tool-rotate-transform">ROTAR DIB.</button>
 
           <select id="brush-style">
             <option value="hard">Duro</option>
@@ -988,6 +1045,7 @@
           <button type="button" id="adjust-bar-toggle">AJUSTES</button>
           <button type="button" id="frames-bar-toggle">FRAMES</button>
           <button type="button" id="edit-frames-bar-toggle">EDITAR</button>
+          <button type="button" id="onion-levels-toggle">ONION NIVELES</button>
         </aside>
 
         <div class="canvas-area">

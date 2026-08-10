@@ -435,3 +435,85 @@ zrRotateInput.addEventListener("input", function () {
   setRotation(+zrRotateInput.value);
   zrRotateReadout.textContent = zrRotateInput.value + "°";
 });
+
+function renderOnionLevelsList() {
+  var container = document.getElementById("onion-levels-list");
+  container.innerHTML = "";
+  for (var offset = -MINI_XSHEET_RANGE; offset <= MINI_XSHEET_RANGE; offset++) {
+    if (offset === 0) continue;
+
+    (function (offset) {
+      var item = document.createElement("div");
+      item.className = "onion-level-item";
+
+      var label = document.createElement("span");
+      label.className = "mini-xsheet-offset";
+      label.textContent = (offset > 0 ? "+" : "") + offset;
+      item.appendChild(label);
+
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!onionOffsets[offset];
+      cb.addEventListener("change", function () {
+        onionOffsets[offset] = cb.checked;
+        updateOnion();
+      });
+      item.appendChild(cb);
+
+      container.appendChild(item);
+    })(offset);
+  }
+}
+
+var onionLevelsDialog = document.getElementById("onion-levels-dialog");
+var olRangeInput = document.getElementById("ol-range");
+var olOnionToggleInput = document.getElementById("ol-onion-toggle");
+var olOnionOpacityInput = document.getElementById("ol-onion-opacity");
+var olOnionFalloffInput = document.getElementById("ol-onion-falloff");
+
+document
+  .getElementById("onion-levels-toggle")
+  .addEventListener("click", function () {
+    if (onionLevelsDialog.hidden) {
+      olRangeInput.value = MINI_XSHEET_RANGE;
+      olOnionToggleInput.checked = onionEnabled;
+      olOnionOpacityInput.value = onionOpacity;
+      olOnionFalloffInput.value = onionFalloff;
+      renderOnionLevelsList();
+      centerFloatingBar(onionLevelsDialog);
+    } else {
+      onionLevelsDialog.hidden = true;
+    }
+  });
+
+olRangeInput.addEventListener("change", function () {
+  var v = Math.max(1, Math.round(+olRangeInput.value) || 5);
+  MINI_XSHEET_RANGE = v;
+  olRangeInput.value = v;
+  renderOnionLevelsList();
+});
+
+olOnionToggleInput.addEventListener("change", function () {
+  onionEnabled = olOnionToggleInput.checked;
+  onionToggleInput.checked = onionEnabled;
+  qdOnionToggleInput.checked = onionEnabled;
+  updateOnion();
+});
+
+olOnionOpacityInput.addEventListener("change", function () {
+  var v = Math.min(1, Math.max(0, parseFloat(olOnionOpacityInput.value)));
+  if (!isFinite(v)) v = onionOpacity;
+  onionOpacity = v;
+  olOnionOpacityInput.value = v;
+  onionOpacityInput.value = v;
+  qdOnionOpacityInput.value = v;
+  updateOnion();
+});
+
+olOnionFalloffInput.addEventListener("change", function () {
+  var v = Math.min(1, Math.max(0, parseFloat(olOnionFalloffInput.value)));
+  if (!isFinite(v)) v = onionFalloff;
+  onionFalloff = v;
+  olOnionFalloffInput.value = v;
+  updateOnion();
+});

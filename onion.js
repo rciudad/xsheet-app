@@ -67,6 +67,7 @@ var onionOpacityInput = document.getElementById("onion-opacity");
 onionToggleInput.addEventListener("change", function () {
   onionEnabled = onionToggleInput.checked;
   qdOnionToggleInput.checked = onionEnabled;
+  document.getElementById("ol-onion-toggle").checked = onionEnabled;
   updateOnion();
 });
 
@@ -76,6 +77,7 @@ onionOpacityInput.addEventListener("change", function () {
   onionOpacity = v;
   onionOpacityInput.value = v;
   qdOnionOpacityInput.value = v;
+  document.getElementById("ol-onion-opacity").value = v;
   updateOnion();
 });
 
