@@ -21,8 +21,8 @@ function applyViewTransform() {
     "scale(" +
     viewZoom +
     ")";
-  zoomReadout.textContent = Math.round(viewZoom * 100) + "%";
-  rotateReadout.textContent = Math.round(viewRotation) + "°";
+  //zoomReadout.textContent = Math.round(viewZoom * 100) + "%";
+  //rotateReadout.textContent = Math.round(viewRotation) + "°";
 }
 
 // Convierte clientX/clientY a coordenadas locales del canvas, deshaciendo
@@ -97,6 +97,7 @@ function zoomOut() {
   var vr = stageViewport.getBoundingClientRect();
   zoomAt(viewZoom / 1.2, vr.left + vr.width / 2, vr.top + vr.height / 2);
 }
+/*
 document.getElementById("zoom-in").addEventListener("click", zoomIn);
 document.getElementById("zoom-out").addEventListener("click", zoomOut);
 
@@ -106,17 +107,21 @@ document.getElementById("rotate-left").addEventListener("click", function () {
 document.getElementById("rotate-right").addEventListener("click", function () {
   setRotation(viewRotation + 15);
 });
+*/
 document.getElementById("zoom-reset").addEventListener("click", function () {
   viewZoom = 1;
   viewRotation = 0;
   viewPanX = 0;
   viewPanY = 0;
   applyViewTransform();
+  syncZoomRotateInputs();
 });
 
+/*
 document.getElementById("tool-pan").addEventListener("click", function () {
   setTool("pan");
 });
+*/
 
 var panning = false;
 var panStart = null;
@@ -407,9 +412,9 @@ var zrRotateReadout = document.getElementById("zr-rotate-readout");
 
 function syncZoomRotateInputs() {
   zrZoomInput.value = Math.round(viewZoom * 100);
-  zrZoomReadout.textContent = Math.round(viewZoom * 100) + "%";
+  zrZoomReadout.textContent = "ZOOM " + Math.round(viewZoom * 100) + "%";
   zrRotateInput.value = Math.round(viewRotation);
-  zrRotateReadout.textContent = Math.round(viewRotation) + "°";
+  zrRotateReadout.textContent = "ROT " + Math.round(viewRotation) + "°";
 }
 
 function toggleZoomRotateDialog() {
@@ -428,12 +433,12 @@ zrZoomInput.addEventListener("input", function () {
     vr.left + vr.width / 2,
     vr.top + vr.height / 2
   );
-  zrZoomReadout.textContent = zrZoomInput.value + "%";
+  zrZoomReadout.textContent = "ZOOM " + zrZoomInput.value + "%";
 });
 
 zrRotateInput.addEventListener("input", function () {
   setRotation(+zrRotateInput.value);
-  zrRotateReadout.textContent = zrRotateInput.value + "°";
+  zrRotateReadout.textContent = "ROT " + zrRotateInput.value + "°";
 });
 
 function renderOnionLevelsList() {
