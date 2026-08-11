@@ -270,6 +270,18 @@
       color: #fff;
       border-color: #b8b9b9;
     }
+    .f-buttons-wrap {
+      position: absolute;
+      top: 0;
+      left: 221px;
+      border-left: 1px solid var(--ink-700);
+      padding: 21px 20px;
+      height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+    }
     .floating-bar {
       position: fixed;
       left: 50%;
@@ -374,7 +386,7 @@
       gap: 8px;
     }
     #zoom-rotate-dialog {
-      width: 220px;
+      width: 400px;
       flex-direction: column;
       align-items: stretch;
       gap: 6px;
@@ -400,7 +412,7 @@
     .zr-bar-wrap input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
-      width: 100%;
+      width: 190px;
       height: 100%;
       margin: 0;
       background: var(--ink-850);
@@ -444,6 +456,9 @@
       font-size: 12px;
       color: var(--text);
       /*text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);*/
+    }
+    #zoom-reset {
+      width: 190px;
     }
     .frame-action-field label {
       flex: 0 0 auto;
@@ -944,11 +959,9 @@
       <audio id="audioPlayer"></audio>
 
       <div class="floating-bar" id="frames-bar" hidden>
-        <button type="button" id="prev"><</button>
-        <button type="button" id="next">></button>
-        <button type="button" id="new-frame">ADD FRAME</button>
+        <!--button type="button" id="new-frame">ADD FRAME</button>
         <button type="button" id="insert-frame-left">INSERTAR IZQUIERDA</button>
-        <button type="button" id="duplicate-frame">DUPLICAR</button>
+        <button type="button" id="duplicate-frame">DUPLICAR</button-->
       </div>
 
       <!--div class="floating-bar" id="drawing-dialog" hidden>
@@ -1090,7 +1103,13 @@
           <button type="button" id="tool-scale-transform">S</button>
           <button type="button" id="tool-rotate-transform">R</button>
         </div>
-
+        <div class="f-buttons-wrap">
+          <button type="button" id="new-frame">ADD FRAME</button>
+          <button type="button" id="insert-frame-left">LEFT</button>
+          <button type="button" id="duplicate-frame">DUPLICATE</button>
+          <button type="button" id="clear-drawing">CLEAR FRAME</button>
+          <button type="button" id="delete-frame">DELETE FRAME</button>
+        </div>
         <div class="zr-bar-wrap">
           <input type="range" id="zr-zoom" min="20" max="800" value="100" />
           <span class="zr-bar-label" id="zr-zoom-readout">ZOOM 100%</span>
@@ -1303,12 +1322,13 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
         <button type="button" id="play">PLAY</button>
         <label for="fps">FPS:</label>
         <input type="number" id="fps" min="1" max="30" value="12" />
-        <button type="button" id="clear-drawing">BORRAR DIBUJO</button>
-        <button type="button" id="delete-frame">ELIMINAR FRAME</button>
+
         <label for="range-start">REPRODUCIR/EXPORTAR Desde:</label>
         <input type="number" id="range-start" min="1" value="1" />
         <label for="range-end">Hasta:</label>
         <input type="number" id="range-end" min="1" value="1" />
+        <button type="button" id="prev"><</button>
+        <button type="button" id="next">></button>
       </footer>
     </div>
     <button type="button" id="drawing-mode-toggle" class="mode-toggle-btn">
