@@ -45,6 +45,7 @@ document
 var layerOpacityInput = document.getElementById("layer-opacity");
 layerOpacityInput.addEventListener("change", function () {
   var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
+  console.log("v:" + v);
   if (!isFinite(v)) v = 1;
   layers[activeLayer].opacity = v;
   layerOpacityInput.value = v;

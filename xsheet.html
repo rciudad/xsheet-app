@@ -10,6 +10,7 @@
       --ink-800: #edeef2;
       --ink-700: #d9dbe2;
       --ink-600: #c2c5cf;
+      --ink-500: #b0b2b9;
       --accent: #ff5b2e;
       --teal: #46c2b0;
       --violet: #9b8cff;
@@ -207,13 +208,16 @@
     .rail input {
       width: 100%;
     }
-    .rail button.active,
+    .rail button.active {
+      background: #3a3a3a;
+      color: #fff;
+      border-color: #3a3a3a;
+    }
     .titlebar button.active {
       background: var(--accent);
       color: var(--ink-950);
       border-color: var(--accent);
     }
-
     .right-panel {
       flex-shrink: 0;
       width: 240px;
@@ -553,7 +557,7 @@
       background: var(--ink-700);
     }
     .xsheet-resizer:hover {
-      background: var(--accent);
+      background: var(--ink-500);
     }
     .canvas-area {
       flex: 1 1 auto;
@@ -617,7 +621,7 @@
     .xsheet-cell.current {
       /*background-color: var(--accent);*/
       color: var(--ink-950);
-      border: 1px solid var(--accent);
+      border: 1px solid var(--text-dim);
     }
     .xsheet-cell input {
       width: 45px;
@@ -644,7 +648,7 @@
       background: var(--ink-850);
     }
     .xsheet-audio-cell.current {
-      border: 1px solid var(--accent);
+      border: 1px solid var(--text-dim);
     }
     .xsheet-audio-bar {
       width: 80%;
@@ -921,13 +925,35 @@
         <button type="button" id="next">></button>
         <button type="button" id="new-frame">ADD FRAME</button>
         <button type="button" id="insert-frame-left">INSERTAR IZQUIERDA</button>
+        <button type="button" id="duplicate-frame">DUPLICAR</button>
+      </div>
+
+      <div class="floating-bar" id="drawing-bar" hidden>
+        <button type="button" id="tool-pencil">LÁPIZ</button>
+        <button type="button" id="tool-eraser">GOMA</button>
+        <button type="button" id="tool-move-transform">MOVER DIB.</button>
+        <button type="button" id="tool-scale-transform">ESCALAR</button>
+        <button type="button" id="tool-rotate-transform">ROTAR DIB.</button>
       </div>
 
       <div class="floating-bar" id="edit-frames-bar" hidden>
+        <button type="button" id="new-layer">ADD LAYER</button>
+        <label for="layers">LAYER:</label>
+        <select id="layers">
+          <option value="0">Selecciona una opción...</option>
+        </select>
+        <label for="layer-opacity">Opacidad capa:</label>
+        <input
+          type="number"
+          id="layer-opacity"
+          min="0"
+          max="1"
+          step="0.05"
+          value="1"
+        />
         <label for="layer-hold-all">HOLD CAPA:</label>
         <input type="number" id="layer-hold-all" min="1" value="1" />
         <button type="button" id="apply-layer-hold">APLICAR</button>
-        <button type="button" id="duplicate-frame">DUPLICAR</button>
       </div>
       <div class="floating-bar" id="frame-action-popup" hidden>
         <div class="frame-action-dir-group">
@@ -1087,11 +1113,11 @@
         <aside class="rail">
           <input type="color" id="selectedColor" />
           <input type="number" id="brushSize" value="4" min="1" />
-          <button type="button" id="tool-pencil">LÁPIZ</button>
+          <!--button type="button" id="tool-pencil">LÁPIZ</button>
           <button type="button" id="tool-eraser">GOMA</button>
           <button type="button" id="tool-move-transform">MOVER DIB.</button>
           <button type="button" id="tool-scale-transform">ESCALAR</button>
-          <button type="button" id="tool-rotate-transform">ROTAR DIB.</button>
+          <button type="button" id="tool-rotate-transform">ROTAR DIB.</button-->
 
           <select id="brush-style">
             <option value="hard">Duro</option>
@@ -1100,12 +1126,12 @@
           </select>
 
           <button type="button" id="texture-bar-toggle">TEXTURAS</button>
-
+          <button type="button" id="drawing-toggle">DIBUJO</button>
           <button type="button" id="peg-bar-toggle">PEG</button>
           <button type="button" id="adjust-bar-toggle">AJUSTES</button>
           <button type="button" id="frames-bar-toggle">FRAMES</button>
-          <button type="button" id="edit-frames-bar-toggle">EDITAR</button>
-          <button type="button" id="onion-levels-toggle">ONION NIVELES</button>
+          <button type="button" id="edit-frames-bar-toggle">LAYER</button>
+          <button type="button" id="onion-levels-toggle">LIGHTBOX</button>
         </aside>
 
         <div class="canvas-area">
@@ -1212,8 +1238,8 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
 
         <div class="xsheet-resizer" id="xsheet-resizer"></div>
         <div class="xsheet" id="xsheet"></div>
-        <aside class="right-panel">
-          <button type="button" id="new-layer">ADD LAYER</button>
+        <!--aside class="right-panel"-->
+        <!--button type="button" id="new-layer">ADD LAYER</button>
           <label for="layers">LAYER:</label>
           <select id="layers">
             <option value="0">Selecciona una opción...</option>
@@ -1226,8 +1252,8 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
             max="1"
             step="0.05"
             value="1"
-          />
-          <label
+          /-->
+        <!--label
             ><input type="checkbox" id="onion-toggle" checked /> Onion
             skin</label
           >
@@ -1239,8 +1265,8 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
             max="1"
             step="0.05"
             value="0.35"
-          />
-        </aside>
+          /-->
+        <!--/aside-->
       </div>
       <footer class="transport">
         <button type="button" id="play">PLAY</button>
