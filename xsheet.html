@@ -247,6 +247,29 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+    .d-buttons-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      max-width: 90vw;
+      padding: 12px 0px;
+    }
+    .d-buttons-wrap button {
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 12px;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+    .d-buttons-wrap button.active {
+      background: #b8b9b9;
+      color: #fff;
+      border-color: #b8b9b9;
+    }
     .floating-bar {
       position: fixed;
       left: 50%;
@@ -394,7 +417,7 @@
       -webkit-appearance: none;
       width: 10px;
       height: 100%;
-      background: #3b82f6; /*var(--accent);*/
+      background: #b8b9b9; /*#3b82f6; var(--accent);*/
       border-radius: 10px;
       cursor: pointer;
     }
@@ -406,7 +429,7 @@
     .zr-bar-wrap input[type="range"]::-moz-range-thumb {
       width: 10px;
       height: 100%;
-      background: #3b82f6; /*var(--accent);*/
+      background: #b8b9b9; /*#3b82f6; var(--accent);*/
       border-radius: 10px;
       border: none;
       cursor: pointer;
@@ -928,13 +951,13 @@
         <button type="button" id="duplicate-frame">DUPLICAR</button>
       </div>
 
-      <div class="floating-bar" id="drawing-bar" hidden>
-        <button type="button" id="tool-pencil">LÁPIZ</button>
-        <button type="button" id="tool-eraser">GOMA</button>
-        <button type="button" id="tool-move-transform">MOVER DIB.</button>
-        <button type="button" id="tool-scale-transform">ESCALAR</button>
-        <button type="button" id="tool-rotate-transform">ROTAR DIB.</button>
-      </div>
+      <!--div class="floating-bar" id="drawing-dialog" hidden>
+        <button type="button" id="tool-pencil">P</button>
+        <button type="button" id="tool-eraser">E</button>
+        <button type="button" id="tool-move-transform">MOV</button>
+        <button type="button" id="tool-scale-transform">ESC</button>
+        <button type="button" id="tool-rotate-transform">ROT</button>
+      </div-->
 
       <div class="floating-bar" id="edit-frames-bar" hidden>
         <button type="button" id="new-layer">ADD LAYER</button>
@@ -1060,6 +1083,14 @@
       </div>
 
       <div class="floating-bar" id="zoom-rotate-dialog" hidden>
+        <div class="d-buttons-wrap">
+          <button type="button" id="tool-pencil">P</button>
+          <button type="button" id="tool-eraser">E</button>
+          <button type="button" id="tool-move-transform">M</button>
+          <button type="button" id="tool-scale-transform">S</button>
+          <button type="button" id="tool-rotate-transform">R</button>
+        </div>
+
         <div class="zr-bar-wrap">
           <input type="range" id="zr-zoom" min="20" max="800" value="100" />
           <span class="zr-bar-label" id="zr-zoom-readout">ZOOM 100%</span>
@@ -1068,7 +1099,7 @@
           <input type="range" id="zr-rotate" min="-180" max="180" value="0" />
           <span class="zr-bar-label" id="zr-rotate-readout">ROT 0°</span>
         </div>
-        <button type="button" id="zoom-reset">RESET VISTA</button>
+        <button type="button" id="zoom-reset">RESET VIEW</button>
       </div>
 
       <div class="floating-bar" id="onion-levels-dialog" hidden>

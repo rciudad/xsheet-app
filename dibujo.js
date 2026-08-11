@@ -144,9 +144,11 @@ canvas.addEventListener("pointercancel", function (e) {
 });
 
 document.getElementById("tool-pencil").addEventListener("click", function () {
+  console.log("pencil selected");
   setTool("pencil");
 });
 document.getElementById("tool-eraser").addEventListener("click", function () {
+  console.log("eraser selected");
   setTool("eraser");
 });
 

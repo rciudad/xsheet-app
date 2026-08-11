@@ -344,12 +344,14 @@ var zoomKeyHeld = false;
 var rotateKeyHeld = false;
 
 window.addEventListener("keydown", function (e) {
-  if (e.code === "NumpadDivide") zoomKeyHeld = true;
+  //if (e.code === "NumpadDivide") zoomKeyHeld = true;
   if (e.code === "NumpadMultiply" && !e.repeat) toggleZoomRotateDialog();
+  if (e.code === "NumpadDivide" && !e.repeat) toggleDrawingDialog();
 });
-window.addEventListener("keyup", function (e) {
-  if (e.code === "NumpadDivide") zoomKeyHeld = false;
-});
+
+//window.addEventListener("keyup", function (e) {
+//  if (e.code === "NumpadDivide") zoomKeyHeld = false;
+//});
 
 var zoomDragging = false;
 var zoomDragAnchorX = 0;
@@ -404,6 +406,17 @@ document.addEventListener("pointerlockchange", function () {
     rotateDragging = false;
   }
 });
+
+var drawingDialog = document.getElementById("drawing-dialog");
+function toggleDrawingDialog() {
+  if (drawingDialog.hidden) {
+    //syncZoomRotateInputs();
+    openFloatingBarAt(drawingDialog, lastMouseX, lastMouseY);
+  } else {
+    drawingDialog.hidden = true;
+  }
+}
+
 var zoomRotateDialog = document.getElementById("zoom-rotate-dialog");
 var zrZoomInput = document.getElementById("zr-zoom");
 var zrZoomReadout = document.getElementById("zr-zoom-readout");
