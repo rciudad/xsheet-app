@@ -10,11 +10,35 @@ const resolutionInput = document.getElementById("resolution");
 var W = 800;
 var H = 600;
 
+function resizeCanvasKeepContent(canvas, ctx, newW, newH) {
+  var tmp = document.createElement("canvas");
+  tmp.width = canvas.width;
+  tmp.height = canvas.height;
+  tmp.getContext("2d").drawImage(canvas, 0, 0);
+  canvas.width = newW;
+  canvas.height = newH;
+  ctx.clearRect(0, 0, newW, newH);
+  ctx.drawImage(tmp, 0, 0);
+}
+
 resolutionInput.addEventListener("change", function (e) {
   const [newWidth, newHeight] = e.target.value.split("x");
-  W = parseInt(newWidth, 10);
-  H = parseInt(newHeight, 10);
+  const newW = parseInt(newWidth, 10);
+  const newH = parseInt(newHeight, 10);
+  if (!newW || !newH || (newW === W && newH === H)) return;
+  if (playing) stopPlay();
+  syncActiveToStorage();
+  layers.forEach(function (L) {
+    L.cels.forEach(function (c) {
+      resizeCanvasKeepContent(c.canvas, c.ctx, newW, newH);
+    });
+  });
+  W = newW;
+  H = newH;
   applyStageSize();
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
 });
 
 /*
