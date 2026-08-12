@@ -1,6 +1,36 @@
 const onionEl = document.getElementById("onion");
 const onionCtx = onionEl.getContext("2d");
 
+const layersBelowEl = document.getElementById("layersBelow");
+const layersBelowCtx = layersBelowEl.getContext("2d");
+const layersAboveEl = document.getElementById("layersAbove");
+const layersAboveCtx = layersAboveEl.getContext("2d");
+
+function renderLayerComposites() {
+  layersBelowCtx.clearRect(0, 0, W, H);
+  for (var i = 0; i < activeLayer; i++) {
+    var L = layers[i];
+    if (!L.visible) continue;
+    var run = layerCelAtTick(L, currentTick);
+    layersBelowCtx.globalAlpha = L.opacity;
+    layersBelowCtx.drawImage(L.cels[run.idx].canvas, 0, 0);
+  }
+  layersBelowCtx.globalAlpha = 1;
+
+  layersAboveCtx.clearRect(0, 0, W, H);
+  for (var j = activeLayer + 1; j < layers.length; j++) {
+    var L2 = layers[j];
+    if (!L2.visible) continue;
+    var run2 = layerCelAtTick(L2, currentTick);
+    layersAboveCtx.globalAlpha = L2.opacity;
+    layersAboveCtx.drawImage(L2.cels[run2.idx].canvas, 0, 0);
+  }
+  layersAboveCtx.globalAlpha = 1;
+
+  var active = layers[activeLayer];
+  canvas.style.opacity = active.visible ? active.opacity : 0;
+}
+
 const flattenCanvas = document.createElement("canvas");
 flattenCanvas.width = W;
 flattenCanvas.height = H;
@@ -59,6 +89,7 @@ function updateOnion() {
     });
   }
   refreshGradePreview();
+  renderLayerComposites();
 }
 
 var onionToggleInput = document.getElementById("onion-toggle");

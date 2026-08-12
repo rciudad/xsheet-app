@@ -206,6 +206,10 @@ function applyStageSize() {
   canvas.height = H;
   onionEl.width = W;
   onionEl.height = H;
+  layersBelowEl.width = W;
+  layersBelowEl.height = H;
+  layersAboveEl.width = W;
+  layersAboveEl.height = H;
   flattenCanvas.width = W;
   flattenCanvas.height = H;
   tintCanvas.width = W;
