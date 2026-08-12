@@ -69,7 +69,7 @@ canvas.addEventListener("pointerdown", function (e) {
   ctx.globalCompositeOperation =
     tool === "eraser" ? "destination-out" : "source-over";
   ctx.strokeStyle = colorInput.value;
-  ctx.lineWidth = sizeInput.value;
+  ctx.lineWidth = currentWidth(e);
 
   const p = getPos(e);
   if (tool === "pencil" && brushStyle === "stamp") {
@@ -81,12 +81,16 @@ canvas.addEventListener("pointerdown", function (e) {
     lastStampPos = p;
     initBristleStroke(p, e);
   } else {
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    lastHardPos = p;
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + 0.01, p.y + 0.01);
+    ctx.stroke();
   }
   canvas.setPointerCapture(e.pointerId);
 });
-
 canvas.addEventListener("pointermove", function (e) {
   if (zoomDragging) {
     doZoomDrag(e);
@@ -114,8 +118,12 @@ canvas.addEventListener("pointermove", function (e) {
     strokeSegmentBristles(lastStampPos, p, e);
     lastStampPos = p;
   } else {
+    ctx.lineWidth = currentWidth(e);
+    ctx.beginPath();
+    ctx.moveTo(lastHardPos.x, lastHardPos.y);
     ctx.lineTo(p.x, p.y);
     ctx.stroke();
+    lastHardPos = p;
   }
 });
 
@@ -225,9 +233,18 @@ var stampCarry = 0;
 var lastStampPos = null;
 var bristleStrands = null;
 var bristleDist = 0;
+var lastHardPos = null;
 
 function pressureFactor(e) {
   return e && e.pointerType === "pen" && e.pressure > 0 ? e.pressure : 1;
+}
+
+function currentWidth(e) {
+  var base = parseFloat(sizeInput.value) || 4;
+  if (e && e.pointerType === "pen" && e.pressure > 0) {
+    return base * (0.35 + 0.9 * e.pressure);
+  }
+  return base;
 }
 
 function dabParams(e) {
