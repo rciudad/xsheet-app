@@ -488,7 +488,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 renderXSheet();
-
+/*
 document
   .getElementById("frames-bar-toggle")
   .addEventListener("click", function () {
@@ -506,7 +506,7 @@ document
       bar.hidden = true;
     }
   });
-
+*/
 (function () {
   var resizer = document.getElementById("xsheet-resizer");
   var xsheetEl = document.getElementById("xsheet");
