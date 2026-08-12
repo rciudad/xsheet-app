@@ -1123,12 +1123,19 @@
         <div class="l-buttons-wrap">
           <button type="button" id="new-layer">ADD LAYER</button>
           <!--label for="layers">LAYER:</label-->
+
           <select id="layers">
             <option value="0">Selecciona una opción...</option>
           </select>
 
+          <label class="input-wrap" for="layer-visible">
+            <input type="checkbox" id="layer-visible" checked />
+            VISIBLE
+          </label>
+
           <div class="input-wrap">
             <label for="layer-opacity">LAYER OPACITY:</label>
+
             <input
               type="number"
               id="layer-opacity"

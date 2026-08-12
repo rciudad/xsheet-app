@@ -53,6 +53,24 @@ layerOpacityInput.addEventListener("change", function () {
   refreshGradePreview();
 });
 
+var layerOpacityInput = document.getElementById("layer-opacity");
+layerOpacityInput.addEventListener("change", function () {
+  var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
+  console.log("v:" + v);
+  if (!isFinite(v)) v = 1;
+  layers[activeLayer].opacity = v;
+  layerOpacityInput.value = v;
+  updateOnion();
+  refreshGradePreview();
+});
+
+var layerVisibleInput = document.getElementById("layer-visible");
+layerVisibleInput.addEventListener("change", function () {
+  layers[activeLayer].visible = layerVisibleInput.checked;
+  updateOnion();
+  refreshGradePreview();
+});
+
 function addFrame(L, position) {
   syncActiveToStorage();
   const run = layerCelAtTick(L, position);
@@ -130,9 +148,15 @@ function syncLayerOpacityInput() {
   layerOpacityInput.value = layers[activeLayer].opacity;
 }
 
+function syncLayerVisibleInput() {
+  layerVisibleInput.checked = layers[activeLayer].visible;
+}
+
 populateLayerSelector(layers, activeLayer);
 
 syncLayerOpacityInput();
+syncLayerVisibleInput();
+
 // "guarda lo que hay en pantalla en el cel activo"
 function syncActiveToStorage() {
   var c = activeCel(); //cels[activeIdx()];
@@ -208,6 +232,7 @@ function selectLayer(li) {
   activeLayer = li;
   loadActiveFromStorage();
   syncLayerOpacityInput();
+  syncLayerVisibleInput();
   renderXSheet();
   updateOnion();
 }
@@ -230,6 +255,7 @@ function addLayer() {
   activeLayer = insertAt;
   populateLayerSelector(layers, activeLayer);
   syncLayerOpacityInput();
+  syncLayerVisibleInput();
   loadActiveFromStorage();
   renderXSheet();
   updateOnion();
