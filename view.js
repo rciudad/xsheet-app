@@ -428,6 +428,9 @@ function syncZoomRotateInputs() {
   zrZoomReadout.textContent = "ZOOM " + Math.round(viewZoom * 100) + "%";
   zrRotateInput.value = Math.round(viewRotation);
   zrRotateReadout.textContent = "ROT " + Math.round(viewRotation) + "°";
+  layerSelector.value = activeLayer;
+  syncLayerOpacityInput();
+  syncLayerVisibleInput();
 }
 
 function toggleZoomRotateDialog() {
