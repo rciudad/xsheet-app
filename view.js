@@ -514,14 +514,11 @@ olRangeInput.addEventListener("change", function () {
   renderOnionLevelsList();
 });
 
-/*
 olOnionToggleInput.addEventListener("change", function () {
   onionEnabled = olOnionToggleInput.checked;
-  onionToggleInput.checked = onionEnabled;
   qdOnionToggleInput.checked = onionEnabled;
   updateOnion();
 });
-*/
 
 olOnionOpacityInput.addEventListener("change", function () {
   var v = Math.min(1, Math.max(0, parseFloat(olOnionOpacityInput.value)));

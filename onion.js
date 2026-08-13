@@ -120,7 +120,7 @@ var qdOnionOpacityInput = document.getElementById("qd-onion-opacity");
 
 qdOnionToggleInput.addEventListener("change", function () {
   onionEnabled = qdOnionToggleInput.checked;
-  onionToggleInput.checked = onionEnabled;
+  olOnionToggleInput.checked = onionEnabled;
   updateOnion();
 });
 
