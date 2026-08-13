@@ -52,6 +52,9 @@ function startPlay() {
   playing = true;
   onionEl.style.display = "none";
   canvas.style.display = "none";
+  layersBelowEl.style.display = "none";
+  layersAboveEl.style.display = "none";
+
   playCanvas.style.display = "block";
   playTickPos = Math.min(Math.max(currentTick, rangeStart), rangeEnd);
   renderPlayFrame();
@@ -90,6 +93,9 @@ function stopPlay() {
   onionEl.style.display = "block";
   canvas.style.display = "block";
   playCanvas.style.display = "none";
+  layersBelowEl.style.display = "block";
+  layersAboveEl.style.display = "block";
+
   playBtn.textContent = "PLAY";
   if (audioDataURL) audioPlayerEl.pause();
   loadActiveFromStorage();

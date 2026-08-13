@@ -98,6 +98,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 14px;
+      justify-content: center;
     }
 
     .titlebar input:not([type="checkbox"]):not([type="color"]),
@@ -110,6 +111,7 @@
       color: var(--text);
       padding: 0 6px;
       font-size: 13px;
+      width: 60px;
     }
 
     .titlebar button,
@@ -144,6 +146,7 @@
       padding: 10px 16px;
       background: var(--ink-900);
       border-bottom: 1px solid var(--ink-700);
+      justify-content: center;
     }
     .file-menu {
       position: relative;
@@ -1352,22 +1355,26 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
         <!--/aside-->
       </div>
       <footer class="transport">
-        <button type="button" id="play">PLAY</button>
-        <label for="fps">FPS:</label>
-        <input type="number" id="fps" min="1" max="30" value="12" />
-
-        <label for="range-start">REPRODUCIR/EXPORTAR Desde:</label>
-        <input type="number" id="range-start" min="1" value="1" />
-        <label for="range-end">Hasta:</label>
-        <input type="number" id="range-end" min="1" value="1" />
-        <button type="button" id="prev"><</button>
-        <button type="button" id="next">></button>
         <button type="button" id="peg-bar-toggle">PEG</button>
         <button type="button" id="adjust-bar-toggle">AJUSTES</button>
         <button type="button" id="onion-levels-toggle">LIGHTBOX</button>
+        <label for="range-start">PLAYBACK/EXPORT RANGE:</label>
+        <input type="number" id="range-start" min="1" value="1" />
+        <!--label for="range-end">Hasta:</label-->
+        <input type="number" id="range-end" min="1" value="1" />
+        <button type="button" id="prev"><</button>
+        <button type="button" id="next">></button>
+        <button type="button" id="play">PLAY</button>
+        <label for="fps">FPS:</label>
+        <input type="number" id="fps" min="1" max="30" value="12" />
       </footer>
     </div>
-    <button type="button" id="drawing-mode-toggle" class="mode-toggle-btn">
+    <button
+      type="button"
+      id="drawing-mode-toggle"
+      class="mode-toggle-btn"
+      style="display: none"
+    >
       MODO DIBUJO
     </button>
     <div class="quick-dialog" id="quick-dialog" hidden>

@@ -17,12 +17,14 @@ window.addEventListener("keydown", function (e) {
     return;
   }
 
-  if (!playing && e.key === "ArrowLeft") {
+  if (!playing && e.key === "PageUp") {
+    //ArrowLeft
     e.preventDefault();
     selectPrevFrame();
     return;
   }
-  if (!playing && e.key === "ArrowRight") {
+  if (!playing && e.key === "+") {
+    //ArrowRight
     e.preventDefault();
     selectNextFrame();
     return;
@@ -51,12 +53,13 @@ window.addEventListener("keydown", function (e) {
     }
     return;
   }
-  if (e.key === "PageDown") {
+  if (e.key === "/") {
+    //PageDown
     e.preventDefault();
     addFrame(layers[activeLayer], currentTick);
     return;
   }
-  if (e.key === "+" || e.key === "=") {
+  if (e.key === "=") {
     e.preventDefault();
     zoomIn();
     return;
