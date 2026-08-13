@@ -1,5 +1,5 @@
 const canvas = document.getElementById("drawingTable");
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
 let dibujando = false;
 let tool = "pencil";
 

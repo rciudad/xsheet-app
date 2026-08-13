@@ -346,7 +346,7 @@ var rotateKeyHeld = false;
 window.addEventListener("keydown", function (e) {
   //if (e.code === "NumpadDivide") zoomKeyHeld = true;
   if (e.code === "NumpadMultiply" && !e.repeat) toggleZoomRotateDialog();
-  if (e.code === "NumpadDivide" && !e.repeat) toggleDrawingDialog();
+  //if (e.code === "NumpadDivide" && !e.repeat) toggleDrawingDialog();
 });
 
 //window.addEventListener("keyup", function (e) {
@@ -407,6 +407,7 @@ document.addEventListener("pointerlockchange", function () {
   }
 });
 
+/*
 var drawingDialog = document.getElementById("drawing-dialog");
 function toggleDrawingDialog() {
   if (drawingDialog.hidden) {
@@ -416,6 +417,7 @@ function toggleDrawingDialog() {
     drawingDialog.hidden = true;
   }
 }
+*/
 
 var zoomRotateDialog = document.getElementById("zoom-rotate-dialog");
 var zrZoomInput = document.getElementById("zr-zoom");
