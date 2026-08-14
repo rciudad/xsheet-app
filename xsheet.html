@@ -356,6 +356,20 @@
       padding: 0 10px;
       cursor: pointer;
     }
+    .floating-bar-handle {
+      width: 100%;
+      cursor: move;
+      padding-bottom: 6px;
+      margin-bottom: 2px;
+      border-bottom: 1px solid var(--ink-700);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
     .quick-dialog label,
     .file-menu-section label {
       color: var(--text-dim);
@@ -869,8 +883,8 @@
     .app.drawing-mode .rail,
     .app.drawing-mode .right-panel,
     .app.drawing-mode .xsheet-resizer,
-    .app.drawing-mode .xsheet,
-    .app.drawing-mode .floating-bar {
+    .app.drawing-mode .xsheet {
+      /*.app.drawing-mode .floating-bar {*/
       display: none !important;
     }
   </style>
@@ -1109,6 +1123,9 @@
       </div>
 
       <div class="floating-bar" id="zoom-rotate-dialog" hidden>
+        <div class="floating-bar-handle" id="zoom-rotate-dialog-drag-handle">
+          ⠿
+        </div>
         <div class="d-buttons-wrap">
           <button type="button" id="tool-pencil">P</button>
           <button type="button" id="tool-eraser">E</button>

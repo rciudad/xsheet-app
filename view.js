@@ -420,6 +420,34 @@ function toggleDrawingDialog() {
 */
 
 var zoomRotateDialog = document.getElementById("zoom-rotate-dialog");
+var zrDialogHandle = document.getElementById("zoom-rotate-dialog-drag-handle");
+var zrDragging = false;
+var zrDragStart = null;
+
+zrDialogHandle.addEventListener("pointerdown", function (e) {
+  if (e.target.closest("button")) return;
+  e.preventDefault();
+  zrDragging = true;
+  var rect = zoomRotateDialog.getBoundingClientRect();
+  zrDragStart = { x: e.clientX, y: e.clientY, left: rect.left, top: rect.top };
+  zrDialogHandle.setPointerCapture(e.pointerId);
+});
+
+zrDialogHandle.addEventListener("pointermove", function (e) {
+  if (!zrDragging) return;
+  var dx = e.clientX - zrDragStart.x;
+  var dy = e.clientY - zrDragStart.y;
+  zoomRotateDialog.style.transform = "none";
+  zoomRotateDialog.style.left = zrDragStart.left + dx + "px";
+  zoomRotateDialog.style.top = zrDragStart.top + dy + "px";
+});
+zrDialogHandle.addEventListener("pointerup", function () {
+  zrDragging = false;
+});
+zrDialogHandle.addEventListener("pointercancel", function () {
+  zrDragging = false;
+});
+
 var zrZoomInput = document.getElementById("zr-zoom");
 var zrZoomReadout = document.getElementById("zr-zoom-readout");
 var zrRotateInput = document.getElementById("zr-rotate");

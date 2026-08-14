@@ -84,3 +84,4 @@ UI reutilizable de tipo `.floating-bar`, cada uno con su propia lógica de apert
 
 - `xsheet.html` conserva un bloque de markup viejo dentro de un comentario HTML (~líneas 1327-1355), con IDs duplicados de elementos que sí están vivos (`layers`, `layer-opacity`, `onion-toggle`, `onion-opacity`). Es inerte para el DOM, pero un riesgo de confusión si alguien lo descomenta sin revisar contra la UI actual.
 - `#drawing-dialog` (`view.js`) no tiene ningún trigger de apertura activo — su función y listener están comentados.
+- `#edit-frames-bar` / `#frames-bar-toggle` son código muerto: el div existe en `xsheet.html:1006` (`hidden`), pero el único código que lo maneja está comentado en `xsheet.js:492-509`. Nada activo lo abre.

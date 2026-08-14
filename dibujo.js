@@ -56,7 +56,6 @@ canvas.addEventListener("pointerdown", function (e) {
 
 canvas.addEventListener("pointerdown", function (e) {
   if (e.button === 2) return;
-  if (!quickDialog.hidden) return;
 
   if (zoomKeyHeld) {
     startZoomDrag(e);
