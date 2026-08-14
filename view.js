@@ -491,7 +491,19 @@ function renderOnionLevelsList() {
   var container = document.getElementById("onion-levels-list");
   container.innerHTML = "";
   for (var offset = -MINI_XSHEET_RANGE; offset <= MINI_XSHEET_RANGE; offset++) {
-    if (offset === 0) continue;
+    if (offset === 0) {
+      var zeroItem = document.createElement("div");
+      zeroItem.className = "onion-level-item";
+
+      var zeroLabel = document.createElement("span");
+      zeroLabel.className = "mini-xsheet-offset";
+      zeroLabel.textContent = "0";
+      zeroItem.appendChild(zeroLabel);
+
+      zeroItem.appendChild(olOnionToggleInput);
+      container.appendChild(zeroItem);
+      continue;
+    }
 
     (function (offset) {
       var item = document.createElement("div");
@@ -516,7 +528,7 @@ function renderOnionLevelsList() {
   }
 }
 
-var onionLevelsDialog = document.getElementById("onion-levels-dialog");
+var onionLevelsBar = document.getElementById("onion-levels-bar");
 var olRangeInput = document.getElementById("ol-range");
 var olOnionToggleInput = document.getElementById("ol-onion-toggle");
 var olOnionOpacityInput = document.getElementById("ol-onion-opacity");
@@ -525,17 +537,37 @@ var olOnionFalloffInput = document.getElementById("ol-onion-falloff");
 document
   .getElementById("onion-levels-toggle")
   .addEventListener("click", function () {
-    if (onionLevelsDialog.hidden) {
+    onionLevelsBar.hidden = !onionLevelsBar.hidden;
+    if (!onionLevelsBar.hidden) {
       olRangeInput.value = MINI_XSHEET_RANGE;
       olOnionToggleInput.checked = onionEnabled;
       olOnionOpacityInput.value = onionOpacity;
       olOnionFalloffInput.value = onionFalloff;
       renderOnionLevelsList();
-      centerFloatingBar(onionLevelsDialog);
-    } else {
-      onionLevelsDialog.hidden = true;
     }
   });
+
+/*
+  document
+  .getElementById("peg-bar-toggle")
+  .addEventListener("click", function () {
+    var bar = document.getElementById("peg-bar");
+    bar.hidden = !bar.hidden;
+    var display = bar.hidden ? "none" : "block";
+    document.getElementById("pegOverlay1").style.display = display;
+    document.getElementById("pegOverlay2").style.display = display;
+  });
+
+  document
+  .getElementById("adjust-bar-toggle")
+  .addEventListener("click", function () {
+    var bar = document.getElementById("adjust-bar");
+    bar.hidden = !bar.hidden;
+    document.getElementById("cropOverlay").style.display = bar.hidden
+      ? "none"
+      : "block";
+  });
+  */
 
 olRangeInput.addEventListener("change", function () {
   var v = Math.max(1, Math.round(+olRangeInput.value) || 5);

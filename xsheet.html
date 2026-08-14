@@ -535,6 +535,7 @@
       padding: 8px 16px;
       background: var(--ink-900);
       border-top: 1px solid var(--ink-700);
+      justify-content: center;
     }
     .docked-bar[hidden] {
       display: none;
@@ -870,7 +871,9 @@
       flex-direction: row;
       flex-wrap: wrap;
       gap: 6px;
-      width: 100%;
+      width: auto;
+      justify-content: end;
+      padding-right: 25px;
     }
     .onion-level-item {
       display: flex;
@@ -1060,6 +1063,30 @@
           <button type="button" id="fa-cancel">Cancelar</button>
         </div>
       </div>
+      <div class="docked-bar" id="onion-levels-bar" hidden>
+        <div class="onion-levels-list" id="onion-levels-list"></div>
+        <label for="ol-range">Rango:</label>
+        <input type="number" id="ol-range" min="1" value="5" />
+        <input type="checkbox" id="ol-onion-toggle" checked />
+        <input
+          type="number"
+          id="ol-onion-opacity"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.35"
+          title="Opacidad onion"
+        />
+        <input
+          type="number"
+          id="ol-onion-falloff"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.7"
+          title="Onion gradiente"
+        />
+      </div>
       <div class="docked-bar" id="peg-bar" hidden>
         <label
           >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
@@ -1182,32 +1209,7 @@
         <button type="button" id="zoom-reset">RESET VIEW</button>
       </div>
 
-      <div class="floating-bar" id="onion-levels-dialog" hidden>
-        <div class="onion-levels-list" id="onion-levels-list"></div>
-        <label for="ol-range">Rango:</label>
-        <input type="number" id="ol-range" min="1" value="5" />
-        <label
-          ><input type="checkbox" id="ol-onion-toggle" checked /> Onion</label
-        >
-        <input
-          type="number"
-          id="ol-onion-opacity"
-          min="0"
-          max="1"
-          step="0.05"
-          value="0.35"
-          title="Opacidad onion"
-        />
-        <input
-          type="number"
-          id="ol-onion-falloff"
-          min="0"
-          max="1"
-          step="0.05"
-          value="0.7"
-          title="Onion gradiente"
-        />
-      </div>
+      <div class="floating-bar" id="onion-levels-dialog" hidden></div>
 
       <div class="floating-bar" id="texture-bar" hidden>
         <button type="button" id="brush-texture-btn">AGREGAR</button>
