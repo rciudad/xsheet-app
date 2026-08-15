@@ -84,6 +84,7 @@ function renderXSheet() {
 
       const holdInput = document.createElement("input");
       holdInput.type = "number";
+      holdInput.className = "xsheet-hold";
       holdInput.min = "1";
       holdInput.value = L.holds[celIdx];
       holdInput.addEventListener("click", function (ev) {
@@ -106,6 +107,12 @@ function renderXSheet() {
         runStart + runLen - 1 >= frameAction.destFrame - 1;
 
       const cell = document.createElement("div");
+      //cell.appendChild(holdInput);
+      const numEl = document.createElement("span");
+      numEl.className = "xsheet-num";
+      numEl.textContent = runStart + 1;
+      cell.appendChild(numEl);
+
       cell.appendChild(holdInput);
 
       cell.className =
@@ -120,10 +127,6 @@ function renderXSheet() {
         (isDest ? " action-dest" : "");
       cell.style.gridColumn = String(li + 3);
       cell.style.gridRow = runStart + 2 + " / span " + runLen;
-
-      const numEl = document.createElement("span");
-      numEl.textContent = runStart + 1;
-      cell.appendChild(numEl);
 
       (function (li, runStart) {
         cell.addEventListener("click", function () {
