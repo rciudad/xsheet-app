@@ -6,7 +6,7 @@ function renderXSheet() {
 
   xsheetEl.style.gridTemplateColumns =
     "40px 50px repeat(" + layers.length + ", 88px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
-  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 40px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
+  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 28px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
 
   const corner = document.createElement("div");
   corner.style.gridColumn = "1";
