@@ -1,5 +1,171 @@
 // KEY SHORTCUTS
+
+var shortcutActions = [
+  {
+    id: "undo",
+    label: "Deshacer",
+    defaultKey: "Ctrl+Z",
+    run: function () {
+      undo();
+    },
+  },
+  {
+    id: "prevFrame",
+    label: "Frame anterior",
+    defaultKey: "PageUp",
+    guard: function () {
+      return;
+      !playing;
+    },
+    run: function () {
+      selectPrevFrame();
+    },
+  },
+  {
+    id: "nextFrame",
+    label: "Frame siguiente",
+    defaultKey: "+",
+    guard: function () {
+      return;
+      !playing;
+    },
+    run: function () {
+      selectNextFrame();
+    },
+  },
+  {
+    id: "toolPencil",
+    label: "Herramienta lápiz",
+    defaultKey: "B",
+    run: function () {
+      setTool("pencil");
+    },
+  },
+  {
+    id: "toolEraser",
+    label: "Herramienta goma",
+    defaultKey: "E",
+    run: function () {
+      setTool("eraser");
+    },
+  },
+  {
+    id: "toolPan",
+    label: "Herramienta mano",
+    defaultKey: "H",
+    run: function () {
+      setTool("pan");
+    },
+  },
+  {
+    id: "toggleDrawingMode",
+    label: "Modo dibujo",
+    defaultKey: "D",
+    run: function () {
+      toggleDrawingMode();
+    },
+  },
+  {
+    id: "quickDialog",
+    label: "Diálogo rápido",
+    defaultKey: "Q",
+    guard: function () {
+      return;
+      appEl.classList.contains("drawing-mode");
+    },
+    run: function () {
+      openQuickDialog(lastMouseX, lastMouseY);
+    },
+  },
+  {
+    id: "addFrame",
+    label: "Agregar frame",
+    defaultKey: "/",
+    run: function () {
+      addFrame(layers[activeLayer], currentTick);
+    },
+  },
+  {
+    id: "zoomIn",
+    label: "Acercar zoom",
+    defaultKey: "=",
+    run: function () {
+      zoomIn();
+    },
+  },
+  {
+    id: "zoomOut",
+    label: "Alejar zoom",
+    defaultKey: "-",
+    run: function () {
+      zoomOut();
+    },
+  },
+];
+
+var SHORTCUTS_STORAGE_KEY = "xsheetShortcutBindings";
+
+function loadShortcutBindings() {
+  var bindings = {};
+  shortcutActions.forEach(function (a) {
+    bindings[a.id] = a.defaultKey;
+  });
+  try {
+    var saved = JSON.parse(localStorage.getItem(SHORTCUTS_STORAGE_KEY));
+    if (saved) {
+      Object.keys(saved).forEach(function (id) {
+        if (id in bindings) bindings[id] = saved[id];
+      });
+    }
+  } catch (e) {}
+  return bindings;
+}
+
+function saveShortcutBindings() {
+  localStorage.setItem(SHORTCUTS_STORAGE_KEY, JSON.stringify(shortcutBindings));
+}
+
+var shortcutBindings = loadShortcutBindings();
+
+function keyEventToCombo(e) {
+  var parts = [];
+  if (e.ctrlKey || e.metaKey) parts.push("Ctrl");
+  var key = e.key;
+  if (key === " ") key = "Space";
+  parts.push(key.length === 1 ? key.toUpperCase() : key);
+  return parts.join("+");
+}
+
+function findActionByCombo(combo) {
+  return shortcutActions.find(function (a) {
+    return shortcutBindings[a.id] === combo;
+  });
+}
+
+var capturingActionId = null;
+
 window.addEventListener("keydown", function (e) {
+  if (capturingActionId) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.key === "Escape") {
+      capturingActionId = null;
+      renderShortcutsList();
+      return;
+    }
+    var combo = keyEventToCombo(e);
+    var clash = findActionByCombo(combo);
+    if (clash && clash.id !== capturingActionId) {
+      alert('Esa tecla ya está asignada a "' + clash.label + '".');
+      return;
+    }
+    shortcutBindings[capturingActionId] = combo;
+    saveShortcutBindings();
+    capturingActionId = null;
+    renderShortcutsList();
+    return;
+  }
+
   var tag = document.activeElement && document.activeElement.tagName;
   var inField = tag === "INPUT" || tag === "TEXTAREA";
 
@@ -11,62 +177,66 @@ window.addEventListener("keydown", function (e) {
 
   if (inField) return;
 
-  if ((e.key === "z" || e.key === "Z") && (e.ctrlKey || e.metaKey)) {
-    e.preventDefault();
-    undo();
-    return;
-  }
+  var action = findActionByCombo(keyEventToCombo(e));
+  if (!action) return;
+  if (action.guard && !action.guard()) return;
+  e.preventDefault();
+  action.run();
+});
 
-  if (!playing && e.key === "PageUp") {
-    //ArrowLeft
-    e.preventDefault();
-    selectPrevFrame();
-    return;
-  }
-  if (!playing && e.key === "+") {
-    //ArrowRight
-    e.preventDefault();
-    selectNextFrame();
-    return;
-  }
+// --- Diálogo de configuración de atajos ---
 
-  if (e.key === "b" || e.key === "B") {
-    setTool("pencil");
-    return;
-  }
-  if (e.key === "e" || e.key === "E") {
-    setTool("eraser");
-    return;
-  }
-  if (e.key === "h" || e.key === "H") {
-    setTool("pan");
-    return;
-  }
-  if (e.key === "d" || e.key === "D") {
-    toggleDrawingMode();
-    return;
-  }
-  if (e.key === "q" || e.key === "Q") {
-    if (appEl.classList.contains("drawing-mode")) {
-      e.preventDefault();
-      openQuickDialog(lastMouseX, lastMouseY);
-    }
-    return;
-  }
-  if (e.key === "/") {
-    //PageDown
-    e.preventDefault();
-    addFrame(layers[activeLayer], currentTick);
-    return;
-  }
-  if (e.key === "=") {
-    e.preventDefault();
-    zoomIn();
-    return;
-  }
-  if (e.key === "-" || e.key === "_") {
-    e.preventDefault();
-    zoomOut();
-    return;
-  }
+var shortcutsOverlay = document.getElementById("shortcuts-overlay");
+var shortcutsList = document.getElementById("shortcuts-list");
+var shortcutsConfigBtn = document.getElementById("shortcuts-config-btn");
+var shortcutsResetBtn = document.getElementById("shortcuts-reset");
+var shortcutsCloseBtn = document.getElementById("shortcuts-close");
+
+function renderShortcutsList() {
+  shortcutsList.innerHTML = "";
+  shortcutActions.forEach(function (a) {
+    var row = document.createElement("div");
+    row.style.cssText =
+      "display:flex; justify-content:space-between; align-items:center; padding:4px 6px;";
+
+    var label = document.createElement("span");
+    label.textContent = a.label;
+
+    var keyBtn = document.createElement("button");
+
+    keyBtn.type = "button";
+    keyBtn.textContent =
+      capturingActionId === a.id
+        ? "Presioná una tecla..."
+        : shortcutBindings[a.id];
+    keyBtn.addEventListener("click", function () {
+      capturingActionId = a.id;
+      renderShortcutsList();
+    });
+
+    row.appendChild(label);
+    row.appendChild(keyBtn);
+    shortcutsList.appendChild(row);
+  });
+}
+
+shortcutsConfigBtn.addEventListener("click", function () {
+  fileMenuDropdown.hidden = true;
+  capturingActionId = null;
+  renderShortcutsList();
+  shortcutsOverlay.style.display = "flex";
+});
+
+shortcutsCloseBtn.addEventListener("click", function () {
+  shortcutsOverlay.style.display = "none";
+  capturingActionId = null;
+});
+
+shortcutsResetBtn.addEventListener("click", function () {
+  shortcutActions.forEach(function (a) {
+    shortcutBindings[a.id] = a.defaultKey;
+  });
+  saveShortcutBindings();
+  capturingActionId = null;
+  renderShortcutsList();
 });

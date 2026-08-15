@@ -1076,6 +1076,12 @@
                   <div id="ffmpeg-cmd-hint" style="font-size: 12px"></div>
                 </div>
               </div>
+              <div class="file-menu-section">
+                <span class="file-menu-heading">Atajos</span>
+                <button type="button" id="shortcuts-config-btn">
+                  CONFIGURAR ATAJOS
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1465,6 +1471,57 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
                 <button type="button" id="folder-browse-cancel">
                   CANCELAR
                 </button>
+              </div>
+            </div>
+          </div>
+          <div
+            id="shortcuts-overlay"
+            style="
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0, 0, 0, 0.5);
+              z-index: 1000;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <div
+              style="
+                background: var(--ink-900);
+                color: var(--text);
+                padding: 18px;
+                width: 420px;
+                max-width: 90vw;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+              "
+            >
+              <strong>Atajos de teclado</strong>
+              <small style="margin-bottom: 8px"
+                >Click en la tecla, después presioná la nueva.</small
+              >
+              <div
+                id="shortcuts-list"
+                style="
+                  flex: 1;
+                  overflow-y: auto;
+                  border: 1px solid #999;
+                  margin-bottom: 8px;
+                  min-height: 120px;
+                "
+              ></div>
+              <div>
+                <button type="button" id="shortcuts-reset">
+                  RESTAURAR POR DEFECTO
+                </button>
+                <button type="button" id="shortcuts-close">CERRAR</button>
               </div>
             </div>
           </div>
