@@ -39,10 +39,36 @@ function downloadBlob(blob, name) {
   URL.revokeObjectURL(url);
 }
 
-function deliverFile(name, blob) {
-  if (dirHandle) {
+function fileExistsInDir(dir, name) {
+  return dir.getFileHandle(name).then(
+    function () {
+      return true;
+    },
+    function () {
+      return false;
+    }
+  );
+}
+
+function uniqueFileName(dir, name) {
+  var dot = name.lastIndexOf(".");
+  var base = dot === -1 ? name : name.slice(0, dot);
+  var ext = dot === -1 ? "" : name.slice(dot);
+  function tryName(n) {
+    var candidate = n === 0 ? name : base + " (" + n + ")" + ext;
+    return fileExistsInDir(dir, candidate).then(function (exists) {
+      return exists ? tryName(n + 1) : candidate;
+    });
+  }
+  return tryName(0);
+}
+
+function deliverFile(name, blob, options) {
+  options = options || {};
+
+  function writeToDir(finalName) {
     return dirHandle
-      .getFileHandle(name, { create: true })
+      .getFileHandle(finalName, { create: true })
       .then(function (fh) {
         return fh.createWritable();
       })
@@ -51,6 +77,22 @@ function deliverFile(name, blob) {
           return w.close();
         });
       });
+  }
+
+  if (dirHandle) {
+    if (options.askOverwrite) {
+      return fileExistsInDir(dirHandle, name).then(function (exists) {
+        if (!exists) return writeToDir(name);
+        var overwrite = confirm(
+          'Ya existe "' +
+            name +
+            '" en la carpeta.\n\nAceptar: sobrescribir.\nCancelar: guardar como archivo nuevo.'
+        );
+        if (overwrite) return writeToDir(name);
+        return uniqueFileName(dirHandle, name).then(writeToDir);
+      });
+    }
+    return uniqueFileName(dirHandle, name).then(writeToDir);
   }
   downloadBlob(blob, name);
   return Promise.resolve();

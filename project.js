@@ -25,7 +25,7 @@ function saveProject() {
     pegRegion2: pegRegion2,
   };
   const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-  deliverFile("project.json", blob)
+  deliverFile("project.json", blob, { askOverwrite: true })
     .then(function () {
       folderStatusEl.textContent = dirHandle
         ? "→ " + dirHandle.name + " (guardado ✓)"

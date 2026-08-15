@@ -161,24 +161,18 @@ function calcTotalFrames(input_holds) {
   return input_holds.reduce((a, b) => a + b, 0);
 }
 
-/*
 function populateLayerSelector(layers, newSelection) {
   const select = document.getElementById("layers");
+  if (!select) return;
   select.innerHTML = "";
   layers.forEach(function (layer, index) {
-    // Crear la etiqueta <option>
     const nuevaLayer = document.createElement("option");
-    console.log("index: " + index);
-    // Asignar los atributos
     nuevaLayer.value = index;
     nuevaLayer.textContent = layer.name;
-
-    console.log("nuevaLayer: " + nuevaLayer.innerHTML);
-    // Insertar la opción dentro del <select>
     select.appendChild(nuevaLayer);
   });
   select.value = newSelection;
-}*/
+}
 
 function syncLayerOpacityInput() {
   //layerOpacityInput.value = layers[activeLayer].opacity;
@@ -192,7 +186,7 @@ function syncLayerVisibleInput() {
   xhLayerVisibleInput.checked = layers[activeLayer].visible;
 }
 
-//populateLayerSelector(layers, activeLayer);
+populateLayerSelector(layers, activeLayer);
 
 syncLayerOpacityInput();
 syncLayerVisibleInput();
