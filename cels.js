@@ -1,8 +1,8 @@
 const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 const newFrameBtn = document.getElementById("new-frame");
-const newLayerBtn = document.getElementById("new-layer");
-const layerSelector = document.getElementById("layers");
+//const newLayerBtn = document.getElementById("new-layer");
+//const layerSelector = document.getElementById("layers");
 
 prevBtn.addEventListener("click", function () {
   selectPrevFrame();
@@ -21,18 +21,19 @@ document
     insertFrameLeft(layers[activeLayer], currentTick);
   });
 
-newLayerBtn.addEventListener("click", function () {
-  addLayer();
-});
-layerSelector.addEventListener("change", function () {
-  selectLayer(Number(layerSelector.value));
-});
+//newLayerBtn.addEventListener("click", function () {
+//  addLayer();
+//});
+//layerSelector.addEventListener("change", function () {
+//  selectLayer(Number(layerSelector.value));
+//});
 document
   .getElementById("clear-drawing")
   .addEventListener("click", clearDrawing);
 document.getElementById("delete-frame").addEventListener("click", function () {
   deleteFrame(layers[activeLayer]);
 });
+/*
 document
   .getElementById("apply-layer-hold")
   .addEventListener("click", function () {
@@ -41,8 +42,41 @@ document
       document.getElementById("layer-hold-all").value
     );
   });
+*/
 
 var layerOpacityInput = document.getElementById("layer-opacity");
+var xhLayerOpacityInput = document.getElementById("xh-layer-opacity");
+var xhLayerOpacityReadout = document.getElementById("xh-layer-opacity-readout");
+
+xhLayerOpacityInput.addEventListener("input", function () {
+  var v = +xhLayerOpacityInput.value / 100;
+  layers[activeLayer].opacity = v;
+  xhLayerOpacityReadout.textContent = Math.round(v * 100) + "%";
+  layerOpacityInput.value = v;
+  updateOnion();
+  refreshGradePreview();
+});
+
+var xhLayerVisibleInput = document.getElementById("xh-layer-visible");
+xhLayerVisibleInput.addEventListener("change", function () {
+  layers[activeLayer].visible = xhLayerVisibleInput.checked;
+  layerVisibleInput.checked = xhLayerVisibleInput.checked;
+  updateOnion();
+  refreshGradePreview();
+});
+
+var xhLayerHoldAllInput = document.getElementById("xh-layer-hold-all");
+document
+  .getElementById("xh-apply-layer-hold")
+  .addEventListener("click", function () {
+    setLayerHoldAll(activeLayer, xhLayerHoldAllInput.value);
+  });
+
+document.getElementById("xh-new-layer").addEventListener("click", function () {
+  addLayer();
+});
+
+/*
 layerOpacityInput.addEventListener("change", function () {
   var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
   console.log("v:" + v);
@@ -52,6 +86,7 @@ layerOpacityInput.addEventListener("change", function () {
   updateOnion();
   refreshGradePreview();
 });
+
 
 var layerOpacityInput = document.getElementById("layer-opacity");
 layerOpacityInput.addEventListener("change", function () {
@@ -69,7 +104,7 @@ layerVisibleInput.addEventListener("change", function () {
   layers[activeLayer].visible = layerVisibleInput.checked;
   updateOnion();
   refreshGradePreview();
-});
+});*/
 
 function addFrame(L, position) {
   syncActiveToStorage();
@@ -126,6 +161,7 @@ function calcTotalFrames(input_holds) {
   return input_holds.reduce((a, b) => a + b, 0);
 }
 
+/*
 function populateLayerSelector(layers, newSelection) {
   const select = document.getElementById("layers");
   select.innerHTML = "";
@@ -142,17 +178,21 @@ function populateLayerSelector(layers, newSelection) {
     select.appendChild(nuevaLayer);
   });
   select.value = newSelection;
-}
+}*/
 
 function syncLayerOpacityInput() {
-  layerOpacityInput.value = layers[activeLayer].opacity;
+  //layerOpacityInput.value = layers[activeLayer].opacity;
+  xhLayerOpacityInput.value = Math.round(layers[activeLayer].opacity * 100);
+  xhLayerOpacityReadout.textContent =
+    Math.round(layers[activeLayer].opacity * 100) + "%";
 }
 
 function syncLayerVisibleInput() {
-  layerVisibleInput.checked = layers[activeLayer].visible;
+  //layerVisibleInput.checked = layers[activeLayer].visible;
+  xhLayerVisibleInput.checked = layers[activeLayer].visible;
 }
 
-populateLayerSelector(layers, activeLayer);
+//populateLayerSelector(layers, activeLayer);
 
 syncLayerOpacityInput();
 syncLayerVisibleInput();

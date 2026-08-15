@@ -36,8 +36,16 @@
     }
     .app {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       height: 100vh;
+      overflow: hidden;
+    }
+    .app-left {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 100%;
       overflow: hidden;
     }
     .toolbar {
@@ -277,11 +285,11 @@
 
     .f-buttons-wrap {
       position: absolute;
-      top: 0;
-      left: 221px;
-      border-left: 1px solid var(--ink-700);
+      top: 220px;
+      left: 0;
+      border-left: 0px solid var(--ink-700);
       padding: 21px 20px;
-      height: 100%;
+      height: auto;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -435,8 +443,8 @@
       gap: 8px;
     }
     #zoom-rotate-dialog {
-      width: 640px;
-      height: 206px;
+      width: 220px;
+      height: 400px;
       flex-direction: column;
       align-items: stretch;
       gap: 6px;
@@ -631,18 +639,90 @@
     }
     .xsheet {
       display: grid;
-      flex: 0 0 auto;
-      width: 320px;
-      min-width: 160px;
-      max-width: 70vw;
+      flex: 1 1 auto;
+      width: 100%;
       min-height: 0;
       overflow: auto;
       background-color: var(--ink-900);
       color: var(--text);
     }
+    .xsheet-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 0 0 auto;
+      width: 320px;
+      min-width: 160px;
+      max-width: 70vw;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .xsheet-header {
+      flex-shrink: 0;
+      padding: 8px 10px;
+      background: var(--ink-900);
+      border-bottom: 1px solid var(--ink-700);
+    }
+    .xsheet-header-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+      text-transform: none;
+      letter-spacing: normal;
+      color: var(--text-dim);
+    }
+    .xsheet-header-field {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 0;
+    }
+    .xsheet-header-field + .xsheet-header-field {
+      border-top: 1px solid var(--ink-700);
+    }
+    .xsheet-header-field label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+    }
+    .xsheet-header-field input[type="range"] {
+      flex: 1;
+      min-width: 0;
+      accent-color: var(--accent);
+    }
+    .xsheet-header-field input[type="number"] {
+      width: 3.4em;
+    }
+    .xsheet-header-field span {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      width: 3.4ch;
+      text-align: right;
+    }
+    .xsheet-header-field button {
+      flex: 0 0 auto;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .xsheet-header-field button:hover {
+      background: var(--ink-800);
+      cursor: pointer;
+    }
+    .xsheet-header-field button:hover {
+      background: var(--ink-800);
+    }
     .xsheet-resizer {
       flex: 0 0 auto;
       width: 6px;
+      height: 100%;
       cursor: col-resize;
       background: var(--ink-700);
     }
@@ -909,465 +989,482 @@
     .app.drawing-mode .rail,
     .app.drawing-mode .right-panel,
     .app.drawing-mode .xsheet-resizer,
-    .app.drawing-mode .xsheet {
+    .app.drawing-mode .xsheet-panel {
       /*.app.drawing-mode .floating-bar {*/
       display: none !important;
     }
   </style>
   <body>
     <div class="app">
-      <header class="titlebar">
-        <div class="file-menu">
-          <button type="button" id="file-menu-btn">ARCHIVO ▾</button>
-          <div class="file-menu-dropdown" id="file-menu-dropdown" hidden>
-            <div class="file-menu-section">
-              <span class="file-menu-heading">Carpeta</span>
-              <button type="button" id="choose-folder">CARPETA</button>
-              <span id="folder-status"></span>
-              <button type="button" id="clear-folder" style="display: none">
-                QUITAR CARPETA
-              </button>
-            </div>
-            <div class="file-menu-section">
-              <span class="file-menu-heading">Proyecto</span>
-              <button type="button" id="save-project">GUARDAR PROYECTO</button>
-              <button type="button" id="import-project-btn">
-                ABRIR PROYECTO
-              </button>
-              <input
-                type="file"
-                id="import-project"
-                accept="application/json,.json"
-                style="display: none"
-              />
-            </div>
-            <div class="file-menu-section">
-              <span class="file-menu-heading">Importar</span>
-              <button type="button" id="import-image-btn">
-                IMPORTAR IMAGEN
-              </button>
-              <input
-                type="file"
-                id="import-image"
-                accept="image/*"
-                style="display: none"
-              />
-              <label
-                ><input type="checkbox" id="import-replace" /> Reemplazar frame
-                actual (en vez de insertar uno nuevo)</label
-              >
-              <button type="button" id="import-batch-btn">
-                IMPORTAR BATCH
-              </button>
-              <input
-                type="file"
-                id="import-batch"
-                accept="image/*"
-                multiple
-                style="display: none"
-              />
-              <button type="button" id="import-audio-btn">
-                IMPORTAR AUDIO
-              </button>
-              <input
-                type="file"
-                id="import-audio"
-                accept="audio/*"
-                style="display: none"
-              />
-            </div>
-            <div class="file-menu-section">
-              <span class="file-menu-heading">Exportar</span>
-              <label for="export-prefix">Prefijo:</label>
-              <input type="text" id="export-prefix" value="frame" />
-              <label
-                ><input type="checkbox" id="export-bg-toggle" checked />
-                Fondo</label
-              >
-              <input type="color" id="export-bg-color" value="#ffffff" />
-              <button type="button" id="export-png">EXPORT PNG</button>
-              <label
-                ><input type="checkbox" id="export-zip-toggle" /> Zip</label
-              >
-              <label
-                ><input type="checkbox" id="export-expand-toggle" checked /> Por
-                hold</label
-              >
-              <button type="button" id="export-sequence">
-                EXPORT SEQUENCE
-              </button>
-              <button type="button" id="export-video">EXPORT WEBM</button>
-              <span id="export-video-status"></span>
-              <button type="button" id="ffmpeg-cmd-btn">COMANDO FFMPEG</button>
-              <div id="ffmpeg-cmd-box" style="display: none">
+      <div class="app-left">
+        <header class="titlebar">
+          <div class="file-menu">
+            <button type="button" id="file-menu-btn">ARCHIVO ▾</button>
+            <div class="file-menu-dropdown" id="file-menu-dropdown" hidden>
+              <div class="file-menu-section">
+                <span class="file-menu-heading">Carpeta</span>
+                <button type="button" id="choose-folder">CARPETA</button>
+                <span id="folder-status"></span>
+                <button type="button" id="clear-folder" style="display: none">
+                  QUITAR CARPETA
+                </button>
+              </div>
+              <div class="file-menu-section">
+                <span class="file-menu-heading">Proyecto</span>
+                <button type="button" id="save-project">
+                  GUARDAR PROYECTO
+                </button>
+                <button type="button" id="import-project-btn">
+                  ABRIR PROYECTO
+                </button>
                 <input
-                  type="text"
-                  id="ffmpeg-cmd-input"
-                  readonly
-                  style="width: 500px"
+                  type="file"
+                  id="import-project"
+                  accept="application/json,.json"
+                  style="display: none"
                 />
-                <div id="ffmpeg-cmd-hint" style="font-size: 12px"></div>
+              </div>
+              <div class="file-menu-section">
+                <span class="file-menu-heading">Importar</span>
+                <button type="button" id="import-image-btn">
+                  IMPORTAR IMAGEN
+                </button>
+                <input
+                  type="file"
+                  id="import-image"
+                  accept="image/*"
+                  style="display: none"
+                />
+                <label
+                  ><input type="checkbox" id="import-replace" /> Reemplazar
+                  frame actual (en vez de insertar uno nuevo)</label
+                >
+                <button type="button" id="import-batch-btn">
+                  IMPORTAR BATCH
+                </button>
+                <input
+                  type="file"
+                  id="import-batch"
+                  accept="image/*"
+                  multiple
+                  style="display: none"
+                />
+                <button type="button" id="import-audio-btn">
+                  IMPORTAR AUDIO
+                </button>
+                <input
+                  type="file"
+                  id="import-audio"
+                  accept="audio/*"
+                  style="display: none"
+                />
+              </div>
+              <div class="file-menu-section">
+                <span class="file-menu-heading">Exportar</span>
+                <label for="export-prefix">Prefijo:</label>
+                <input type="text" id="export-prefix" value="frame" />
+                <label
+                  ><input type="checkbox" id="export-bg-toggle" checked />
+                  Fondo</label
+                >
+                <input type="color" id="export-bg-color" value="#ffffff" />
+                <button type="button" id="export-png">EXPORT PNG</button>
+                <label
+                  ><input type="checkbox" id="export-zip-toggle" /> Zip</label
+                >
+                <label
+                  ><input type="checkbox" id="export-expand-toggle" checked />
+                  Por hold</label
+                >
+                <button type="button" id="export-sequence">
+                  EXPORT SEQUENCE
+                </button>
+                <button type="button" id="export-video">EXPORT WEBM</button>
+                <span id="export-video-status"></span>
+                <button type="button" id="ffmpeg-cmd-btn">
+                  COMANDO FFMPEG
+                </button>
+                <div id="ffmpeg-cmd-box" style="display: none">
+                  <input
+                    type="text"
+                    id="ffmpeg-cmd-input"
+                    readonly
+                    style="width: 500px"
+                  />
+                  <div id="ffmpeg-cmd-hint" style="font-size: 12px"></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <label for="resolution">RES:</label>
-        <select id="resolution">
-          <option value="800x600">800×600</option>
-          <option value="1280x720">1280×720</option>
-          <option value="1440x1080">1440×1080</option>
-          <option value="1920x1080">1920×1080</option>
-          <option value="1080x1440">1080×1440</option>
-          <option value="1080x1920">1080×1920</option>
-        </select>
-        <input type="color" id="selectedColor" />
-        <input type="number" id="brushSize" value="4" min="1" />
+          <label for="resolution">RES:</label>
+          <select id="resolution">
+            <option value="800x600">800×600</option>
+            <option value="1280x720">1280×720</option>
+            <option value="1440x1080">1440×1080</option>
+            <option value="1920x1080">1920×1080</option>
+            <option value="1080x1440">1080×1440</option>
+            <option value="1080x1920">1080×1920</option>
+          </select>
+          <input type="color" id="selectedColor" />
+          <input type="number" id="brushSize" value="4" min="1" />
 
-        <select id="brush-style">
-          <option value="hard">Duro</option>
-          <option value="stamp">Textura</option>
-          <option value="bristles">Cerdas</option>
-        </select>
+          <select id="brush-style">
+            <option value="hard">Duro</option>
+            <option value="stamp">Textura</option>
+            <option value="bristles">Cerdas</option>
+          </select>
 
-        <button type="button" id="texture-bar-toggle">TEXTURAS</button>
-        <!--button type="button" id="tool-pan">MANO</button>
+          <button type="button" id="texture-bar-toggle">TEXTURAS</button>
+          <!--button type="button" id="tool-pan">MANO</button>
         <button type="button" id="zoom-out">−</button>
         <span id="zoomReadout">100%</span>
         <button type="button" id="zoom-in">+</button>
         <button type="button" id="rotate-left">⟲</button>
         <span id="rotateReadout">0°</span>
         <button type="button" id="rotate-right">⟳</button-->
-        <!--button type="button" id="zoom-reset">RESET VISTA</button-->
-      </header>
+          <!--button type="button" id="zoom-reset">RESET VISTA</button-->
+        </header>
 
-      <audio id="audioPlayer"></audio>
+        <audio id="audioPlayer"></audio>
 
-      <div class="floating-bar" id="edit-frames-bar" hidden></div>
-      <div class="floating-bar" id="frame-action-popup" hidden>
-        <div class="frame-action-dir-group">
-          <button
-            type="button"
-            id="fa-move-btn"
-            class="frame-action-dir-btn active"
-          >
-            Mover
-          </button>
-          <button type="button" id="fa-copy-btn" class="frame-action-dir-btn">
-            Copiar
-          </button>
-        </div>
-        <label><input type="checkbox" id="fa-range-check" /> Rango</label>
-        <div class="frame-action-field">
-          <label for="fa-origin">Frame</label>
-          <input type="number" id="fa-origin" min="1" readonly />
-        </div>
-        <div class="frame-action-field" id="fa-range-end-field" hidden>
-          <label for="fa-range-end">Hasta</label>
-          <input
-            type="number"
-            id="fa-range-end"
-            min="1"
-            placeholder="click un frame"
-          />
-        </div>
-        <div class="frame-action-field">
-          <label for="fa-dest">En</label>
-          <input
-            type="number"
-            id="fa-dest"
-            min="1"
-            placeholder="click un frame"
-          />
-        </div>
-        <p class="frame-action-summary" id="fa-summary" hidden></p>
-        <div class="frame-action-buttons">
-          <button type="button" id="fa-confirm" disabled>Mover</button>
-          <button type="button" id="fa-cancel">Cancelar</button>
-        </div>
-      </div>
-      <div class="docked-bar" id="onion-levels-bar" hidden>
-        <div class="onion-levels-list" id="onion-levels-list"></div>
-        <label for="ol-range">Rango:</label>
-        <input type="number" id="ol-range" min="1" value="5" />
-        <input type="checkbox" id="ol-onion-toggle" checked />
-        <input
-          type="number"
-          id="ol-onion-opacity"
-          min="0"
-          max="1"
-          step="0.05"
-          value="0.35"
-          title="Opacidad onion"
-        />
-        <input
-          type="number"
-          id="ol-onion-falloff"
-          min="0"
-          max="1"
-          step="0.05"
-          value="0.7"
-          title="Onion gradiente"
-        />
-      </div>
-      <div class="docked-bar" id="peg-bar" hidden>
-        <label
-          >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
-            type="number"
-            id="peg1y"
-            value="430" />
-          w<input type="number" id="peg1w" value="90" /> h<input
-            type="number"
-            id="peg1h"
-            value="60"
-        /></label>
-        <label
-          >Región 2: x<input type="number" id="peg2x" value="570" /> y<input
-            type="number"
-            id="peg2y"
-            value="430" />
-          w<input type="number" id="peg2w" value="90" /> h<input
-            type="number"
-            id="peg2h"
-            value="60"
-        /></label>
-        <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
-        <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
-        <button type="button" id="peg-align-layer">ALINEAR CAPA ACTUAL</button>
-      </div>
-      <div class="docked-bar" id="adjust-bar" hidden>
-        <label
-          >Crop: x<input type="number" id="cropX" value="0" /> y<input
-            type="number"
-            id="cropY"
-            value="0" />
-          w<input type="number" id="cropW" value="800" /> h<input
-            type="number"
-            id="cropH"
-            value="600"
-        /></label>
-        <label
-          >Bright.<input type="number" id="adjBrightness" value="0" step="0.05"
-        /></label>
-        <label
-          >Contraste<input type="number" id="adjContrast" value="1" step="0.05"
-        /></label>
-        <label
-          >Saturación<input
-            type="number"
-            id="adjSaturation"
-            value="1"
-            step="0.05"
-        /></label>
-        <label
-          >WB R<input type="number" id="adjWbR" value="1" step="0.05"
-        /></label>
-        <label
-          >WB B<input type="number" id="adjWbB" value="1" step="0.05"
-        /></label>
-        <button type="button" id="adjust-reset">RESET AJUSTES</button>
-        <label
-          ><input type="checkbox" id="grade-preview-toggle" /> Vista
-          previa</label
-        >
-      </div>
-
-      <div class="floating-bar" id="zoom-rotate-dialog" hidden>
-        <div class="floating-bar-handle" id="zoom-rotate-dialog-drag-handle">
-          ⠿
-        </div>
-        <div class="d-buttons-wrap">
-          <button type="button" id="tool-pencil">P</button>
-          <button type="button" id="tool-eraser">E</button>
-          <button type="button" id="tool-move-transform">M</button>
-          <button type="button" id="tool-scale-transform">S</button>
-          <button type="button" id="tool-rotate-transform">R</button>
-        </div>
-        <div class="f-buttons-wrap">
-          <button type="button" id="new-frame">ADD AFTER</button>
-          <button type="button" id="insert-frame-left">BEFORE</button>
-          <button type="button" id="duplicate-frame">DUPLICATE</button>
-          <button type="button" id="clear-drawing">CLEAR FRAME</button>
-          <button type="button" id="delete-frame">DELETE FRAME</button>
-        </div>
-        <div class="l-buttons-wrap">
-          <button type="button" id="new-layer">ADD LAYER</button>
-          <!--label for="layers">LAYER:</label-->
-
-          <select id="layers">
-            <option value="0">Selecciona una opción...</option>
-          </select>
-
-          <label class="input-wrap" for="layer-visible">
-            <input type="checkbox" id="layer-visible" checked />
-            VISIBLE
-          </label>
-
-          <div class="input-wrap">
-            <label for="layer-opacity">LAYER OPACITY:</label>
-
+        <div class="floating-bar" id="edit-frames-bar" hidden></div>
+        <div class="floating-bar" id="frame-action-popup" hidden>
+          <div class="frame-action-dir-group">
+            <button
+              type="button"
+              id="fa-move-btn"
+              class="frame-action-dir-btn active"
+            >
+              Mover
+            </button>
+            <button type="button" id="fa-copy-btn" class="frame-action-dir-btn">
+              Copiar
+            </button>
+          </div>
+          <label><input type="checkbox" id="fa-range-check" /> Rango</label>
+          <div class="frame-action-field">
+            <label for="fa-origin">Frame</label>
+            <input type="number" id="fa-origin" min="1" readonly />
+          </div>
+          <div class="frame-action-field" id="fa-range-end-field" hidden>
+            <label for="fa-range-end">Hasta</label>
             <input
               type="number"
-              id="layer-opacity"
-              min="0"
-              max="1"
-              step="0.05"
-              value="1"
+              id="fa-range-end"
+              min="1"
+              placeholder="click un frame"
             />
           </div>
-          <div class="input-wrap">
-            <label for="layer-hold-all">BATCH HOLD:</label>
-            <input type="number" id="layer-hold-all" min="1" value="1" />
-            <button type="button" id="apply-layer-hold">APPLY</button>
+          <div class="frame-action-field">
+            <label for="fa-dest">En</label>
+            <input
+              type="number"
+              id="fa-dest"
+              min="1"
+              placeholder="click un frame"
+            />
+          </div>
+          <p class="frame-action-summary" id="fa-summary" hidden></p>
+          <div class="frame-action-buttons">
+            <button type="button" id="fa-confirm" disabled>Mover</button>
+            <button type="button" id="fa-cancel">Cancelar</button>
           </div>
         </div>
-        <div class="zr-bar-wrap">
-          <input type="range" id="zr-zoom" min="20" max="800" value="100" />
-          <span class="zr-bar-label" id="zr-zoom-readout">ZOOM 100%</span>
-        </div>
-        <div class="zr-bar-wrap">
-          <input type="range" id="zr-rotate" min="-180" max="180" value="0" />
-          <span class="zr-bar-label" id="zr-rotate-readout">ROT 0°</span>
-        </div>
-        <button type="button" id="zoom-reset">RESET VIEW</button>
-      </div>
+        <div class="docked-bar" id="onion-levels-bar" hidden>
+          <div class="onion-levels-list" id="onion-levels-list"></div>
+          <label for="ol-range">Rango:</label>
+          <input type="number" id="ol-range" min="1" value="5" />
 
-      <div class="floating-bar" id="onion-levels-dialog" hidden></div>
+          <input
+            type="number"
+            id="ol-onion-opacity"
+            min="0"
+            max="1"
+            step="0.05"
+            value="0.35"
+            title="Opacidad onion"
+          />
+          <input
+            type="number"
+            id="ol-onion-falloff"
+            min="0"
+            max="1"
+            step="0.05"
+            value="0.7"
+            title="Onion gradiente"
+          />
+        </div>
+        <div class="docked-bar" id="peg-bar" hidden>
+          <label
+            >Región 1: x<input type="number" id="peg1x" value="140" /> y<input
+              type="number"
+              id="peg1y"
+              value="430" />
+            w<input type="number" id="peg1w" value="90" /> h<input
+              type="number"
+              id="peg1h"
+              value="60"
+          /></label>
+          <label
+            >Región 2: x<input type="number" id="peg2x" value="570" /> y<input
+              type="number"
+              id="peg2y"
+              value="430" />
+            w<input type="number" id="peg2w" value="90" /> h<input
+              type="number"
+              id="peg2h"
+              value="60"
+          /></label>
+          <button type="button" id="peg-set-ref">FIJAR REFERENCIA</button>
+          <button type="button" id="peg-align-cel">ALINEAR CEL ACTUAL</button>
+          <button type="button" id="peg-align-layer">
+            ALINEAR CAPA ACTUAL
+          </button>
+        </div>
+        <div class="docked-bar" id="adjust-bar" hidden>
+          <label
+            >Crop: x<input type="number" id="cropX" value="0" /> y<input
+              type="number"
+              id="cropY"
+              value="0" />
+            w<input type="number" id="cropW" value="800" /> h<input
+              type="number"
+              id="cropH"
+              value="600"
+          /></label>
+          <label
+            >Bright.<input
+              type="number"
+              id="adjBrightness"
+              value="0"
+              step="0.05"
+          /></label>
+          <label
+            >Contraste<input
+              type="number"
+              id="adjContrast"
+              value="1"
+              step="0.05"
+          /></label>
+          <label
+            >Saturación<input
+              type="number"
+              id="adjSaturation"
+              value="1"
+              step="0.05"
+          /></label>
+          <label
+            >WB R<input type="number" id="adjWbR" value="1" step="0.05"
+          /></label>
+          <label
+            >WB B<input type="number" id="adjWbB" value="1" step="0.05"
+          /></label>
+          <button type="button" id="adjust-reset">RESET AJUSTES</button>
+          <label
+            ><input type="checkbox" id="grade-preview-toggle" /> Vista
+            previa</label
+          >
+        </div>
 
-      <div class="floating-bar" id="texture-bar" hidden>
-        <button type="button" id="brush-texture-btn">AGREGAR</button>
-        <input
-          type="file"
-          id="brush-texture-input"
-          accept="image/png"
-          multiple
-          style="display: none"
-        />
-        <div class="texture-gallery" id="texture-gallery"></div>
-      </div>
-      <div class="main-row">
-        <!--aside class="rail">
+        <div class="floating-bar" id="zoom-rotate-dialog" hidden>
+          <div class="floating-bar-handle" id="zoom-rotate-dialog-drag-handle">
+            ⠿
+          </div>
+          <div class="d-buttons-wrap">
+            <button type="button" id="tool-pencil">P</button>
+            <button type="button" id="tool-eraser">E</button>
+            <button type="button" id="tool-move-transform">M</button>
+            <button type="button" id="tool-scale-transform">S</button>
+            <button type="button" id="tool-rotate-transform">R</button>
+          </div>
+          <div class="f-buttons-wrap">
+            <button type="button" id="new-frame">ADD AFTER</button>
+            <button type="button" id="insert-frame-left">BEFORE</button>
+            <button type="button" id="duplicate-frame">DUPLICATE</button>
+            <button type="button" id="clear-drawing">CLEAR FRAME</button>
+            <button type="button" id="delete-frame">DELETE FRAME</button>
+          </div>
+          <!--div class="l-buttons-wrap">
+            <button type="button" id="new-layer">ADD LAYER</button>
+           
+
+            <select id="layers">
+              <option value="0">Selecciona una opción...</option>
+            </select>
+
+            <label class="input-wrap" for="layer-visible">
+              <input type="checkbox" id="layer-visible" checked />
+              VISIBLE
+            </label>
+
+            <div class="input-wrap">
+              <label for="layer-opacity">LAYER OPACITY:</label>
+
+              <input
+                type="number"
+                id="layer-opacity"
+                min="0"
+                max="1"
+                step="0.05"
+                value="1"
+              />
+            </div>
+            <div class="input-wrap">
+              <label for="layer-hold-all">BATCH HOLD:</label>
+              <input type="number" id="layer-hold-all" min="1" value="1" />
+              <button type="button" id="apply-layer-hold">APPLY</button>
+            </div>
+          </div-->
+          <div class="zr-bar-wrap">
+            <input type="range" id="zr-zoom" min="20" max="800" value="100" />
+            <span class="zr-bar-label" id="zr-zoom-readout">ZOOM 100%</span>
+          </div>
+          <div class="zr-bar-wrap">
+            <input type="range" id="zr-rotate" min="-180" max="180" value="0" />
+            <span class="zr-bar-label" id="zr-rotate-readout">ROT 0°</span>
+          </div>
+          <button type="button" id="zoom-reset">RESET VIEW</button>
+        </div>
+
+        <div class="floating-bar" id="onion-levels-dialog" hidden></div>
+
+        <div class="floating-bar" id="texture-bar" hidden>
+          <button type="button" id="brush-texture-btn">AGREGAR</button>
+          <input
+            type="file"
+            id="brush-texture-input"
+            accept="image/png"
+            multiple
+            style="display: none"
+          />
+          <div class="texture-gallery" id="texture-gallery"></div>
+        </div>
+        <div class="main-row">
+          <!--aside class="rail">
           <button type="button" id="drawing-toggle">DIBUJO</button>
         </aside-->
 
-        <div class="canvas-area">
-          <div id="stageViewport">
-            <div id="stage">
-              <canvas
-                id="onion"
-                width="800"
-                height="600"
-                style="pointer-events: none"
-              ></canvas>
-              <canvas
-                id="layersBelow"
-                width="800"
-                height="600"
-                style="pointer-events: none"
-              ></canvas>
-              <canvas id="drawingTable" width="800" height="600"></canvas>
-              <canvas
-                id="layersAbove"
-                width="800"
-                height="600"
-                style="pointer-events: none"
-              ></canvas>
-              <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) 
+          <div class="canvas-area">
+            <div id="stageViewport">
+              <div id="stage">
+                <canvas
+                  id="onion"
+                  width="800"
+                  height="600"
+                  style="pointer-events: none"
+                ></canvas>
+                <canvas
+                  id="layersBelow"
+                  width="800"
+                  height="600"
+                  style="pointer-events: none"
+                ></canvas>
+                <canvas id="drawingTable" width="800" height="600"></canvas>
+                <canvas
+                  id="layersAbove"
+                  width="800"
+                  height="600"
+                  style="pointer-events: none"
+                ></canvas>
+                <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) 
 mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
-              <canvas
-                id="playCanvas"
-                width="800"
-                height="600"
-                style="display: none"
-              ></canvas>
+                <canvas
+                  id="playCanvas"
+                  width="800"
+                  height="600"
+                  style="display: none"
+                ></canvas>
 
-              <div
-                id="pegOverlay1"
-                style="
-                  position: absolute;
-                  border: 2px solid red;
-                  pointer-events: none;
-                  display: none;
-                "
-              ></div>
-              <div
-                id="pegOverlay2"
-                style="
-                  position: absolute;
-                  border: 2px solid blue;
-                  pointer-events: none;
-                  display: none;
-                "
-              ></div>
-              <div
-                id="cropOverlay"
-                style="
-                  position: absolute;
-                  border: 2px dashed lime;
-                  pointer-events: none;
-                  display: none;
-                "
-              ></div>
+                <div
+                  id="pegOverlay1"
+                  style="
+                    position: absolute;
+                    border: 2px solid red;
+                    pointer-events: none;
+                    display: none;
+                  "
+                ></div>
+                <div
+                  id="pegOverlay2"
+                  style="
+                    position: absolute;
+                    border: 2px solid blue;
+                    pointer-events: none;
+                    display: none;
+                  "
+                ></div>
+                <div
+                  id="cropOverlay"
+                  style="
+                    position: absolute;
+                    border: 2px dashed lime;
+                    pointer-events: none;
+                    display: none;
+                  "
+                ></div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div
-          id="folder-browse-overlay"
-          style="
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-          "
-        >
           <div
+            id="folder-browse-overlay"
             style="
-              background: var(--ink-900);
-              color: var(--text);
-              padding: 18px;
-              width: 420px;
-              max-width: 90vw;
-              max-height: 80vh;
-              display: flex;
-              flex-direction: column;
-              border-radius: 12px;
-              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0, 0, 0, 0.5);
+              z-index: 1000;
+              align-items: center;
+              justify-content: center;
             "
           >
-            <strong id="folder-browse-title">Elegir archivo</strong>
-            <small id="folder-browse-path" style="margin-bottom: 8px"></small>
             <div
-              id="folder-browse-list"
               style="
-                flex: 1;
-                overflow-y: auto;
-                border: 1px solid #999;
-                margin-bottom: 8px;
-                min-height: 120px;
+                background: var(--ink-900);
+                color: var(--text);
+                padding: 18px;
+                width: 420px;
+                max-width: 90vw;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
               "
-            ></div>
-            <div>
-              <button type="button" id="folder-browse-up">↑ SUBIR</button>
-              <button type="button" id="folder-browse-elsewhere">
-                BUSCAR EN OTRO LADO...
-              </button>
-              <button type="button" id="folder-browse-confirm">IMPORTAR</button>
-              <button type="button" id="folder-browse-cancel">CANCELAR</button>
+            >
+              <strong id="folder-browse-title">Elegir archivo</strong>
+              <small id="folder-browse-path" style="margin-bottom: 8px"></small>
+              <div
+                id="folder-browse-list"
+                style="
+                  flex: 1;
+                  overflow-y: auto;
+                  border: 1px solid #999;
+                  margin-bottom: 8px;
+                  min-height: 120px;
+                "
+              ></div>
+              <div>
+                <button type="button" id="folder-browse-up">↑ SUBIR</button>
+                <button type="button" id="folder-browse-elsewhere">
+                  BUSCAR EN OTRO LADO...
+                </button>
+                <button type="button" id="folder-browse-confirm">
+                  IMPORTAR
+                </button>
+                <button type="button" id="folder-browse-cancel">
+                  CANCELAR
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="xsheet-resizer" id="xsheet-resizer"></div>
-        <div class="xsheet" id="xsheet"></div>
-        <!--aside class="right-panel"-->
-        <!--button type="button" id="new-layer">ADD LAYER</button>
+          <!--aside class="right-panel"-->
+          <!--button type="button" id="new-layer">ADD LAYER</button>
           <label for="layers">LAYER:</label>
           <select id="layers">
             <option value="0">Selecciona una opción...</option>
@@ -1381,7 +1478,7 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
             step="0.05"
             value="1"
           /-->
-        <!--label
+          <!--label
             ><input type="checkbox" id="onion-toggle" checked /> Onion
             skin</label
           >
@@ -1394,82 +1491,124 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
             step="0.05"
             value="0.35"
           /-->
-        <!--/aside-->
+          <!--/aside-->
+        </div>
+        <footer class="transport">
+          <button type="button" id="peg-bar-toggle">PEG</button>
+          <button type="button" id="adjust-bar-toggle">AJUSTES</button>
+          <button type="button" id="onion-levels-toggle">LIGHTBOX</button>
+          <label for="ol-onion-toggle"
+            ><input type="checkbox" id="ol-onion-toggle" checked /> Onion</label
+          >
+          <label for="range-start">PLAYBACK/EXPORT RANGE:</label>
+          <input type="number" id="range-start" min="1" value="1" />
+          <!--label for="range-end">Hasta:</label-->
+          <input type="number" id="range-end" min="1" value="1" />
+          <button type="button" id="prev"><</button>
+          <button type="button" id="next">></button>
+          <button type="button" id="play">PLAY</button>
+          <label for="fps">FPS:</label>
+          <input type="number" id="fps" min="1" max="30" value="12" />
+        </footer>
       </div>
-      <footer class="transport">
-        <button type="button" id="peg-bar-toggle">PEG</button>
-        <button type="button" id="adjust-bar-toggle">AJUSTES</button>
-        <button type="button" id="onion-levels-toggle">LIGHTBOX</button>
-        <label for="range-start">PLAYBACK/EXPORT RANGE:</label>
-        <input type="number" id="range-start" min="1" value="1" />
-        <!--label for="range-end">Hasta:</label-->
-        <input type="number" id="range-end" min="1" value="1" />
-        <button type="button" id="prev"><</button>
-        <button type="button" id="next">></button>
-        <button type="button" id="play">PLAY</button>
-        <label for="fps">FPS:</label>
-        <input type="number" id="fps" min="1" max="30" value="12" />
-      </footer>
-    </div>
-    <button
-      type="button"
-      id="drawing-mode-toggle"
-      class="mode-toggle-btn"
-      style="display: none"
-    >
-      MODO DIBUJO
-    </button>
-    <div class="quick-dialog" id="quick-dialog" hidden>
-      <div class="quick-dialog-header" id="quick-dialog-drag-handle">
-        <span>Menú rápido</span>
-        <button type="button" id="qd-hide">OCULTAR</button>
-      </div>
+      <button
+        type="button"
+        id="drawing-mode-toggle"
+        class="mode-toggle-btn"
+        style="display: none"
+      >
+        MODO DIBUJO
+      </button>
+      <div class="quick-dialog" id="quick-dialog" hidden>
+        <div class="quick-dialog-header" id="quick-dialog-drag-handle">
+          <span>Menú rápido</span>
+          <button type="button" id="qd-hide">OCULTAR</button>
+        </div>
 
-      <div class="quick-dialog-row">
-        <button type="button" id="qd-pencil" class="quick-dialog-btn-square">
-          LÁPIZ
-        </button>
-        <button type="button" id="qd-eraser" class="quick-dialog-btn-square">
-          GOMA
-        </button>
-        <button type="button" id="qd-add-frame" class="quick-dialog-btn-square">
-          AGREGAR FRAME
-        </button>
-        <button
-          type="button"
-          id="qd-delete-frame"
-          class="quick-dialog-btn-square"
-        >
-          BORRAR FRAME
-        </button>
-      </div>
-      <label for="qd-range">Rango:</label>
-      <input type="number" id="qd-range" min="1" value="5" />
-      <div class="quick-dialog-row">
-        <label
-          ><input type="checkbox" id="qd-onion-toggle" checked /> Onion</label
-        >
-        <input
-          type="number"
-          id="qd-onion-opacity"
-          min="0"
-          max="1"
-          step="0.05"
-          value="0.35"
-          title="Opacidad onion"
-        />
-        <input
-          type="number"
-          id="qd-onion-falloff"
-          min="0"
-          max="1"
-          step="0.05"
-          value="0.7"
-          title="Onion gradiente"
-        />
-      </div>
+        <div class="quick-dialog-row">
+          <button type="button" id="qd-pencil" class="quick-dialog-btn-square">
+            LÁPIZ
+          </button>
+          <button type="button" id="qd-eraser" class="quick-dialog-btn-square">
+            GOMA
+          </button>
+          <button
+            type="button"
+            id="qd-add-frame"
+            class="quick-dialog-btn-square"
+          >
+            AGREGAR FRAME
+          </button>
+          <button
+            type="button"
+            id="qd-delete-frame"
+            class="quick-dialog-btn-square"
+          >
+            BORRAR FRAME
+          </button>
+        </div>
+        <label for="qd-range">Rango:</label>
+        <input type="number" id="qd-range" min="1" value="5" />
+        <div class="quick-dialog-row">
+          <label
+            ><input type="checkbox" id="qd-onion-toggle" checked /> Onion</label
+          >
+          <input
+            type="number"
+            id="qd-onion-opacity"
+            min="0"
+            max="1"
+            step="0.05"
+            value="0.35"
+            title="Opacidad onion"
+          />
+          <input
+            type="number"
+            id="qd-onion-falloff"
+            min="0"
+            max="1"
+            step="0.05"
+            value="0.7"
+            title="Onion gradiente"
+          />
+        </div>
 
-      <div class="mini-xsheet" id="mini-xsheet"></div>
+        <div class="mini-xsheet" id="mini-xsheet"></div>
+      </div>
+      <div class="xsheet-resizer" id="xsheet-resizer"></div>
+      <div class="xsheet-panel" id="xsheet-panel">
+        <div class="xsheet-header">
+          <div class="xsheet-header-field">
+            <label for="xh-layer-opacity">Opacidad</label>
+            <input
+              type="range"
+              id="xh-layer-opacity"
+              min="0"
+              max="100"
+              value="100"
+            />
+            <span id="xh-layer-opacity-readout">100%</span>
+            <label class="xsheet-header-checkbox" for="xh-layer-visible">
+              <input type="checkbox" id="xh-layer-visible" checked /> Visible
+            </label>
+          </div>
+          <div class="xsheet-header-field">
+            <label for="xh-layer-hold-all">Todos los holds</label>
+            <input
+              type="number"
+              id="xh-layer-hold-all"
+              class="xsheet-hold"
+              min="1"
+              value="1"
+            />
+            <button type="button" id="xh-apply-layer-hold">Aplicar</button>
+            <button type="button" id="xh-new-layer" title="Agregar capa">
+              + Capa
+            </button>
+          </div>
+        </div>
+        <div class="xsheet" id="xsheet"></div>
+      </div>
     </div>
     <script src="dibujo.js"></script>
 

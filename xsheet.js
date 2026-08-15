@@ -519,7 +519,7 @@ document
 */
 (function () {
   var resizer = document.getElementById("xsheet-resizer");
-  var xsheetEl = document.getElementById("xsheet");
+  var xsheetEl = document.getElementById("xsheet-panel");
   var dragging = false;
   var startX = 0;
   var startWidth = 0;

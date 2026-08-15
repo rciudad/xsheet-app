@@ -458,7 +458,7 @@ function syncZoomRotateInputs() {
   zrZoomReadout.textContent = "ZOOM " + Math.round(viewZoom * 100) + "%";
   zrRotateInput.value = Math.round(viewRotation);
   zrRotateReadout.textContent = "ROT " + Math.round(viewRotation) + "°";
-  layerSelector.value = activeLayer;
+  //layerSelector.value = activeLayer;
   syncLayerOpacityInput();
   syncLayerVisibleInput();
 }
@@ -491,19 +491,7 @@ function renderOnionLevelsList() {
   var container = document.getElementById("onion-levels-list");
   container.innerHTML = "";
   for (var offset = -MINI_XSHEET_RANGE; offset <= MINI_XSHEET_RANGE; offset++) {
-    if (offset === 0) {
-      var zeroItem = document.createElement("div");
-      zeroItem.className = "onion-level-item";
-
-      var zeroLabel = document.createElement("span");
-      zeroLabel.className = "mini-xsheet-offset";
-      zeroLabel.textContent = "0";
-      zeroItem.appendChild(zeroLabel);
-
-      zeroItem.appendChild(olOnionToggleInput);
-      container.appendChild(zeroItem);
-      continue;
-    }
+    if (offset === 0) continue;
 
     (function (offset) {
       var item = document.createElement("div");
