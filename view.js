@@ -246,6 +246,7 @@ document
   });
 
 function openQuickDialog(x, y) {
+  return; //deshabilitado temporalmente
   renderMiniXsheet();
   var margin = 8;
   quickDialog.hidden = false;
@@ -263,13 +264,15 @@ function closeQuickDialog() {
 }
 
 canvas.addEventListener("contextmenu", function (e) {
-  if (!appEl.classList.contains("drawing-mode")) return;
+  //if (!appEl.classList.contains("drawing-mode")) return;
   e.preventDefault();
+  toggleZoomRotateDialog();
+  /*
   if (!quickDialog.hidden) {
     closeQuickDialog();
   } else {
     openQuickDialog(e.clientX, e.clientY);
-  }
+  }*/
 });
 
 var quickDialogHandle = document.getElementById("quick-dialog-drag-handle");
