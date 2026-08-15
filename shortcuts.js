@@ -78,6 +78,14 @@ var shortcutActions = [
     },
   },
   {
+    id: "zoomRotateDialog",
+    label: "Diálogo zoom/rotar",
+    defaultKey: "*",
+    run: function () {
+      toggleZoomRotateDialog();
+    },
+  },
+  {
     id: "addFrame",
     label: "Agregar frame",
     defaultKey: "/",

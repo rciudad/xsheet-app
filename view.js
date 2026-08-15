@@ -348,7 +348,7 @@ var rotateKeyHeld = false;
 
 window.addEventListener("keydown", function (e) {
   //if (e.code === "NumpadDivide") zoomKeyHeld = true;
-  if (e.code === "NumpadMultiply" && !e.repeat) toggleZoomRotateDialog();
+  //if (e.code === "NumpadMultiply" && !e.repeat) toggleZoomRotateDialog();
   //if (e.code === "NumpadDivide" && !e.repeat) toggleDrawingDialog();
 });
 
