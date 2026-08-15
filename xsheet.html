@@ -4,6 +4,7 @@
       box-sizing: border-box;
     }
     :root {
+      --cell-border: #dadada;
       --ink-950: #eceef3;
       --ink-900: #ffffff;
       --ink-850: #f6f7f9;
@@ -690,14 +691,14 @@
       color: var(--text);
     }
     .xsheet-tick {
-      border: 1px solid #9c9c9c; /*var(--ink-700);*/
+      border: 1px solid var(--cell-border); /*var(--ink-700);*/
       text-align: right;
       padding-right: 4px;
       font-size: 12px;
       color: var(--text-dim);
     }
     .xsheet-cell {
-      border: 1px solid #9c9c9c; /*var(--ink-700);*/
+      border: 1px solid var(--cell-border); /*var(--ink-700);*/
       background-color: #ffffff; /*var(--ink-850);*/
       cursor: pointer;
       font-size: 12px;
@@ -738,10 +739,11 @@
     }
 
     .xsheet-num {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--text-dim);
       line-height: 1;
       margin-top: 2px;
+      font-weight: bold;
     }
     .xsheet-tick.current {
       /*background-color: var(--accent);
@@ -751,7 +753,7 @@
       display: none;
     }
     .xsheet-audio-cell {
-      border: 1px solid #9c9c9c; /*var(--ink-700);*/
+      border: 1px solid var(--cell-border); /*var(--ink-700);*/
       display: flex;
       align-items: flex-end;
       justify-content: center;
