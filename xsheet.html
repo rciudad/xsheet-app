@@ -462,59 +462,41 @@
       width: 100%;
     }
       */
+
     .zr-bar-wrap {
-      position: relative;
-      width: 188px; /*100%;*/
-      height: 23px;
-    }
-    .zr-bar-wrap input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 190px;
-      height: 100%;
-      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 188px;
+      height: 26px;
+      padding: 0 8px;
       background: var(--ink-850);
       border: 1px solid var(--ink-700);
       border-radius: 8px;
-      outline: none;
     }
-    .zr-bar-wrap input[type="range"]::-webkit-slider-runnable-track {
-      height: 100%;
-      background: transparent;
-      border-radius: 8px;
+    .zr-bar-icon {
+      flex: 0 0 auto;
+      width: 14px;
+      height: 14px;
+      color: var(--text-dim);
     }
-    .zr-bar-wrap input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 10px;
-      height: 100%;
-      background: #b8b9b9; /*#3b82f6; var(--accent);*/
-      border-radius: 10px;
-      cursor: pointer;
+    .zr-bar-wrap input[type="range"] {
+      flex: 1 1 auto;
+      min-width: 0;
+      accent-color: var(--accent);
     }
-    .zr-bar-wrap input[type="range"]::-moz-range-track {
-      height: 100%;
-      background: transparent;
-      border-radius: 8px;
+    .zr-bar-readout {
+      flex: 0 0 auto;
+      font-family: var(--font-mono, monospace);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      min-width: 3.4ch;
+      text-align: right;
     }
-    .zr-bar-wrap input[type="range"]::-moz-range-thumb {
-      width: 10px;
-      height: 100%;
-      background: #b8b9b9; /*#3b82f6; var(--accent);*/
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
+    #zoom-reset {
+      width: 190px;
     }
-    .zr-bar-label {
-      position: absolute;
-      top: 5px;
-      left: 6px;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      font-size: 12px;
-      color: var(--text);
-      /*text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);*/
-    }
+
     #zoom-reset {
       width: 190px;
     }
@@ -1316,14 +1298,38 @@
               <button type="button" id="apply-layer-hold">APPLY</button>
             </div>
           </div-->
+
           <div class="zr-bar-wrap">
+            <svg
+              class="zr-bar-icon"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            >
+              <circle cx="8.5" cy="8.5" r="5.5" />
+              <line x1="12.7" y1="12.7" x2="17" y2="17" />
+            </svg>
             <input type="range" id="zr-zoom" min="20" max="800" value="100" />
-            <span class="zr-bar-label" id="zr-zoom-readout">ZOOM 100%</span>
+            <span class="zr-bar-readout" id="zr-zoom-readout">100%</span>
           </div>
           <div class="zr-bar-wrap">
+            <svg
+              class="zr-bar-icon"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            >
+              <path d="M4 10a6 6 0 1 1 2 4.5" />
+              <polyline points="3 15 4 10.5 8.5 11.5" />
+            </svg>
             <input type="range" id="zr-rotate" min="-180" max="180" value="0" />
-            <span class="zr-bar-label" id="zr-rotate-readout">ROT 0°</span>
+            <span class="zr-bar-readout" id="zr-rotate-readout">0°</span>
           </div>
+
           <button type="button" id="zoom-reset">RESET VIEW</button>
         </div>
 

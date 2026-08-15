@@ -455,9 +455,9 @@ var zrRotateReadout = document.getElementById("zr-rotate-readout");
 
 function syncZoomRotateInputs() {
   zrZoomInput.value = Math.round(viewZoom * 100);
-  zrZoomReadout.textContent = "ZOOM " + Math.round(viewZoom * 100) + "%";
+  zrZoomReadout.textContent = Math.round(viewZoom * 100) + "%";
   zrRotateInput.value = Math.round(viewRotation);
-  zrRotateReadout.textContent = "ROT " + Math.round(viewRotation) + "°";
+  zrRotateReadout.textContent = Math.round(viewRotation) + "°";
   //layerSelector.value = activeLayer;
   syncLayerOpacityInput();
   syncLayerVisibleInput();
@@ -479,12 +479,12 @@ zrZoomInput.addEventListener("input", function () {
     vr.left + vr.width / 2,
     vr.top + vr.height / 2
   );
-  zrZoomReadout.textContent = "ZOOM " + zrZoomInput.value + "%";
+  zrZoomReadout.textContent = zrZoomInput.value + "%";
 });
 
 zrRotateInput.addEventListener("input", function () {
   setRotation(+zrRotateInput.value);
-  zrRotateReadout.textContent = "ROT " + zrRotateInput.value + "°";
+  zrRotateReadout.textContent = zrRotateInput.value + "°";
 });
 
 function renderOnionLevelsList() {
