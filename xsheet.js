@@ -13,6 +13,13 @@ function renderXSheet() {
   corner.style.gridRow = "1";
   xsheetEl.appendChild(corner);
 
+  const audioTh = document.createElement("div");
+  audioTh.className = "xsheet-th";
+  audioTh.textContent = "Audio";
+  audioTh.style.gridColumn = "2";
+  audioTh.style.gridRow = "1";
+  xsheetEl.appendChild(audioTh);
+
   layers.forEach(function (layer, li) {
     const th = document.createElement("div");
     th.className = "xsheet-th" + (li === activeLayer ? " active" : "");
