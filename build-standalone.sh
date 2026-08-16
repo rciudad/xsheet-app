@@ -3,7 +3,7 @@
   cd "$(dirname "$0")"
 
   SRC="xsheet.html"
-  OUT="${1:-xsheet-standalone.html}"
+  OUT="${1:-xsheet-app.html}"
 
   SCRIPTS=(
     dibujo.js onion.js adjust.js cels.js undo.js shortcuts.js
