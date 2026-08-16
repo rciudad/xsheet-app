@@ -26,7 +26,6 @@ document.getElementById("delete-frame").addEventListener("click", function () {
   deleteFrame(layers[activeLayer]);
 });
 
-var layerOpacityInput = document.getElementById("layer-opacity");
 var xhLayerOpacityInput = document.getElementById("xh-layer-opacity");
 var xhLayerOpacityReadout = document.getElementById("xh-layer-opacity-readout");
 
@@ -34,7 +33,7 @@ xhLayerOpacityInput.addEventListener("input", function () {
   var v = +xhLayerOpacityInput.value / 100;
   layers[activeLayer].opacity = v;
   xhLayerOpacityReadout.textContent = Math.round(v * 100) + "%";
-  layerOpacityInput.value = v;
+
   updateOnion();
   refreshGradePreview();
 });
@@ -42,7 +41,7 @@ xhLayerOpacityInput.addEventListener("input", function () {
 var xhLayerVisibleInput = document.getElementById("xh-layer-visible");
 xhLayerVisibleInput.addEventListener("change", function () {
   layers[activeLayer].visible = xhLayerVisibleInput.checked;
-  layerVisibleInput.checked = xhLayerVisibleInput.checked;
+
   updateOnion();
   refreshGradePreview();
 });
