@@ -229,7 +229,18 @@ El valor queda guardado en el navegador (no viaja con el archivo de proyecto), i
 
 **Nota técnica**: este guardado no usa cookies, sino `localStorage` — una API del navegador para persistir datos por origen (dominio + protocolo + puerto), sin fecha de expiración automática y sin enviarse en requests de red (acá no aplica de todos modos, porque la app corre entera en el navegador sin servidor). Al ser "por origen", si se abre `xsheet.html` desde rutas distintas, o directo como archivo (`file://`) en vez de servido por un servidor local, el navegador puede tratarlo como orígenes distintos y no compartir el mismo `localStorage` — en ese caso los atajos y el nivel de undo configurados no se van a ver reflejados.
 
-## 18. Estado no implementado o deshabilitado
+## 18. Privacidad — dónde viven tus datos
+
+xsheet corre enteramente en el navegador, incluso cuando se accede a través de una demo online: el servidor solo entrega los archivos estáticos (`xsheet.html` + los `.js`) una vez, al cargar la página, y no vuelve a comunicarse con nada después de eso.
+
+- Las imágenes, audio y proyectos que importás nunca se suben a ningún servidor — se leen directo del disco con las APIs propias del navegador (`FileReader`, `URL.createObjectURL`, File System Access API) y quedan solo en memoria/canvas local.
+- El único lugar del código que usa `fetch()` (en `audio.js`, al importar audio) no apunta a una URL de red: apunta a un `data:` URI generado localmente a partir del archivo elegido, y el navegador resuelve esos URIs sin salir a internet.
+- Guardar el proyecto o exportar escribe directo al disco (carpeta de descargas o la carpeta de trabajo elegida, sección 12) — no hay ningún paso intermedio por servidor.
+- Lo único que se guarda fuera de un archivo explícito son los atajos de teclado y el nivel de undo (sección 16-17), y eso vive en `localStorage` del propio navegador, no en ningún servidor.
+
+En resumen: no hay cuenta, no hay backend, no hay subida de archivos — todo el trabajo (y sus datos) permanece en la máquina de quien lo usa.
+
+## 19. Estado no implementado o deshabilitado
 
 - **Menú rápido** (`quick-dialog`, con su mini-xsheet): existe en el código pero está **deshabilitado temporalmente** — ni la tecla `Q` ni ninguna otra acción lo abren por ahora. En su lugar, mientras se trabaja en modo dibujo, click derecho sobre el escenario abre el diálogo de zoom/rotación (sección 6).
 - Un diálogo adicional (`drawing-dialog`) existe en el código pero no tiene ninguna forma de activarse desde la UI actual.
