@@ -1139,6 +1139,7 @@
               </div>
             </div>
           </div>
+          <button type="button" id="help-toggle-btn">AYUDA</button>
         </header>
 
         <audio id="audioPlayer"></audio>
@@ -1514,6 +1515,104 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
                   RESTAURAR POR DEFECTO
                 </button>
                 <button type="button" id="shortcuts-close">CERRAR</button>
+              </div>
+            </div>
+          </div>
+          <div
+            id="help-overlay"
+            style="
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0, 0, 0, 0.5);
+              z-index: 1000;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <div
+              style="
+                background: var(--ink-900);
+                color: var(--text);
+                padding: 18px;
+                width: 460px;
+                max-width: 90vw;
+                max-height: 85vh;
+                display: flex;
+                flex-direction: column;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+              "
+            >
+              <strong>Ayuda — xsheet</strong>
+
+              <small style="margin: 6px 0; color: var(--text-dim)"
+                >Atajos de teclado</small
+              >
+              <div
+                id="help-shortcuts-list"
+                style="
+                  overflow-y: auto;
+                  border: 1px solid #999;
+                  margin-bottom: 10px;
+                "
+              ></div>
+
+              <small style="margin: 6px 0; color: var(--text-dim)">Mouse</small>
+              <div style="border: 1px solid #999; margin-bottom: 10px">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Rueda del mouse</span>
+                  <span style="color: var(--text-dim)"
+                    >Zoom centrado en el cursor</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Botón central</span>
+                  <span style="color: var(--text-dim)">Pan temporal</span>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Click derecho (escenario, modo dibujo)</span>
+                  <span style="color: var(--text-dim)">Zoom/rotación</span>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Click derecho (celda del xsheet)</span>
+                  <span style="color: var(--text-dim)">Mover/copiar frame</span>
+                </div>
+              </div>
+
+              <label style="margin-bottom: 8px">
+                <input type="checkbox" id="help-dont-show" /> No mostrar al
+                iniciar
+              </label>
+              <div>
+                <button type="button" id="help-close">CERRAR</button>
               </div>
             </div>
           </div>
@@ -2898,8 +2997,7 @@ var shortcutActions = [
     label: "Frame anterior",
     defaultKey: "PageUp",
     guard: function () {
-      return;
-      !playing;
+      return !playing;
     },
     run: function () {
       selectPrevFrame();
@@ -2910,8 +3008,7 @@ var shortcutActions = [
     label: "Frame siguiente",
     defaultKey: "+",
     guard: function () {
-      return;
-      !playing;
+      return !playing;
     },
     run: function () {
       selectNextFrame();
@@ -2953,9 +3050,9 @@ var shortcutActions = [
     id: "quickDialog",
     label: "Diálogo rápido",
     defaultKey: "Q",
+    note: "deshabilitado temporalmente",
     guard: function () {
-      return;
-      appEl.classList.contains("drawing-mode");
+      return appEl.classList.contains("drawing-mode");
     },
     run: function () {
       openQuickDialog(lastMouseX, lastMouseY);
@@ -3132,6 +3229,59 @@ shortcutsResetBtn.addEventListener("click", function () {
   capturingActionId = null;
   renderShortcutsList();
 });
+
+// --- Diálogo de ayuda ---
+
+var helpOverlay = document.getElementById("help-overlay");
+var helpShortcutsList = document.getElementById("help-shortcuts-list");
+var helpToggleBtn = document.getElementById("help-toggle-btn");
+var helpCloseBtn = document.getElementById("help-close");
+var helpDontShowInput = document.getElementById("help-dont-show");
+
+var HELP_DONT_SHOW_KEY = "xsheetHelpDontShow";
+
+function renderHelpShortcutsList() {
+  helpShortcutsList.innerHTML = "";
+  shortcutActions.forEach(function (a) {
+    var row = document.createElement("div");
+    row.style.cssText =
+      "display:flex; justify-content:space-between; gap:12px; padding:3px 6px;";
+
+    var label = document.createElement("span");
+    label.textContent = a.label + (a.note ? " (" + a.note + ")" : "");
+
+    var key = document.createElement("span");
+    key.style.cssText =
+      "font-family: var(--font-mono, monospace); color: var(--text-dim);";
+    key.textContent = shortcutBindings[a.id];
+
+    row.appendChild(label);
+    row.appendChild(key);
+    helpShortcutsList.appendChild(row);
+  });
+}
+
+function openHelpOverlay() {
+  renderHelpShortcutsList();
+  helpOverlay.style.display = "flex";
+}
+
+function closeHelpOverlay() {
+  helpOverlay.style.display = "none";
+}
+
+helpToggleBtn.addEventListener("click", openHelpOverlay);
+
+helpCloseBtn.addEventListener("click", function () {
+  if (helpDontShowInput.checked) {
+    localStorage.setItem(HELP_DONT_SHOW_KEY, "1");
+  }
+  closeHelpOverlay();
+});
+
+if (localStorage.getItem(HELP_DONT_SHOW_KEY) !== "1") {
+  openHelpOverlay();
+}
 </script>
 <script>
 var audioPlayerEl = document.getElementById("audioPlayer");

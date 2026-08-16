@@ -1538,7 +1538,7 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
                 background: var(--ink-900);
                 color: var(--text);
                 padding: 18px;
-                width: 460px;
+                width: 760px;
                 max-width: 90vw;
                 max-height: 85vh;
                 display: flex;
@@ -1548,62 +1548,137 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
               "
             >
               <strong>Ayuda — xsheet</strong>
-
-              <small style="margin: 6px 0; color: var(--text-dim)"
-                >Atajos de teclado</small
-              >
-              <div
-                id="help-shortcuts-list"
-                style="
-                  overflow-y: auto;
-                  border: 1px solid #999;
-                  margin-bottom: 10px;
-                "
-              ></div>
-
-              <small style="margin: 6px 0; color: var(--text-dim)">Mouse</small>
-              <div style="border: 1px solid #999; margin-bottom: 10px">
+              <div style="display: flex; gap: 18px; margin-top: 4px">
                 <div
                   style="
+                    flex: 1 1 0;
+                    min-width: 0;
                     display: flex;
-                    justify-content: space-between;
-                    padding: 3px 6px;
+                    flex-direction: column;
                   "
                 >
-                  <span>Rueda del mouse</span>
-                  <span style="color: var(--text-dim)"
-                    >Zoom centrado en el cursor</span
+                  <small style="margin: 6px 0; color: var(--text-dim)"
+                    >Atajos de teclado</small
                   >
+                  <div
+                    id="help-shortcuts-list"
+                    style="
+                      overflow-y: auto;
+                      border: 1px solid #999;
+                      margin-bottom: 10px;
+                    "
+                  ></div>
+
+                  <small style="margin: 6px 0; color: var(--text-dim)"
+                    >Mouse</small
+                  >
+                  <div style="border: 1px solid #999; margin-bottom: 10px">
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 3px 6px;
+                      "
+                    >
+                      <span>Rueda del mouse</span>
+                      <span style="color: var(--text-dim)"
+                        >Zoom centrado en el cursor</span
+                      >
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 3px 6px;
+                      "
+                    >
+                      <span>Botón central</span>
+                      <span style="color: var(--text-dim)">Pan temporal</span>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 3px 6px;
+                      "
+                    >
+                      <span>Click derecho (escenario, modo dibujo)</span>
+                      <span style="color: var(--text-dim)">Zoom/rotación</span>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 3px 6px;
+                      "
+                    >
+                      <span>Click derecho (celda del xsheet)</span>
+                      <span style="color: var(--text-dim)"
+                        >Mover/copiar frame</span
+                      >
+                    </div>
+                  </div>
                 </div>
+
                 <div
                   style="
+                    flex: 1 1 0;
+                    min-width: 0;
                     display: flex;
-                    justify-content: space-between;
-                    padding: 3px 6px;
+                    flex-direction: column;
                   "
                 >
-                  <span>Botón central</span>
-                  <span style="color: var(--text-dim)">Pan temporal</span>
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 3px 6px;
-                  "
-                >
-                  <span>Click derecho (escenario, modo dibujo)</span>
-                  <span style="color: var(--text-dim)">Zoom/rotación</span>
-                </div>
-                <div
-                  style="
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 3px 6px;
-                  "
-                >
-                  <span>Click derecho (celda del xsheet)</span>
-                  <span style="color: var(--text-dim)">Mover/copiar frame</span>
+                  <small style="margin: 6px 0; color: var(--text-dim)"
+                    >Diálogos</small
+                  >
+                  <div
+                    style="
+                      overflow-y: auto;
+                      border: 1px solid #999;
+                      margin-bottom: 10px;
+                      padding: 4px 6px;
+                    "
+                  >
+                    <div style="padding: 3px 0">
+                      <strong>TABLE TOOLS</strong> (tecla <code>*</code> / click
+                      derecho):<br />
+                      DRAWING: Pencil, Erase, Move, Scale, Rotate.<br />
+                      CANVAS: Zoom, Rotation, Reset view .<br />
+                      FRAMES: Add after, Before, Duplicate, Clear frame, Delete
+                      frame.<br />
+                    </div>
+                    <div style="padding: 3px 0">
+                      <strong>LIGHTBOX</strong>: Niveles de onion individuales,
+                      Rango, Opacidad, Falloff.
+                    </div>
+                    <div style="padding: 3px 0">
+                      <strong>AJUSTES</strong>: Crop,
+                      Bright./Contraste/Saturación, WB R/WB B, Reset ajustes,
+                      Vista previa.
+                    </div>
+                    <div style="padding: 3px 0">
+                      <strong>PEGS</strong>: Región 1/Región 2, Fijar
+                      referencia, Alinear cel actual, Alinear capa actual.
+                    </div>
+                    <div style="padding: 3px 0">
+                      <strong>TEXTURAS</strong>: Agregar PNG, Galería de
+                      texturas.
+                    </div>
+                    <div style="padding: 3px 0">
+                      <strong>Encabezado del xsheet</strong>: Opacidad, Visible,
+                      Todos los holds + Aplicar, + Capa.
+                    </div>
+                    <div style="padding: 3px 0">
+                      <strong>ARCHIVO ▾</strong>: carpeta de trabajo,
+                      guardar/abrir proyecto, importar imagen/batch/audio,
+                      exportar PNG/secuencia/WebM/comando ffmpeg, configurar
+                      atajos, niveles de undo.
+                    </div>
+                    <div style="padding: 3px 0">
+                      <strong>LINKS ▾</strong>: Download App, User's Manual,
+                      License.
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1618,11 +1693,11 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
           </div>
         </div>
         <footer class="transport">
-          <button type="button" id="peg-bar-toggle">PEG</button>
+          <button type="button" id="peg-bar-toggle">PEGS</button>
           <button type="button" id="adjust-bar-toggle">AJUSTES</button>
           <button type="button" id="onion-levels-toggle">LIGHTBOX</button>
           <label for="ol-onion-toggle"
-            ><input type="checkbox" id="ol-onion-toggle" checked /> Onion</label
+            ><input type="checkbox" id="ol-onion-toggle" checked /> BULB</label
           >
           <label for="range-start">PLAYBACK/EXPORT RANGE:</label>
           <input type="number" id="range-start" min="1" value="1" />
