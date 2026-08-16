@@ -185,7 +185,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      min-width: 260px;
+      min-width: 129px;
       padding: 12px;
       background: var(--ink-900);
       border: 1px solid var(--ink-700);
@@ -207,6 +207,22 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--text-faint);
+    }
+    .file-menu-dropdown a {
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 12px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .file-menu-dropdown a:hover {
+      background: var(--ink-800);
     }
     .wordmark {
       font-weight: 800;
@@ -1105,6 +1121,21 @@
           </select>
 
           <button type="button" id="texture-bar-toggle">TEXTURAS</button>
+          <div class="file-menu">
+            <button type="button" id="links-menu-btn">LINKS ▾</button>
+            <div class="file-menu-dropdown" id="links-menu-dropdown" hidden>
+              <div class="file-menu-section">
+                <a href="xsheet-standalone.zip" target="_blank" rel="noopener"
+                  >Download App</a
+                >
+
+                <a href="MANUAL.md" target="_blank" rel="noopener"
+                  >User's Manual</a
+                >
+                <a href="LICENSE" target="_blank" rel="noopener">License</a>
+              </div>
+            </div>
+          </div>
         </header>
 
         <audio id="audioPlayer"></audio>

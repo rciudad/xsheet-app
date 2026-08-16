@@ -394,3 +394,21 @@ document.addEventListener("click", function (e) {
     fileMenuDropdown.hidden = true;
   }
 });
+
+var linksMenuBtn = document.getElementById("links-menu-btn");
+var linksMenuDropdown = document.getElementById("links-menu-dropdown");
+
+linksMenuBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  linksMenuDropdown.hidden = !linksMenuDropdown.hidden;
+});
+
+document.addEventListener("click", function (e) {
+  if (
+    !linksMenuDropdown.hidden &&
+    !linksMenuDropdown.contains(e.target) &&
+    e.target !== linksMenuBtn
+  ) {
+    linksMenuDropdown.hidden = true;
+  }
+});

@@ -12,7 +12,8 @@
   )
 
   tmp="$(mktemp)"
-  trap 'rm -f "$tmp" "$tmp.new"' EXIT
+  ZIP_DIR="$(mktemp -d)"
+  trap 'rm -f "$tmp" "$tmp.new"; rm -rf "$ZIP_DIR"' EXIT
   cp "$SRC" "$tmp"
 
   for f in "${SCRIPTS[@]}"; do
@@ -40,3 +41,16 @@
 
   mv "$tmp" "$OUT"
   echo "Generado $OUT"
+
+  ZIP_OUT="${OUT%.html}.zip"
+  RELEASE_NAME="xsheet"
+
+  mkdir -p "$ZIP_DIR/$RELEASE_NAME"
+  cp "$OUT" "$ZIP_DIR/$RELEASE_NAME/"
+  cp LICENSE "$ZIP_DIR/$RELEASE_NAME/"
+  cp MANUAL.md "$ZIP_DIR/$RELEASE_NAME/"
+
+  rm -f "$ZIP_OUT"
+  ( cd "$ZIP_DIR" && zip -q -r "$OLDPWD/$ZIP_OUT" "$RELEASE_NAME" )
+
+  echo "Generado $ZIP_OUT"

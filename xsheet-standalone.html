@@ -208,6 +208,22 @@
       letter-spacing: 0.06em;
       color: var(--text-faint);
     }
+    .file-menu-dropdown a {
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--ink-700);
+      background: var(--ink-850);
+      color: var(--text);
+      font-size: 12px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .file-menu-dropdown a:hover {
+      background: var(--ink-800);
+    }
     .wordmark {
       font-weight: 800;
       font-size: 16px;
@@ -334,14 +350,7 @@
       width: 216px;
       height: 22px;
     }
-    /*
-    .f-buttons-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 9px;
-      padding: 12px 0;
-    }*/
+
     .floating-bar {
       position: fixed;
       left: 50%;
@@ -387,7 +396,6 @@
       cursor: move;
       padding-bottom: 6px;
       margin-bottom: 2px;
-      /*border-bottom: 1px solid var(--ink-700);*/
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -474,11 +482,6 @@
       align-items: stretch;
       gap: 6px;
     }
-    /*
-    #zoom-rotate-dialog input[type="range"] {
-      width: 100%;
-    }
-      */
 
     .zr-bar-wrap {
       display: flex;
@@ -766,19 +769,19 @@
       text-transform: uppercase;
     }
     .xsheet-th.active {
-      background-color: var(--ink-700); /*accent*/
+      background-color: var(--ink-700);
       color: var(--text);
     }
     .xsheet-tick {
-      border: 1px solid var(--cell-border); /*var(--ink-700);*/
+      border: 1px solid var(--cell-border);
       text-align: right;
       padding-right: 4px;
       font-size: 12px;
       color: var(--text-dim);
     }
     .xsheet-cell {
-      border: 1px solid var(--cell-border); /*var(--ink-700);*/
-      background-color: #ffffff; /*var(--ink-850);*/
+      border: 1px solid var(--cell-border);
+      background-color: #ffffff;
       cursor: pointer;
       font-size: 12px;
       text-align: center;
@@ -790,31 +793,18 @@
       padding: 1px 3px;
     }
     .xsheet-cell.active-col {
-      background-color: #ffffff; /*var(--ink-800);*/
+      background-color: #ffffff;
     }
     .xsheet-cell.current {
-      /*background-color: var(--accent);*/
       color: var(--ink-950);
-      border: 2px solid #000000; /*var(--text-dim);*/
+      border: 2px solid #000000;
     }
-    /*
-    .xsheet-cell input {
-      width: 45px;
-      position: relative;
-      left: 19px;
-      top: 4px;
-      background: var(--ink-800);
-      color: var(--text);
-      border: 1px solid var(--ink-700);
-      border-radius: 3px;
-    }
-    */
+
     .xsheet-cell .xsheet-hold {
       width: 32px;
       background: var(--ink-800);
       color: var(--text);
       border: 1px solid #b3b1b1;
-      /*border-radius: 3px;*/
     }
 
     .xsheet-num {
@@ -832,11 +822,11 @@
       display: none;
     }
     .xsheet-audio-cell {
-      border: 1px solid var(--cell-border); /*var(--ink-700);*/
+      border: 1px solid var(--cell-border);
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      background: #ffffff; /*var(--ink-850);*/
+      background: #ffffff;
     }
     .xsheet-audio-cell.current {
       border: 1px solid var(--text-dim);
@@ -989,7 +979,6 @@
     .app.drawing-mode .right-panel,
     .app.drawing-mode .xsheet-resizer,
     .app.drawing-mode .xsheet-panel {
-      /*.app.drawing-mode .floating-bar {*/
       display: none !important;
     }
   </style>
@@ -1132,14 +1121,20 @@
           </select>
 
           <button type="button" id="texture-bar-toggle">TEXTURAS</button>
-          <!--button type="button" id="tool-pan">MANO</button>
-        <button type="button" id="zoom-out">−</button>
-        <span id="zoomReadout">100%</span>
-        <button type="button" id="zoom-in">+</button>
-        <button type="button" id="rotate-left">⟲</button>
-        <span id="rotateReadout">0°</span>
-        <button type="button" id="rotate-right">⟳</button-->
-          <!--button type="button" id="zoom-reset">RESET VISTA</button-->
+          <div class="file-menu">
+            <button type="button" id="links-menu-btn">LINKS ▾</button>
+            <div class="file-menu-dropdown" id="links-menu-dropdown" hidden>
+              <div class="file-menu-section">
+                <a href="xsheet-standalone.html" target="_blank" rel="noopener"
+                  >Download App</a
+                >
+                <a href="LICENSE" target="_blank" rel="noopener">License</a>
+                <a href="MANUAL.md" target="_blank" rel="noopener"
+                  >User's Manual</a
+                >
+              </div>
+            </div>
+          </div>
         </header>
 
         <audio id="audioPlayer"></audio>
@@ -1301,37 +1296,6 @@
             <button type="button" id="clear-drawing">CLEAR FRAME</button>
             <button type="button" id="delete-frame">DELETE FRAME</button>
           </div>
-          <!--div class="l-buttons-wrap">
-            <button type="button" id="new-layer">ADD LAYER</button>
-           
-
-            <select id="layers">
-              <option value="0">Selecciona una opción...</option>
-            </select>
-
-            <label class="input-wrap" for="layer-visible">
-              <input type="checkbox" id="layer-visible" checked />
-              VISIBLE
-            </label>
-
-            <div class="input-wrap">
-              <label for="layer-opacity">LAYER OPACITY:</label>
-
-              <input
-                type="number"
-                id="layer-opacity"
-                min="0"
-                max="1"
-                step="0.05"
-                value="1"
-              />
-            </div>
-            <div class="input-wrap">
-              <label for="layer-hold-all">BATCH HOLD:</label>
-              <input type="number" id="layer-hold-all" min="1" value="1" />
-              <button type="button" id="apply-layer-hold">APPLY</button>
-            </div>
-          </div-->
 
           <div class="zr-bar-wrap">
             <svg
@@ -1381,10 +1345,6 @@
           <div class="texture-gallery" id="texture-gallery"></div>
         </div>
         <div class="main-row">
-          <!--aside class="rail">
-          <button type="button" id="drawing-toggle">DIBUJO</button>
-        </aside-->
-
           <div class="canvas-area">
             <div id="stageViewport">
               <div id="stage">
@@ -1553,36 +1513,6 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
               </div>
             </div>
           </div>
-
-          <!--aside class="right-panel"-->
-          <!--button type="button" id="new-layer">ADD LAYER</button>
-          <label for="layers">LAYER:</label>
-          <select id="layers">
-            <option value="0">Selecciona una opción...</option>
-          </select>
-          <label for="layer-opacity">Opacidad capa:</label>
-          <input
-            type="number"
-            id="layer-opacity"
-            min="0"
-            max="1"
-            step="0.05"
-            value="1"
-          /-->
-          <!--label
-            ><input type="checkbox" id="onion-toggle" checked /> Onion
-            skin</label
-          >
-          <label for="onion-opacity">Opacidad onion:</label>
-          <input
-            type="number"
-            id="onion-opacity"
-            min="0"
-            max="1"
-            step="0.05"
-            value="0.35"
-          /-->
-          <!--/aside-->
         </div>
         <footer class="transport">
           <button type="button" id="peg-bar-toggle">PEG</button>
@@ -1745,19 +1675,6 @@ resolutionInput.addEventListener("change", function (e) {
   updateOnion();
 });
 
-/*
-canvas.addEventListener("pointerdown", function (e) {
-  dibujando = true;
-  ctx.globalCompositeOperation =
-    tool === "eraser" ? "destination-out" : "source-over";
-  ctx.strokeStyle = colorInput.value;
-  ctx.lineWidth = sizeInput.value;
-  ctx.beginPath();
-  ctx.moveTo(e.offsetX, e.offsetY);
-  canvas.setPointerCapture(e.pointerId);
-});
-*/
-
 canvas.addEventListener("pointerdown", function (e) {
   if (e.button === 2) return;
 
@@ -1854,14 +1771,6 @@ canvas.addEventListener("pointermove", function (e) {
   }
 });
 
-/*
-canvas.addEventListener("pointermove", function (e) {
-  if (!dibujando) return;
-  ctx.lineTo(e.offsetX, e.offsetY);
-  ctx.stroke();
-});
-*/
-
 canvas.addEventListener("pointerup", function (e) {
   endStroke();
   endZoomDrag();
@@ -1879,11 +1788,9 @@ canvas.addEventListener("pointercancel", function (e) {
 });
 
 document.getElementById("tool-pencil").addEventListener("click", function () {
-  console.log("pencil selected");
   setTool("pencil");
 });
 document.getElementById("tool-eraser").addEventListener("click", function () {
-  console.log("eraser selected");
   setTool("eraser");
 });
 
@@ -2372,26 +2279,6 @@ function updateOnion() {
 var onionToggleInput = document.getElementById("onion-toggle");
 var onionOpacityInput = document.getElementById("onion-opacity");
 
-/*
-onionToggleInput.addEventListener("change", function () {
-  onionEnabled = onionToggleInput.checked;
-  qdOnionToggleInput.checked = onionEnabled;
-  document.getElementById("ol-onion-toggle").checked = onionEnabled;
-  updateOnion();
-});
-
-
-onionOpacityInput.addEventListener("change", function () {
-  var v = Math.min(1, Math.max(0, parseFloat(onionOpacityInput.value)));
-  if (!isFinite(v)) v = onionOpacity;
-  onionOpacity = v;
-  onionOpacityInput.value = v;
-  qdOnionOpacityInput.value = v;
-  document.getElementById("ol-onion-opacity").value = v;
-  updateOnion();
-});
-*/
-
 var qdOnionToggleInput = document.getElementById("qd-onion-toggle");
 var qdOnionOpacityInput = document.getElementById("qd-onion-opacity");
 
@@ -2677,8 +2564,6 @@ document
 const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 const newFrameBtn = document.getElementById("new-frame");
-//const newLayerBtn = document.getElementById("new-layer");
-//const layerSelector = document.getElementById("layers");
 
 prevBtn.addEventListener("click", function () {
   selectPrevFrame();
@@ -2697,30 +2582,13 @@ document
     insertFrameLeft(layers[activeLayer], currentTick);
   });
 
-//newLayerBtn.addEventListener("click", function () {
-//  addLayer();
-//});
-//layerSelector.addEventListener("change", function () {
-//  selectLayer(Number(layerSelector.value));
-//});
 document
   .getElementById("clear-drawing")
   .addEventListener("click", clearDrawing);
 document.getElementById("delete-frame").addEventListener("click", function () {
   deleteFrame(layers[activeLayer]);
 });
-/*
-document
-  .getElementById("apply-layer-hold")
-  .addEventListener("click", function () {
-    setLayerHoldAll(
-      activeLayer,
-      document.getElementById("layer-hold-all").value
-    );
-  });
-*/
 
-var layerOpacityInput = document.getElementById("layer-opacity");
 var xhLayerOpacityInput = document.getElementById("xh-layer-opacity");
 var xhLayerOpacityReadout = document.getElementById("xh-layer-opacity-readout");
 
@@ -2728,7 +2596,7 @@ xhLayerOpacityInput.addEventListener("input", function () {
   var v = +xhLayerOpacityInput.value / 100;
   layers[activeLayer].opacity = v;
   xhLayerOpacityReadout.textContent = Math.round(v * 100) + "%";
-  layerOpacityInput.value = v;
+
   updateOnion();
   refreshGradePreview();
 });
@@ -2736,7 +2604,7 @@ xhLayerOpacityInput.addEventListener("input", function () {
 var xhLayerVisibleInput = document.getElementById("xh-layer-visible");
 xhLayerVisibleInput.addEventListener("change", function () {
   layers[activeLayer].visible = xhLayerVisibleInput.checked;
-  layerVisibleInput.checked = xhLayerVisibleInput.checked;
+
   updateOnion();
   refreshGradePreview();
 });
@@ -2751,36 +2619,6 @@ document
 document.getElementById("xh-new-layer").addEventListener("click", function () {
   addLayer();
 });
-
-/*
-layerOpacityInput.addEventListener("change", function () {
-  var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
-  console.log("v:" + v);
-  if (!isFinite(v)) v = 1;
-  layers[activeLayer].opacity = v;
-  layerOpacityInput.value = v;
-  updateOnion();
-  refreshGradePreview();
-});
-
-
-var layerOpacityInput = document.getElementById("layer-opacity");
-layerOpacityInput.addEventListener("change", function () {
-  var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
-  console.log("v:" + v);
-  if (!isFinite(v)) v = 1;
-  layers[activeLayer].opacity = v;
-  layerOpacityInput.value = v;
-  updateOnion();
-  refreshGradePreview();
-});
-
-var layerVisibleInput = document.getElementById("layer-visible");
-layerVisibleInput.addEventListener("change", function () {
-  layers[activeLayer].visible = layerVisibleInput.checked;
-  updateOnion();
-  refreshGradePreview();
-});*/
 
 function addFrame(L, position) {
   syncActiveToStorage();
@@ -2807,10 +2645,6 @@ function insertFrameLeft(L, position) {
   updateOnion();
 }
 
-// let animales = ['perro', 'gato', 'pez'];
-// En el índice 1 ('gato'), borra 1 elemento y coloca 'pájaro'
-// animales.splice(1, 1, 'pájaro');
-
 //Create a cel, a cel is a real canvas
 //Each frame is a real off-screen <canvas>, saved in memory
 function makeCel() {
@@ -2831,7 +2665,6 @@ var layers = [
 ];
 var activeLayer = 0;
 var currentTick = 0;
-//var totalFrames = calcTotalFrames(layers[activeLayer].holds);
 
 function calcTotalFrames(input_holds) {
   return input_holds.reduce((a, b) => a + b, 0);
@@ -2851,14 +2684,12 @@ function populateLayerSelector(layers, newSelection) {
 }
 
 function syncLayerOpacityInput() {
-  //layerOpacityInput.value = layers[activeLayer].opacity;
   xhLayerOpacityInput.value = Math.round(layers[activeLayer].opacity * 100);
   xhLayerOpacityReadout.textContent =
     Math.round(layers[activeLayer].opacity * 100) + "%";
 }
 
 function syncLayerVisibleInput() {
-  //layerVisibleInput.checked = layers[activeLayer].visible;
   xhLayerVisibleInput.checked = layers[activeLayer].visible;
 }
 
@@ -2947,9 +2778,6 @@ function selectLayer(li) {
   updateOnion();
 }
 
-//¿Por qué en tres lugares "syncLayerOpacityInput();" y no uno solo? Porque activeLayer cambia en esos tres puntos (inicio, selección manual, capa nueva) y el input HTML no se actualiza solo — si no lo sincronizás ahí, se queda
-//  mostrando el valor de la capa anterior aunque cambies de capa.
-
 function addLayer() {
   syncActiveToStorage();
   var L = {
@@ -2978,12 +2806,6 @@ function sheetTotalTicks() {
 }
 
 //Que depende de layers[activeLayer], algo que vos todavía no tenés. Como en tu versión (sin capas todavía) tenés directamente cels/holds sueltos, tu equivalente sería:
-
-/*
-function activeIdx() {
-  return celAtTick(currentTick).idx;
-}
-*/
 
 function clearDrawing() {
   takeUndoSnapshot();
@@ -3320,7 +3142,7 @@ var audioMuted = false;
 //Carga del archivo — importante: usa FileReader.readAsDataURL, no URL.createObjectURL como en tu import.js. La razón es que necesita el mismo dato en dos formas: como src del <audio> Y
 //como ArrayBuffer para decodificar con Web Audio, así que lo más simple es tener un dataURL y volver a "descargarlo" con fetch() para decodificarlo:
 
-//2. computeMonoData no está definida — te expliqué qué hace pero no te di el código. Es la que mezcla los canales (si el audio es estéreo) a uno solo, para poder leerlo simple después:
+//computeMonoData no está definida. Es la que mezcla los canales (si el audio es estéreo) a uno solo, para poder leerlo simple después:
 function computeMonoData(buffer) {
   var ch0 = buffer.getChannelData(0);
   if (buffer.numberOfChannels === 1) return ch0;
@@ -3414,15 +3236,6 @@ var playTimer = null;
 var playTickPos = 0;
 var fps = 12;
 
-/*
-function playTick() {
-  const total = sheetTotalTicks();
-  const looped = playTickPos + 1 >= total;
-  playTickPos = looped ? 0 : playTickPos + 1;
-  renderPlayFrame();
-  if (looped) syncAudioToTick(0);
-}*/
-
 function playTick() {
   const looped = playTickPos + 1 > rangeEnd;
   playTickPos = looped ? rangeStart : playTickPos + 1;
@@ -3453,26 +3266,6 @@ function startPlay() {
   playTimer = setInterval(playTick, 1000 / fps);
   playBtn.textContent = "PAUSE";
 }
-
-/*
-function startPlay() {
-  if (!sheetTotalTicks()) return;
-  syncActiveToStorage();
-  playing = true;
-  onionEl.style.display = "none";
-  canvas.style.display = "none";
-  playCanvas.style.display = "block";
-  playTickPos = currentTick;
-  renderPlayFrame();
-  if (audioDataURL && !audioMuted) {
-    syncAudioToTick(playTickPos);
-    audioPlayerEl.play();
-  }
-
-  playTimer = setInterval(playTick, 1000 / fps);
-  playBtn.textContent = "PAUSE";
-}
-  */
 
 function stopPlay() {
   playing = false;
@@ -4041,25 +3834,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 renderXSheet();
-/*
-document
-  .getElementById("frames-bar-toggle")
-  .addEventListener("click", function () {
-    document.getElementById("frames-bar").hidden =
-      !document.getElementById("frames-bar").hidden;
-  });
 
-document
-  .getElementById("edit-frames-bar-toggle")
-  .addEventListener("click", function () {
-    var bar = document.getElementById("edit-frames-bar");
-    if (bar.hidden) {
-      centerFloatingBar(bar);
-    } else {
-      bar.hidden = true;
-    }
-  });
-*/
 (function () {
   var resizer = document.getElementById("xsheet-resizer");
   var xsheetEl = document.getElementById("xsheet-panel");
@@ -4483,6 +4258,24 @@ document.addEventListener("click", function (e) {
     e.target !== fileMenuBtn
   ) {
     fileMenuDropdown.hidden = true;
+  }
+});
+
+var linksMenuBtn = document.getElementById("links-menu-btn");
+var linksMenuDropdown = document.getElementById("links-menu-dropdown");
+
+linksMenuBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  linksMenuDropdown.hidden = !linksMenuDropdown.hidden;
+});
+
+document.addEventListener("click", function (e) {
+  if (
+    !linksMenuDropdown.hidden &&
+    !linksMenuDropdown.contains(e.target) &&
+    e.target !== linksMenuBtn
+  ) {
+    linksMenuDropdown.hidden = true;
   }
 });
 </script>
@@ -4978,7 +4771,7 @@ var MIN_HOLE_AREA = 100; // área mínima de blob (px²) para no ser ruido
 //imágenes escaneadas de prueba. Para simplificar, en vez del overlay visual arrastrable del original, usa 8 inputs numéricos (x/y/w/h × 2 regiones) — más simple de construir, mismo
 //resultado funcional.
 
-//2. Detección — detectHoleInCel (algoritmo de imagen, autocontenido)
+//Detección — detectHoleInCel (algoritmo de imagen, autocontenido)
 
 function detectHoleInCel(canvas, region) {
   const x = Math.round(region.x),
@@ -5293,14 +5086,6 @@ function saveProject() {
     .catch(function (err) {
       alert("No se pudo guardar el proyecto: " + err.message);
     });
-
-  /*
-  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "project.json";
-  a.click();
-  URL.revokeObjectURL(a.href);*/
 }
 
 document.getElementById("save-project").addEventListener("click", saveProject);
@@ -5517,17 +5302,7 @@ function zoomOut() {
   var vr = stageViewport.getBoundingClientRect();
   zoomAt(viewZoom / 1.2, vr.left + vr.width / 2, vr.top + vr.height / 2);
 }
-/*
-document.getElementById("zoom-in").addEventListener("click", zoomIn);
-document.getElementById("zoom-out").addEventListener("click", zoomOut);
 
-document.getElementById("rotate-left").addEventListener("click", function () {
-  setRotation(viewRotation - 15);
-});
-document.getElementById("rotate-right").addEventListener("click", function () {
-  setRotation(viewRotation + 15);
-});
-*/
 document.getElementById("zoom-reset").addEventListener("click", function () {
   viewZoom = 1;
   viewRotation = 0;
@@ -5536,12 +5311,6 @@ document.getElementById("zoom-reset").addEventListener("click", function () {
   applyViewTransform();
   syncZoomRotateInputs();
 });
-
-/*
-document.getElementById("tool-pan").addEventListener("click", function () {
-  setTool("pan");
-});
-*/
 
 var panning = false;
 var panStart = null;
@@ -5687,12 +5456,6 @@ canvas.addEventListener("contextmenu", function (e) {
   //if (!appEl.classList.contains("drawing-mode")) return;
   e.preventDefault();
   toggleZoomRotateDialog();
-  /*
-  if (!quickDialog.hidden) {
-    closeQuickDialog();
-  } else {
-    openQuickDialog(e.clientX, e.clientY);
-  }*/
 });
 
 var quickDialogHandle = document.getElementById("quick-dialog-drag-handle");
@@ -5772,10 +5535,6 @@ window.addEventListener("keydown", function (e) {
   //if (e.code === "NumpadDivide" && !e.repeat) toggleDrawingDialog();
 });
 
-//window.addEventListener("keyup", function (e) {
-//  if (e.code === "NumpadDivide") zoomKeyHeld = false;
-//});
-
 var zoomDragging = false;
 var zoomDragAnchorX = 0;
 var zoomDragAnchorY = 0;
@@ -5830,18 +5589,6 @@ document.addEventListener("pointerlockchange", function () {
   }
 });
 
-/*
-var drawingDialog = document.getElementById("drawing-dialog");
-function toggleDrawingDialog() {
-  if (drawingDialog.hidden) {
-    //syncZoomRotateInputs();
-    openFloatingBarAt(drawingDialog, lastMouseX, lastMouseY);
-  } else {
-    drawingDialog.hidden = true;
-  }
-}
-*/
-
 var zoomRotateDialog = document.getElementById("zoom-rotate-dialog");
 var zrDialogHandle = document.getElementById("zoom-rotate-dialog-drag-handle");
 var zrDragging = false;
@@ -5881,7 +5628,7 @@ function syncZoomRotateInputs() {
   zrZoomReadout.textContent = Math.round(viewZoom * 100) + "%";
   zrRotateInput.value = Math.round(viewRotation);
   zrRotateReadout.textContent = Math.round(viewRotation) + "°";
-  //layerSelector.value = activeLayer;
+
   syncLayerOpacityInput();
   syncLayerVisibleInput();
 }
@@ -5957,28 +5704,6 @@ document
       renderOnionLevelsList();
     }
   });
-
-/*
-  document
-  .getElementById("peg-bar-toggle")
-  .addEventListener("click", function () {
-    var bar = document.getElementById("peg-bar");
-    bar.hidden = !bar.hidden;
-    var display = bar.hidden ? "none" : "block";
-    document.getElementById("pegOverlay1").style.display = display;
-    document.getElementById("pegOverlay2").style.display = display;
-  });
-
-  document
-  .getElementById("adjust-bar-toggle")
-  .addEventListener("click", function () {
-    var bar = document.getElementById("adjust-bar");
-    bar.hidden = !bar.hidden;
-    document.getElementById("cropOverlay").style.display = bar.hidden
-      ? "none"
-      : "block";
-  });
-  */
 
 olRangeInput.addEventListener("change", function () {
   var v = Math.max(1, Math.round(+olRangeInput.value) || 5);
