@@ -1,8 +1,6 @@
 const prevBtn = document.getElementById("prev");
 const nextBtn = document.getElementById("next");
 const newFrameBtn = document.getElementById("new-frame");
-//const newLayerBtn = document.getElementById("new-layer");
-//const layerSelector = document.getElementById("layers");
 
 prevBtn.addEventListener("click", function () {
   selectPrevFrame();
@@ -21,28 +19,12 @@ document
     insertFrameLeft(layers[activeLayer], currentTick);
   });
 
-//newLayerBtn.addEventListener("click", function () {
-//  addLayer();
-//});
-//layerSelector.addEventListener("change", function () {
-//  selectLayer(Number(layerSelector.value));
-//});
 document
   .getElementById("clear-drawing")
   .addEventListener("click", clearDrawing);
 document.getElementById("delete-frame").addEventListener("click", function () {
   deleteFrame(layers[activeLayer]);
 });
-/*
-document
-  .getElementById("apply-layer-hold")
-  .addEventListener("click", function () {
-    setLayerHoldAll(
-      activeLayer,
-      document.getElementById("layer-hold-all").value
-    );
-  });
-*/
 
 var layerOpacityInput = document.getElementById("layer-opacity");
 var xhLayerOpacityInput = document.getElementById("xh-layer-opacity");
@@ -76,36 +58,6 @@ document.getElementById("xh-new-layer").addEventListener("click", function () {
   addLayer();
 });
 
-/*
-layerOpacityInput.addEventListener("change", function () {
-  var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
-  console.log("v:" + v);
-  if (!isFinite(v)) v = 1;
-  layers[activeLayer].opacity = v;
-  layerOpacityInput.value = v;
-  updateOnion();
-  refreshGradePreview();
-});
-
-
-var layerOpacityInput = document.getElementById("layer-opacity");
-layerOpacityInput.addEventListener("change", function () {
-  var v = Math.min(1, Math.max(0, parseFloat(layerOpacityInput.value)));
-  console.log("v:" + v);
-  if (!isFinite(v)) v = 1;
-  layers[activeLayer].opacity = v;
-  layerOpacityInput.value = v;
-  updateOnion();
-  refreshGradePreview();
-});
-
-var layerVisibleInput = document.getElementById("layer-visible");
-layerVisibleInput.addEventListener("change", function () {
-  layers[activeLayer].visible = layerVisibleInput.checked;
-  updateOnion();
-  refreshGradePreview();
-});*/
-
 function addFrame(L, position) {
   syncActiveToStorage();
   const run = layerCelAtTick(L, position);
@@ -131,10 +83,6 @@ function insertFrameLeft(L, position) {
   updateOnion();
 }
 
-// let animales = ['perro', 'gato', 'pez'];
-// En el índice 1 ('gato'), borra 1 elemento y coloca 'pájaro'
-// animales.splice(1, 1, 'pájaro');
-
 //Create a cel, a cel is a real canvas
 //Each frame is a real off-screen <canvas>, saved in memory
 function makeCel() {
@@ -155,7 +103,6 @@ var layers = [
 ];
 var activeLayer = 0;
 var currentTick = 0;
-//var totalFrames = calcTotalFrames(layers[activeLayer].holds);
 
 function calcTotalFrames(input_holds) {
   return input_holds.reduce((a, b) => a + b, 0);
@@ -175,14 +122,12 @@ function populateLayerSelector(layers, newSelection) {
 }
 
 function syncLayerOpacityInput() {
-  //layerOpacityInput.value = layers[activeLayer].opacity;
   xhLayerOpacityInput.value = Math.round(layers[activeLayer].opacity * 100);
   xhLayerOpacityReadout.textContent =
     Math.round(layers[activeLayer].opacity * 100) + "%";
 }
 
 function syncLayerVisibleInput() {
-  //layerVisibleInput.checked = layers[activeLayer].visible;
   xhLayerVisibleInput.checked = layers[activeLayer].visible;
 }
 
@@ -271,9 +216,6 @@ function selectLayer(li) {
   updateOnion();
 }
 
-//¿Por qué en tres lugares "syncLayerOpacityInput();" y no uno solo? Porque activeLayer cambia en esos tres puntos (inicio, selección manual, capa nueva) y el input HTML no se actualiza solo — si no lo sincronizás ahí, se queda
-//  mostrando el valor de la capa anterior aunque cambies de capa.
-
 function addLayer() {
   syncActiveToStorage();
   var L = {
@@ -302,12 +244,6 @@ function sheetTotalTicks() {
 }
 
 //Que depende de layers[activeLayer], algo que vos todavía no tenés. Como en tu versión (sin capas todavía) tenés directamente cels/holds sueltos, tu equivalente sería:
-
-/*
-function activeIdx() {
-  return celAtTick(currentTick).idx;
-}
-*/
 
 function clearDrawing() {
   takeUndoSnapshot();

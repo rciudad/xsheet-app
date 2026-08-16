@@ -10,7 +10,7 @@ var audioMuted = false;
 //Carga del archivo — importante: usa FileReader.readAsDataURL, no URL.createObjectURL como en tu import.js. La razón es que necesita el mismo dato en dos formas: como src del <audio> Y
 //como ArrayBuffer para decodificar con Web Audio, así que lo más simple es tener un dataURL y volver a "descargarlo" con fetch() para decodificarlo:
 
-//2. computeMonoData no está definida — te expliqué qué hace pero no te di el código. Es la que mezcla los canales (si el audio es estéreo) a uno solo, para poder leerlo simple después:
+//computeMonoData no está definida. Es la que mezcla los canales (si el audio es estéreo) a uno solo, para poder leerlo simple después:
 function computeMonoData(buffer) {
   var ch0 = buffer.getChannelData(0);
   if (buffer.numberOfChannels === 1) return ch0;

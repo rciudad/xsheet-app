@@ -26,15 +26,6 @@ var playTimer = null;
 var playTickPos = 0;
 var fps = 12;
 
-/*
-function playTick() {
-  const total = sheetTotalTicks();
-  const looped = playTickPos + 1 >= total;
-  playTickPos = looped ? 0 : playTickPos + 1;
-  renderPlayFrame();
-  if (looped) syncAudioToTick(0);
-}*/
-
 function playTick() {
   const looped = playTickPos + 1 > rangeEnd;
   playTickPos = looped ? rangeStart : playTickPos + 1;
@@ -65,26 +56,6 @@ function startPlay() {
   playTimer = setInterval(playTick, 1000 / fps);
   playBtn.textContent = "PAUSE";
 }
-
-/*
-function startPlay() {
-  if (!sheetTotalTicks()) return;
-  syncActiveToStorage();
-  playing = true;
-  onionEl.style.display = "none";
-  canvas.style.display = "none";
-  playCanvas.style.display = "block";
-  playTickPos = currentTick;
-  renderPlayFrame();
-  if (audioDataURL && !audioMuted) {
-    syncAudioToTick(playTickPos);
-    audioPlayerEl.play();
-  }
-
-  playTimer = setInterval(playTick, 1000 / fps);
-  playBtn.textContent = "PAUSE";
-}
-  */
 
 function stopPlay() {
   playing = false;

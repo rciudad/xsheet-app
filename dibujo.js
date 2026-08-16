@@ -41,19 +41,6 @@ resolutionInput.addEventListener("change", function (e) {
   updateOnion();
 });
 
-/*
-canvas.addEventListener("pointerdown", function (e) {
-  dibujando = true;
-  ctx.globalCompositeOperation =
-    tool === "eraser" ? "destination-out" : "source-over";
-  ctx.strokeStyle = colorInput.value;
-  ctx.lineWidth = sizeInput.value;
-  ctx.beginPath();
-  ctx.moveTo(e.offsetX, e.offsetY);
-  canvas.setPointerCapture(e.pointerId);
-});
-*/
-
 canvas.addEventListener("pointerdown", function (e) {
   if (e.button === 2) return;
 
@@ -150,14 +137,6 @@ canvas.addEventListener("pointermove", function (e) {
   }
 });
 
-/*
-canvas.addEventListener("pointermove", function (e) {
-  if (!dibujando) return;
-  ctx.lineTo(e.offsetX, e.offsetY);
-  ctx.stroke();
-});
-*/
-
 canvas.addEventListener("pointerup", function (e) {
   endStroke();
   endZoomDrag();
@@ -175,11 +154,9 @@ canvas.addEventListener("pointercancel", function (e) {
 });
 
 document.getElementById("tool-pencil").addEventListener("click", function () {
-  console.log("pencil selected");
   setTool("pencil");
 });
 document.getElementById("tool-eraser").addEventListener("click", function () {
-  console.log("eraser selected");
   setTool("eraser");
 });
 

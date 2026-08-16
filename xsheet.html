@@ -334,14 +334,7 @@
       width: 216px;
       height: 22px;
     }
-    /*
-    .f-buttons-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 9px;
-      padding: 12px 0;
-    }*/
+
     .floating-bar {
       position: fixed;
       left: 50%;
@@ -387,7 +380,6 @@
       cursor: move;
       padding-bottom: 6px;
       margin-bottom: 2px;
-      /*border-bottom: 1px solid var(--ink-700);*/
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -474,11 +466,6 @@
       align-items: stretch;
       gap: 6px;
     }
-    /*
-    #zoom-rotate-dialog input[type="range"] {
-      width: 100%;
-    }
-      */
 
     .zr-bar-wrap {
       display: flex;
@@ -766,19 +753,19 @@
       text-transform: uppercase;
     }
     .xsheet-th.active {
-      background-color: var(--ink-700); /*accent*/
+      background-color: var(--ink-700);
       color: var(--text);
     }
     .xsheet-tick {
-      border: 1px solid var(--cell-border); /*var(--ink-700);*/
+      border: 1px solid var(--cell-border);
       text-align: right;
       padding-right: 4px;
       font-size: 12px;
       color: var(--text-dim);
     }
     .xsheet-cell {
-      border: 1px solid var(--cell-border); /*var(--ink-700);*/
-      background-color: #ffffff; /*var(--ink-850);*/
+      border: 1px solid var(--cell-border);
+      background-color: #ffffff;
       cursor: pointer;
       font-size: 12px;
       text-align: center;
@@ -790,31 +777,18 @@
       padding: 1px 3px;
     }
     .xsheet-cell.active-col {
-      background-color: #ffffff; /*var(--ink-800);*/
+      background-color: #ffffff;
     }
     .xsheet-cell.current {
-      /*background-color: var(--accent);*/
       color: var(--ink-950);
-      border: 2px solid #000000; /*var(--text-dim);*/
+      border: 2px solid #000000;
     }
-    /*
-    .xsheet-cell input {
-      width: 45px;
-      position: relative;
-      left: 19px;
-      top: 4px;
-      background: var(--ink-800);
-      color: var(--text);
-      border: 1px solid var(--ink-700);
-      border-radius: 3px;
-    }
-    */
+
     .xsheet-cell .xsheet-hold {
       width: 32px;
       background: var(--ink-800);
       color: var(--text);
       border: 1px solid #b3b1b1;
-      /*border-radius: 3px;*/
     }
 
     .xsheet-num {
@@ -832,11 +806,11 @@
       display: none;
     }
     .xsheet-audio-cell {
-      border: 1px solid var(--cell-border); /*var(--ink-700);*/
+      border: 1px solid var(--cell-border);
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      background: #ffffff; /*var(--ink-850);*/
+      background: #ffffff;
     }
     .xsheet-audio-cell.current {
       border: 1px solid var(--text-dim);
@@ -989,7 +963,6 @@
     .app.drawing-mode .right-panel,
     .app.drawing-mode .xsheet-resizer,
     .app.drawing-mode .xsheet-panel {
-      /*.app.drawing-mode .floating-bar {*/
       display: none !important;
     }
   </style>
@@ -1132,14 +1105,6 @@
           </select>
 
           <button type="button" id="texture-bar-toggle">TEXTURAS</button>
-          <!--button type="button" id="tool-pan">MANO</button>
-        <button type="button" id="zoom-out">−</button>
-        <span id="zoomReadout">100%</span>
-        <button type="button" id="zoom-in">+</button>
-        <button type="button" id="rotate-left">⟲</button>
-        <span id="rotateReadout">0°</span>
-        <button type="button" id="rotate-right">⟳</button-->
-          <!--button type="button" id="zoom-reset">RESET VISTA</button-->
         </header>
 
         <audio id="audioPlayer"></audio>
@@ -1301,37 +1266,6 @@
             <button type="button" id="clear-drawing">CLEAR FRAME</button>
             <button type="button" id="delete-frame">DELETE FRAME</button>
           </div>
-          <!--div class="l-buttons-wrap">
-            <button type="button" id="new-layer">ADD LAYER</button>
-           
-
-            <select id="layers">
-              <option value="0">Selecciona una opción...</option>
-            </select>
-
-            <label class="input-wrap" for="layer-visible">
-              <input type="checkbox" id="layer-visible" checked />
-              VISIBLE
-            </label>
-
-            <div class="input-wrap">
-              <label for="layer-opacity">LAYER OPACITY:</label>
-
-              <input
-                type="number"
-                id="layer-opacity"
-                min="0"
-                max="1"
-                step="0.05"
-                value="1"
-              />
-            </div>
-            <div class="input-wrap">
-              <label for="layer-hold-all">BATCH HOLD:</label>
-              <input type="number" id="layer-hold-all" min="1" value="1" />
-              <button type="button" id="apply-layer-hold">APPLY</button>
-            </div>
-          </div-->
 
           <div class="zr-bar-wrap">
             <svg
@@ -1381,10 +1315,6 @@
           <div class="texture-gallery" id="texture-gallery"></div>
         </div>
         <div class="main-row">
-          <!--aside class="rail">
-          <button type="button" id="drawing-toggle">DIBUJO</button>
-        </aside-->
-
           <div class="canvas-area">
             <div id="stageViewport">
               <div id="stage">
@@ -1553,36 +1483,6 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
               </div>
             </div>
           </div>
-
-          <!--aside class="right-panel"-->
-          <!--button type="button" id="new-layer">ADD LAYER</button>
-          <label for="layers">LAYER:</label>
-          <select id="layers">
-            <option value="0">Selecciona una opción...</option>
-          </select>
-          <label for="layer-opacity">Opacidad capa:</label>
-          <input
-            type="number"
-            id="layer-opacity"
-            min="0"
-            max="1"
-            step="0.05"
-            value="1"
-          /-->
-          <!--label
-            ><input type="checkbox" id="onion-toggle" checked /> Onion
-            skin</label
-          >
-          <label for="onion-opacity">Opacidad onion:</label>
-          <input
-            type="number"
-            id="onion-opacity"
-            min="0"
-            max="1"
-            step="0.05"
-            value="0.35"
-          /-->
-          <!--/aside-->
         </div>
         <footer class="transport">
           <button type="button" id="peg-bar-toggle">PEG</button>

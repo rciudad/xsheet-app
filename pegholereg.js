@@ -8,7 +8,7 @@ var MIN_HOLE_AREA = 100; // área mínima de blob (px²) para no ser ruido
 //imágenes escaneadas de prueba. Para simplificar, en vez del overlay visual arrastrable del original, usa 8 inputs numéricos (x/y/w/h × 2 regiones) — más simple de construir, mismo
 //resultado funcional.
 
-//2. Detección — detectHoleInCel (algoritmo de imagen, autocontenido)
+//Detección — detectHoleInCel (algoritmo de imagen, autocontenido)
 
 function detectHoleInCel(canvas, region) {
   const x = Math.round(region.x),

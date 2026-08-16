@@ -34,14 +34,6 @@ function saveProject() {
     .catch(function (err) {
       alert("No se pudo guardar el proyecto: " + err.message);
     });
-
-  /*
-  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "project.json";
-  a.click();
-  URL.revokeObjectURL(a.href);*/
 }
 
 document.getElementById("save-project").addEventListener("click", saveProject);

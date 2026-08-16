@@ -498,25 +498,7 @@ document.addEventListener("keydown", function (e) {
 });
 
 renderXSheet();
-/*
-document
-  .getElementById("frames-bar-toggle")
-  .addEventListener("click", function () {
-    document.getElementById("frames-bar").hidden =
-      !document.getElementById("frames-bar").hidden;
-  });
 
-document
-  .getElementById("edit-frames-bar-toggle")
-  .addEventListener("click", function () {
-    var bar = document.getElementById("edit-frames-bar");
-    if (bar.hidden) {
-      centerFloatingBar(bar);
-    } else {
-      bar.hidden = true;
-    }
-  });
-*/
 (function () {
   var resizer = document.getElementById("xsheet-resizer");
   var xsheetEl = document.getElementById("xsheet-panel");

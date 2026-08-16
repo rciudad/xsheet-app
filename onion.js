@@ -95,26 +95,6 @@ function updateOnion() {
 var onionToggleInput = document.getElementById("onion-toggle");
 var onionOpacityInput = document.getElementById("onion-opacity");
 
-/*
-onionToggleInput.addEventListener("change", function () {
-  onionEnabled = onionToggleInput.checked;
-  qdOnionToggleInput.checked = onionEnabled;
-  document.getElementById("ol-onion-toggle").checked = onionEnabled;
-  updateOnion();
-});
-
-
-onionOpacityInput.addEventListener("change", function () {
-  var v = Math.min(1, Math.max(0, parseFloat(onionOpacityInput.value)));
-  if (!isFinite(v)) v = onionOpacity;
-  onionOpacity = v;
-  onionOpacityInput.value = v;
-  qdOnionOpacityInput.value = v;
-  document.getElementById("ol-onion-opacity").value = v;
-  updateOnion();
-});
-*/
-
 var qdOnionToggleInput = document.getElementById("qd-onion-toggle");
 var qdOnionOpacityInput = document.getElementById("qd-onion-opacity");
 

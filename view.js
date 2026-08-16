@@ -97,17 +97,7 @@ function zoomOut() {
   var vr = stageViewport.getBoundingClientRect();
   zoomAt(viewZoom / 1.2, vr.left + vr.width / 2, vr.top + vr.height / 2);
 }
-/*
-document.getElementById("zoom-in").addEventListener("click", zoomIn);
-document.getElementById("zoom-out").addEventListener("click", zoomOut);
 
-document.getElementById("rotate-left").addEventListener("click", function () {
-  setRotation(viewRotation - 15);
-});
-document.getElementById("rotate-right").addEventListener("click", function () {
-  setRotation(viewRotation + 15);
-});
-*/
 document.getElementById("zoom-reset").addEventListener("click", function () {
   viewZoom = 1;
   viewRotation = 0;
@@ -116,12 +106,6 @@ document.getElementById("zoom-reset").addEventListener("click", function () {
   applyViewTransform();
   syncZoomRotateInputs();
 });
-
-/*
-document.getElementById("tool-pan").addEventListener("click", function () {
-  setTool("pan");
-});
-*/
 
 var panning = false;
 var panStart = null;
@@ -267,12 +251,6 @@ canvas.addEventListener("contextmenu", function (e) {
   //if (!appEl.classList.contains("drawing-mode")) return;
   e.preventDefault();
   toggleZoomRotateDialog();
-  /*
-  if (!quickDialog.hidden) {
-    closeQuickDialog();
-  } else {
-    openQuickDialog(e.clientX, e.clientY);
-  }*/
 });
 
 var quickDialogHandle = document.getElementById("quick-dialog-drag-handle");
@@ -352,10 +330,6 @@ window.addEventListener("keydown", function (e) {
   //if (e.code === "NumpadDivide" && !e.repeat) toggleDrawingDialog();
 });
 
-//window.addEventListener("keyup", function (e) {
-//  if (e.code === "NumpadDivide") zoomKeyHeld = false;
-//});
-
 var zoomDragging = false;
 var zoomDragAnchorX = 0;
 var zoomDragAnchorY = 0;
@@ -410,18 +384,6 @@ document.addEventListener("pointerlockchange", function () {
   }
 });
 
-/*
-var drawingDialog = document.getElementById("drawing-dialog");
-function toggleDrawingDialog() {
-  if (drawingDialog.hidden) {
-    //syncZoomRotateInputs();
-    openFloatingBarAt(drawingDialog, lastMouseX, lastMouseY);
-  } else {
-    drawingDialog.hidden = true;
-  }
-}
-*/
-
 var zoomRotateDialog = document.getElementById("zoom-rotate-dialog");
 var zrDialogHandle = document.getElementById("zoom-rotate-dialog-drag-handle");
 var zrDragging = false;
@@ -461,7 +423,7 @@ function syncZoomRotateInputs() {
   zrZoomReadout.textContent = Math.round(viewZoom * 100) + "%";
   zrRotateInput.value = Math.round(viewRotation);
   zrRotateReadout.textContent = Math.round(viewRotation) + "°";
-  //layerSelector.value = activeLayer;
+
   syncLayerOpacityInput();
   syncLayerVisibleInput();
 }
@@ -537,28 +499,6 @@ document
       renderOnionLevelsList();
     }
   });
-
-/*
-  document
-  .getElementById("peg-bar-toggle")
-  .addEventListener("click", function () {
-    var bar = document.getElementById("peg-bar");
-    bar.hidden = !bar.hidden;
-    var display = bar.hidden ? "none" : "block";
-    document.getElementById("pegOverlay1").style.display = display;
-    document.getElementById("pegOverlay2").style.display = display;
-  });
-
-  document
-  .getElementById("adjust-bar-toggle")
-  .addEventListener("click", function () {
-    var bar = document.getElementById("adjust-bar");
-    bar.hidden = !bar.hidden;
-    document.getElementById("cropOverlay").style.display = bar.hidden
-      ? "none"
-      : "block";
-  });
-  */
 
 olRangeInput.addEventListener("change", function () {
   var v = Math.max(1, Math.round(+olRangeInput.value) || 5);
