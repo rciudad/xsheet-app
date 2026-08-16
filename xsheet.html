@@ -1139,6 +1139,7 @@
               </div>
             </div>
           </div>
+          <button type="button" id="help-toggle-btn">AYUDA</button>
         </header>
 
         <audio id="audioPlayer"></audio>
@@ -1514,6 +1515,104 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
                   RESTAURAR POR DEFECTO
                 </button>
                 <button type="button" id="shortcuts-close">CERRAR</button>
+              </div>
+            </div>
+          </div>
+          <div
+            id="help-overlay"
+            style="
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0, 0, 0, 0.5);
+              z-index: 1000;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <div
+              style="
+                background: var(--ink-900);
+                color: var(--text);
+                padding: 18px;
+                width: 460px;
+                max-width: 90vw;
+                max-height: 85vh;
+                display: flex;
+                flex-direction: column;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+              "
+            >
+              <strong>Ayuda — xsheet</strong>
+
+              <small style="margin: 6px 0; color: var(--text-dim)"
+                >Atajos de teclado</small
+              >
+              <div
+                id="help-shortcuts-list"
+                style="
+                  overflow-y: auto;
+                  border: 1px solid #999;
+                  margin-bottom: 10px;
+                "
+              ></div>
+
+              <small style="margin: 6px 0; color: var(--text-dim)">Mouse</small>
+              <div style="border: 1px solid #999; margin-bottom: 10px">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Rueda del mouse</span>
+                  <span style="color: var(--text-dim)"
+                    >Zoom centrado en el cursor</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Botón central</span>
+                  <span style="color: var(--text-dim)">Pan temporal</span>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Click derecho (escenario, modo dibujo)</span>
+                  <span style="color: var(--text-dim)">Zoom/rotación</span>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 3px 6px;
+                  "
+                >
+                  <span>Click derecho (celda del xsheet)</span>
+                  <span style="color: var(--text-dim)">Mover/copiar frame</span>
+                </div>
+              </div>
+
+              <label style="margin-bottom: 8px">
+                <input type="checkbox" id="help-dont-show" /> No mostrar al
+                iniciar
+              </label>
+              <div>
+                <button type="button" id="help-close">CERRAR</button>
               </div>
             </div>
           </div>

@@ -14,8 +14,7 @@ var shortcutActions = [
     label: "Frame anterior",
     defaultKey: "PageUp",
     guard: function () {
-      return;
-      !playing;
+      return !playing;
     },
     run: function () {
       selectPrevFrame();
@@ -26,8 +25,7 @@ var shortcutActions = [
     label: "Frame siguiente",
     defaultKey: "+",
     guard: function () {
-      return;
-      !playing;
+      return !playing;
     },
     run: function () {
       selectNextFrame();
@@ -69,9 +67,9 @@ var shortcutActions = [
     id: "quickDialog",
     label: "Diálogo rápido",
     defaultKey: "Q",
+    note: "deshabilitado temporalmente",
     guard: function () {
-      return;
-      appEl.classList.contains("drawing-mode");
+      return appEl.classList.contains("drawing-mode");
     },
     run: function () {
       openQuickDialog(lastMouseX, lastMouseY);
@@ -248,3 +246,56 @@ shortcutsResetBtn.addEventListener("click", function () {
   capturingActionId = null;
   renderShortcutsList();
 });
+
+// --- Diálogo de ayuda ---
+
+var helpOverlay = document.getElementById("help-overlay");
+var helpShortcutsList = document.getElementById("help-shortcuts-list");
+var helpToggleBtn = document.getElementById("help-toggle-btn");
+var helpCloseBtn = document.getElementById("help-close");
+var helpDontShowInput = document.getElementById("help-dont-show");
+
+var HELP_DONT_SHOW_KEY = "xsheetHelpDontShow";
+
+function renderHelpShortcutsList() {
+  helpShortcutsList.innerHTML = "";
+  shortcutActions.forEach(function (a) {
+    var row = document.createElement("div");
+    row.style.cssText =
+      "display:flex; justify-content:space-between; gap:12px; padding:3px 6px;";
+
+    var label = document.createElement("span");
+    label.textContent = a.label + (a.note ? " (" + a.note + ")" : "");
+
+    var key = document.createElement("span");
+    key.style.cssText =
+      "font-family: var(--font-mono, monospace); color: var(--text-dim);";
+    key.textContent = shortcutBindings[a.id];
+
+    row.appendChild(label);
+    row.appendChild(key);
+    helpShortcutsList.appendChild(row);
+  });
+}
+
+function openHelpOverlay() {
+  renderHelpShortcutsList();
+  helpOverlay.style.display = "flex";
+}
+
+function closeHelpOverlay() {
+  helpOverlay.style.display = "none";
+}
+
+helpToggleBtn.addEventListener("click", openHelpOverlay);
+
+helpCloseBtn.addEventListener("click", function () {
+  if (helpDontShowInput.checked) {
+    localStorage.setItem(HELP_DONT_SHOW_KEY, "1");
+  }
+  closeHelpOverlay();
+});
+
+if (localStorage.getItem(HELP_DONT_SHOW_KEY) !== "1") {
+  openHelpOverlay();
+}
