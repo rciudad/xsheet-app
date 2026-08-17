@@ -154,6 +154,20 @@ function renderXSheet() {
       }
     }
   });
+  const currentTickEl = xsheetEl.querySelector(".xsheet-tick.current");
+  if (currentTickEl) {
+    const margin = 90; // px de aire que queremos dejar debajo del frame actual
+    const xsheetRect = xsheetEl.getBoundingClientRect();
+    const tickRect = currentTickEl.getBoundingClientRect();
+    const tickTop = tickRect.top - xsheetRect.top + xsheetEl.scrollTop;
+    const bottomNeeded = tickTop + currentTickEl.offsetHeight + margin;
+
+    if (bottomNeeded - xsheetEl.scrollTop > xsheetEl.clientHeight) {
+      xsheetEl.scrollTop = bottomNeeded - xsheetEl.clientHeight;
+    } else if (tickTop < xsheetEl.scrollTop) {
+      xsheetEl.scrollTop = tickTop;
+    }
+  }
 }
 
 function setFrameHold(li, celIdx, value) {

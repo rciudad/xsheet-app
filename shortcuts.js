@@ -34,7 +34,7 @@ var shortcutActions = [
   {
     id: "toolPencil",
     label: "Herramienta lápiz",
-    defaultKey: "B",
+    defaultKey: "P",
     run: function () {
       setTool("pencil");
     },

@@ -54,6 +54,9 @@
     button {
       font-family: inherit;
     }
+    header {
+      position: relative;
+    }
     .app {
       display: flex;
       flex-direction: row;
@@ -678,6 +681,7 @@
       overflow: auto;
       background-color: var(--ink-900);
       color: var(--text);
+      padding-bottom: 100px;
     }
     .xsheet-panel {
       display: flex;
@@ -689,6 +693,7 @@
       height: 100%;
       min-height: 0;
       overflow: hidden;
+      position: relative;
     }
     .xsheet-header {
       flex-shrink: 0;
@@ -867,9 +872,9 @@
       background: var(--teal);
     }
     .mode-toggle-btn {
-      position: fixed;
+      position: absolute;
       top: 8px;
-      right: 8px;
+      left: -50px;
       z-index: 700;
       height: 28px;
       padding: 0 10px;
@@ -1784,14 +1789,7 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
           <input type="number" id="fps" min="1" max="30" value="12" />
         </footer>
       </div>
-      <button
-        type="button"
-        id="drawing-mode-toggle"
-        class="mode-toggle-btn"
-        style="display: none"
-      >
-        MODO DIBUJO
-      </button>
+
       <div class="quick-dialog" id="quick-dialog" hidden>
         <div class="quick-dialog-header" id="quick-dialog-drag-handle">
           <span>Menú rápido</span>
@@ -1848,7 +1846,16 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
 
         <div class="mini-xsheet" id="mini-xsheet"></div>
       </div>
-      <div class="xsheet-resizer" id="xsheet-resizer"></div>
+      <div class="xsheet-resizer" id="xsheet-resizer">
+        <button
+          type="button"
+          id="drawing-mode-toggle"
+          class="mode-toggle-btn"
+          style="display: flex"
+        >
+          MODO DIBUJO
+        </button>
+      </div>
       <div class="xsheet-panel" id="xsheet-panel">
         <div class="xsheet-header">
           <div class="xsheet-header-field">
