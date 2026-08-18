@@ -205,6 +205,72 @@ document
     });
   });
 
+function drawWovenSourceFrame(destCtx, tick) {
+  var src = flattenAt(tick);
+  exportCropCanvas.width = cropRect.w;
+  exportCropCanvas.height = cropRect.h;
+  exportCropCtx.clearRect(0, 0, cropRect.w, cropRect.h);
+  exportCropCtx.drawImage(
+    src,
+    cropRect.x,
+    cropRect.y,
+    cropRect.w,
+    cropRect.h,
+    0,
+    0,
+    cropRect.w,
+    cropRect.h
+  );
+  if (hasColorAdjustments())
+    applyColorAdjustments(exportCropCtx, cropRect.w, cropRect.h);
+  destCtx.drawImage(exportCropCanvas, 0, 0);
+}
+
+function buildWovenFrames(N) {
+  const frames = [];
+  for (let k = 0; k < N; k++) {
+    const canvas = document.createElement("canvas");
+    canvas.width = cropRect.w;
+    canvas.width = cropRect.w;
+    canvas.height = cropRect.h;
+    frames.push(canvas);
+  }
+  const total = rangeEnd - rangeStart + 1;
+  for (let i = 0; i < total; i++) {
+    const tick = rangeStart + i;
+    drawWovenSourceFrame(frames[i % N].getContext("2d"), tick);
+  }
+  return frames;
+}
+
+document.getElementById("export-woven").addEventListener("click", function () {
+  syncActiveToStorage();
+  const N = Math.max(
+    1,
+    Math.round(+document.getElementById("export-woven-sheets").value) || 1
+  );
+  const frames = buildWovenFrames(N);
+  const prefix = exportPrefix();
+  const zip = document.getElementById("export-zip-toggle").checked;
+
+  if (zip) {
+    const entries = frames.map(function (canvas, i) {
+      return {
+        name: prefix + "-woven-" + padNum(i + 1, N) + ".png",
+        bytes: pngBytesFromCanvas(canvas),
+      };
+    });
+    deliverFile(prefix + "-woven.zip", buildZip(entries));
+    return;
+  }
+
+  frames.forEach(function (canvas, i) {
+    canvas.toBlob(function (blob) {
+      deliverFile(prefix + "-woven-" + padNum(i + 1, N) + ".png", blob);
+    });
+  });
+});
+
 var exportVideoBtn = document.getElementById("export-video");
 var exportVideoStatusEl = document.getElementById("export-video-status");
 
