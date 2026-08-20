@@ -63,7 +63,7 @@ La grilla tiene una fila por tick y una columna por capa, más una columna de fo
 
 - **Click izquierdo** en una celda selecciona esa capa y ese tick.
 - El número de hold dentro de la celda es editable: cambiarlo ajusta cuántos ticks dura ese frame.
-- **Click derecho** sobre una celda abre el **menú contextual del frame**, con: Agregar después, Agregar antes, Duplicar, Borrar dibujo, Eliminar cuadro, Mover… y Copiar…. Las primeras cinco acciones (agregar/duplicar/borrar/eliminar) actúan sobre un único frame y se deshabilitan si el menú se abrió sobre un rango seleccionado (ver más abajo); Mover… y Copiar… sí soportan tanto un frame único como un rango.
+- **Click derecho** sobre una celda abre el **menú contextual del frame**, con: Agregar después, Agregar antes, Duplicar, Borrar dibujo, Eliminar cuadro, Mover… y Copiar…. Agregar después/antes solo tiene sentido para un frame único y queda deshabilitado sobre un rango seleccionado (ver más abajo); Duplicar, Borrar dibujo, Eliminar cuadro, Mover… y Copiar… soportan tanto un frame único como un rango.
 - **Selección de un rango de frames**: click izquierdo en un frame lo selecciona; click izquierdo de nuevo sobre ese mismo frame abre un popup **"Hasta"** donde se indica el número de frame final — al confirmar, queda seleccionado el rango completo (resaltado en el xsheet). `Escape` limpia la selección. Abrir el menú contextual con un rango seleccionado aplica ese rango como alcance de Mover…/Copiar.
 - El ancho del panel del xsheet (encabezado + grilla) se puede ajustar arrastrando el borde entre el escenario y el panel.
 
@@ -75,7 +75,7 @@ Controles de frame (diálogo de zoom/rotación, tecla `*` o click derecho sobre 
 - **CLEAR FRAME**: borra el contenido del frame actual (deja el hold).
 - **DELETE FRAME**: elimina el frame actual de la capa.
 
-> Duplicar, borrar dibujo y eliminar aplicados a un rango completo (en vez de un solo frame) todavía no están implementados — por ahora esas tres quedan deshabilitadas en el menú contextual cuando el alcance es un rango.
+Duplicar, Borrar dibujo y Eliminar cuadro aplicados desde el menú contextual sobre un rango seleccionado actúan sobre todo el bloque: Duplicar inserta una copia del rango completo justo después; Borrar dibujo limpia el contenido de todos los frames del rango (conserva los holds); Eliminar cuadro saca esos frames de la capa (si el rango cubre toda la capa, deja un único frame en blanco en vez de vaciarla). Ninguna de las tres pasa por el undo de un solo nivel (sección 17) — deshacer un lote requiere rehacerlo a mano.
 
 Atajos: `PageUp` (frame anterior), `+` (frame siguiente, sin reproducir), `/` (agregar frame después del actual). Todos configurables, ver sección 16.
 

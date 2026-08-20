@@ -316,10 +316,103 @@ function copyFrameToPosition(sourceStart, sourceEnd, destNumber) {
 
   var destIdx = tickNumberToRunIdx(L, destNumber);
   var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
+
+  if (insertAt === L.cels.length) {
+    var currentTotal = calcTotalFrames(L.holds);
+    var gap = destNumber - 1 - currentTotal;
+    if (gap > 0 && L.holds.length > 0) {
+      L.holds[L.holds.length - 1] += gap;
+    }
+  }
+
   L.cels.splice.apply(L.cels, [insertAt, 0].concat(newCels));
   L.holds.splice.apply(L.holds, [insertAt, 0].concat(newHolds));
 
   currentTick = runStartForIdx(L, insertAt);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+function duplicateFrameRange(li, startFrame, endFrame) {
+  var L = layers[li];
+  syncActiveToStorage();
+
+  var startIdx = tickNumberToRunIdx(L, startFrame);
+  var endIdx = tickNumberToRunIdx(L, endFrame);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+
+  var newCels = [];
+  var newHolds = [];
+  for (var i = startIdx; i <= endIdx; i++) {
+    var nc = makeCel();
+    nc.ctx.drawImage(L.cels[i].canvas, 0, 0);
+    newCels.push(nc);
+    newHolds.push(L.holds[i]);
+  }
+  L.cels.splice.apply(L.cels, [endIdx + 1, 0].concat(newCels));
+  L.holds.splice.apply(L.holds, [endIdx + 1, 0].concat(newHolds));
+
+  currentTick = runStartForIdx(L, endIdx + 1);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+function clearFrameRange(li, startFrame, endFrame) {
+  var L = layers[li];
+  syncActiveToStorage();
+
+  var startIdx = tickNumberToRunIdx(L, startFrame);
+  var endIdx = tickNumberToRunIdx(L, endFrame);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+
+  for (var i = startIdx; i <= endIdx; i++) {
+    L.cels[i].ctx.clearRect(0, 0, W, H);
+  }
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+function deleteFrameRange(li, startFrame, endFrame) {
+  var L = layers[li];
+  syncActiveToStorage();
+
+  var startIdx = tickNumberToRunIdx(L, startFrame);
+  var endIdx = tickNumberToRunIdx(L, endFrame);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+
+  if (startIdx === 0 && endIdx === L.cels.length - 1) {
+    // Rango cubre toda la capa: igual que deleteFrame() con un solo frame,
+    // dejamos uno en blanco en vez de vaciar la capa.
+    L.cels[0].ctx.clearRect(0, 0, W, H);
+    L.cels.length = 1;
+    L.holds.length = 1;
+    L.holds[0] = 1;
+  } else {
+    L.cels.splice(startIdx, endIdx - startIdx + 1);
+    L.holds.splice(startIdx, endIdx - startIdx + 1);
+  }
+  currentTick = Math.min(currentTick, sheetTotalTicks() - 1);
   loadActiveFromStorage();
   renderXSheet();
   updateOnion();
@@ -429,13 +522,7 @@ function openFrameContextMenu(li, frameNumber, clientX, clientY) {
     end: frameSelection.end,
   };
   var isRange = frameContextMenu.start !== frameContextMenu.end;
-  [
-    "fcm-add-after",
-    "fcm-add-before",
-    "fcm-duplicate",
-    "fcm-clear",
-    "fcm-delete",
-  ].forEach(function (id) {
+  ["fcm-add-after", "fcm-add-before"].forEach(function (id) {
     document.getElementById(id).disabled = isRange;
   });
   document.getElementById("frame-context-menu").hidden = false;
@@ -714,24 +801,38 @@ document
     selectTick(scope.start - 1);
     insertFrameLeft(layers[scope.li], scope.start - 1);
   });
+
 document.getElementById("fcm-duplicate").addEventListener("click", function () {
   var scope = frameContextMenu;
   closeFrameContextMenu();
-  selectTick(scope.start - 1);
-  duplicateFrame();
+  if (scope.start !== scope.end) {
+    duplicateFrameRange(scope.li, scope.start, scope.end);
+  } else {
+    selectTick(scope.start - 1);
+    duplicateFrame();
+  }
 });
 document.getElementById("fcm-clear").addEventListener("click", function () {
   var scope = frameContextMenu;
   closeFrameContextMenu();
-  selectTick(scope.start - 1);
-  clearDrawing();
+  if (scope.start !== scope.end) {
+    clearFrameRange(scope.li, scope.start, scope.end);
+  } else {
+    selectTick(scope.start - 1);
+    clearDrawing();
+  }
 });
 document.getElementById("fcm-delete").addEventListener("click", function () {
   var scope = frameContextMenu;
   closeFrameContextMenu();
-  selectTick(scope.start - 1);
-  deleteFrame(layers[scope.li]);
+  if (scope.start !== scope.end) {
+    deleteFrameRange(scope.li, scope.start, scope.end);
+  } else {
+    selectTick(scope.start - 1);
+    deleteFrame(layers[scope.li]);
+  }
 });
+
 document.getElementById("fcm-move").addEventListener("click", function (ev) {
   var scope = frameContextMenu;
   closeFrameContextMenu();
