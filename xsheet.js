@@ -105,6 +105,11 @@ function renderXSheet() {
         frameAction.destFrame != null &&
         runStart <= frameAction.destFrame - 1 &&
         runStart + runLen - 1 >= frameAction.destFrame - 1;
+      const isSelected =
+        frameSelection &&
+        li === frameSelection.li &&
+        runStart <= frameSelection.end - 1 &&
+        runStart + runLen - 1 >= frameSelection.start - 1;
 
       const cell = document.createElement("div");
       //cell.appendChild(holdInput);
@@ -124,23 +129,26 @@ function renderXSheet() {
           ? " current"
           : "") +
         (isPicked ? " action-picked" : "") +
-        (isDest ? " action-dest" : "");
+        (isDest ? " action-dest" : "") +
+        (isSelected ? " frame-selected" : "");
+
       cell.style.gridColumn = String(li + 3);
       cell.style.gridRow = runStart + 2 + " / span " + runLen;
 
       (function (li, runStart) {
-        cell.addEventListener("click", function () {
+        cell.addEventListener("click", function (ev) {
           if (frameAction) {
             pickFrameActionCell(li, runStart);
             return;
           }
           selectLayer(li);
           selectTick(runStart);
+          handleFrameSelectClick(li, runStart + 1, ev.clientX, ev.clientY);
         });
         cell.addEventListener("contextmenu", function (ev) {
           ev.preventDefault();
           selectLayer(li);
-          openFrameAction(li, runStart + 1, ev.clientX, ev.clientY);
+          openFrameContextMenu(li, runStart + 1, ev.clientX, ev.clientY);
         });
       })(li, runStart);
 
@@ -325,6 +333,142 @@ document
 
 var frameAction = null;
 
+var frameSelection = null; // {li, start, end} — grupo de frames seleccionado (1-based, start<=end)
+var frameSelectAnchor = null; // {li, frame} — frame anclado en el primer click
+var frameSelectDialogOpen = false; // true mientras el diálogo "Hasta" está abierto
+
+function positionFrameSelectRangePopup(clientX, clientY) {
+  var popup = document.getElementById("frame-select-range-popup");
+  popup.style.transform = "none";
+  popup.style.left = "0px";
+  popup.style.top = "0px";
+  var rect = popup.getBoundingClientRect();
+  var xsheetRect = document.getElementById("xsheet").getBoundingClientRect();
+  var left = xsheetRect.left - rect.width - 8;
+  var top = Math.min(clientY, window.innerHeight - rect.height - 8);
+  popup.style.left = Math.max(8, left) + "px";
+  popup.style.top = Math.max(8, top) + "px";
+}
+
+function openFrameSelectRangeDialog(clientX, clientY) {
+  frameSelectDialogOpen = true;
+  document.getElementById("fsr-end").value = "";
+  document.getElementById("fsr-confirm").disabled = true;
+  document.getElementById("frame-select-range-popup").hidden = false;
+  positionFrameSelectRangePopup(clientX, clientY);
+}
+
+function closeFrameSelectRangeDialog() {
+  frameSelectDialogOpen = false;
+  document.getElementById("frame-select-range-popup").hidden = true;
+}
+
+function confirmFrameSelectRange(endFrameNumber) {
+  if (!frameSelectAnchor) return;
+  var li = frameSelectAnchor.li;
+  var start = Math.min(frameSelectAnchor.frame, endFrameNumber);
+  var end = Math.max(frameSelectAnchor.frame, endFrameNumber);
+  frameSelection = { li: li, start: start, end: end };
+  closeFrameSelectRangeDialog();
+  renderXSheet();
+}
+
+function clearFrameSelection() {
+  frameSelection = null;
+  frameSelectAnchor = null;
+  closeFrameSelectRangeDialog();
+  renderXSheet();
+}
+
+function handleFrameSelectClick(li, frameNumber, clientX, clientY) {
+  if (frameSelectDialogOpen) {
+    confirmFrameSelectRange(frameNumber);
+    return;
+  }
+  if (
+    frameSelectAnchor &&
+    frameSelectAnchor.li === li &&
+    frameSelectAnchor.frame === frameNumber
+  ) {
+    openFrameSelectRangeDialog(clientX, clientY);
+    return;
+  }
+  frameSelectAnchor = { li: li, frame: frameNumber };
+  frameSelection = { li: li, start: frameNumber, end: frameNumber };
+  renderXSheet();
+}
+
+var frameContextMenu = null; // {li, start, end} — scope sobre el que actúa el menú abierto
+
+function positionFrameContextMenu(clientX, clientY) {
+  var popup = document.getElementById("frame-context-menu");
+  popup.style.transform = "none";
+  popup.style.left = "0px";
+  popup.style.top = "0px";
+  var rect = popup.getBoundingClientRect();
+  var xsheetRect = document.getElementById("xsheet").getBoundingClientRect();
+  var left = xsheetRect.left - rect.width - 8;
+  var top = Math.min(clientY, window.innerHeight - rect.height - 8);
+  popup.style.left = Math.max(8, left) + "px";
+  popup.style.top = Math.max(8, top) + "px";
+}
+
+function openFrameContextMenu(li, frameNumber, clientX, clientY) {
+  var inSelection =
+    frameSelection &&
+    frameSelection.li === li &&
+    frameNumber >= frameSelection.start &&
+    frameNumber <= frameSelection.end;
+  if (!inSelection) {
+    frameSelection = { li: li, start: frameNumber, end: frameNumber };
+    frameSelectAnchor = { li: li, frame: frameNumber };
+  }
+  frameContextMenu = {
+    li: li,
+    start: frameSelection.start,
+    end: frameSelection.end,
+  };
+  var isRange = frameContextMenu.start !== frameContextMenu.end;
+  [
+    "fcm-add-after",
+    "fcm-add-before",
+    "fcm-duplicate",
+    "fcm-clear",
+    "fcm-delete",
+  ].forEach(function (id) {
+    document.getElementById(id).disabled = isRange;
+  });
+  document.getElementById("frame-context-menu").hidden = false;
+  positionFrameContextMenu(clientX, clientY);
+  renderXSheet();
+}
+
+function closeFrameContextMenu() {
+  frameContextMenu = null;
+  document.getElementById("frame-context-menu").hidden = true;
+}
+
+function openFrameActionFromSelection(scope, mode, clientX, clientY) {
+  var isRange = scope.start !== scope.end;
+  frameAction = {
+    mode: mode,
+    originLi: scope.li,
+    originFrame: scope.start,
+    rangeEndFrame: isRange ? scope.end : null,
+    destFrame: null,
+  };
+  setFrameActionMode(mode);
+  document.getElementById("fa-range-check").checked = isRange;
+  document.getElementById("fa-range-end-field").hidden = !isRange;
+  document.getElementById("fa-origin").value = scope.start;
+  document.getElementById("fa-range-end").value = isRange ? scope.end : "";
+  document.getElementById("fa-dest").value = "";
+  document.getElementById("frame-action-popup").hidden = false;
+  positionFrameActionPopup(clientX, clientY);
+  updateFrameActionConfirmState();
+  renderXSheet();
+}
+
 function positionFrameActionPopup(clientX, clientY) {
   var popup = document.getElementById("frame-action-popup");
   popup.style.transform = "none";
@@ -416,6 +560,8 @@ function closeFrameAction() {
   if (!frameAction) return;
   frameAction = null;
   document.getElementById("frame-action-popup").hidden = true;
+  frameSelection = null;
+  frameSelectAnchor = null;
   renderXSheet();
 }
 
@@ -509,6 +655,106 @@ document.addEventListener("mousedown", function (e) {
 });
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape" && frameAction) closeFrameAction();
+});
+
+document.getElementById("fsr-end").addEventListener("input", function (e) {
+  document.getElementById("fsr-confirm").disabled = e.target.value === "";
+});
+document.getElementById("fsr-end").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && !document.getElementById("fsr-confirm").disabled) {
+    document.getElementById("fsr-confirm").click();
+  }
+});
+document.getElementById("fsr-confirm").addEventListener("click", function () {
+  var v = document.getElementById("fsr-end").value;
+  if (v === "") return;
+  confirmFrameSelectRange(Math.round(+v));
+});
+document.getElementById("fsr-cancel").addEventListener("click", function () {
+  frameSelectAnchor = null;
+  closeFrameSelectRangeDialog();
+  renderXSheet();
+});
+
+document
+  .getElementById("frame-select-range-popup")
+  .addEventListener("mousedown", function (e) {
+    e.stopPropagation();
+  });
+document.addEventListener("mousedown", function (e) {
+  if (!frameSelectDialogOpen) return;
+  if (document.getElementById("frame-select-range-popup").contains(e.target))
+    return;
+  if (document.getElementById("xsheet").contains(e.target)) return;
+  frameSelectAnchor = null;
+  closeFrameSelectRangeDialog();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && frameSelectDialogOpen) {
+    frameSelectAnchor = null;
+    closeFrameSelectRangeDialog();
+    return;
+  }
+  if (e.key === "Escape" && frameSelection) {
+    clearFrameSelection();
+  }
+});
+
+document.getElementById("fcm-add-after").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  selectTick(scope.start - 1);
+  addFrame(layers[scope.li], scope.start - 1);
+});
+document
+  .getElementById("fcm-add-before")
+  .addEventListener("click", function () {
+    var scope = frameContextMenu;
+    closeFrameContextMenu();
+    selectTick(scope.start - 1);
+    insertFrameLeft(layers[scope.li], scope.start - 1);
+  });
+document.getElementById("fcm-duplicate").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  selectTick(scope.start - 1);
+  duplicateFrame();
+});
+document.getElementById("fcm-clear").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  selectTick(scope.start - 1);
+  clearDrawing();
+});
+document.getElementById("fcm-delete").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  selectTick(scope.start - 1);
+  deleteFrame(layers[scope.li]);
+});
+document.getElementById("fcm-move").addEventListener("click", function (ev) {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  openFrameActionFromSelection(scope, "move", ev.clientX, ev.clientY);
+});
+document.getElementById("fcm-copy").addEventListener("click", function (ev) {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  openFrameActionFromSelection(scope, "copy", ev.clientX, ev.clientY);
+});
+
+document
+  .getElementById("frame-context-menu")
+  .addEventListener("mousedown", function (e) {
+    e.stopPropagation();
+  });
+document.addEventListener("mousedown", function (e) {
+  if (!frameContextMenu) return;
+  if (document.getElementById("frame-context-menu").contains(e.target)) return;
+  closeFrameContextMenu();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && frameContextMenu) closeFrameContextMenu();
 });
 
 renderXSheet();

@@ -495,12 +495,47 @@
       outline: 2px dashed var(--teal);
       outline-offset: -2px;
     }
+    .xsheet-cell.frame-selected {
+      background: rgba(70, 194, 176, 0.18);
+      outline: 1px solid var(--teal);
+      outline-offset: -1px;
+    }
     #frame-action-popup {
       width: 220px;
       flex-direction: column;
       align-items: stretch;
       gap: 8px;
     }
+    #frame-context-menu {
+      width: 190px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+      padding: 6px;
+    }
+    #frame-select-range-popup {
+      width: 190px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .frame-context-menu-item {
+      text-align: left;
+      font-size: 12px !important;
+      padding: 0 10px !important;
+    }
+    .frame-context-menu-item:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .frame-context-menu-sep {
+      width: 100%;
+      height: 0;
+      margin: 4px 0;
+      border: none;
+      border-top: 1px solid var(--ink-700);
+    }
+
     #zoom-rotate-dialog {
       width: 217px;
       height: 400px;
@@ -1114,6 +1149,9 @@
                 <button type="button" id="export-woven">
                   EXPORT CICLO TEJIDO
                 </button>
+                <button type="button" id="export-woven-progressive">
+                  EXPORT CICLO TEJIDO PROGRESIVO
+                </button>
                 <span id="export-video-status"></span>
                 <button type="button" id="ffmpeg-cmd-btn">
                   COMANDO FFMPEG
@@ -1233,6 +1271,59 @@
             <button type="button" id="fa-cancel">Cancelar</button>
           </div>
         </div>
+        <div class="floating-bar" id="frame-context-menu" hidden>
+          <button
+            type="button"
+            class="frame-context-menu-item"
+            id="fcm-add-after"
+          >
+            Agregar cuadro después
+          </button>
+          <button
+            type="button"
+            class="frame-context-menu-item"
+            id="fcm-add-before"
+          >
+            Agregar cuadro antes
+          </button>
+          <button
+            type="button"
+            class="frame-context-menu-item"
+            id="fcm-duplicate"
+          >
+            Duplicar
+          </button>
+          <button type="button" class="frame-context-menu-item" id="fcm-clear">
+            Borrar dibujo
+          </button>
+          <button type="button" class="frame-context-menu-item" id="fcm-delete">
+            Eliminar cuadro
+          </button>
+          <hr class="frame-context-menu-sep" />
+          <button type="button" class="frame-context-menu-item" id="fcm-move">
+            Mover…
+          </button>
+          <button type="button" class="frame-context-menu-item" id="fcm-copy">
+            Copiar…
+          </button>
+        </div>
+
+        <div class="floating-bar" id="frame-select-range-popup" hidden>
+          <div class="frame-action-field">
+            <label for="fsr-end">Hasta</label>
+            <input
+              type="number"
+              id="fsr-end"
+              min="1"
+              placeholder="click un frame"
+            />
+          </div>
+          <div class="frame-action-buttons">
+            <button type="button" id="fsr-confirm" disabled>Seleccionar</button>
+            <button type="button" id="fsr-cancel">Cancelar</button>
+          </div>
+        </div>
+
         <div class="docked-bar" id="onion-levels-bar" hidden>
           <div class="onion-levels-list" id="onion-levels-list"></div>
           <label for="ol-range">Rango:</label>

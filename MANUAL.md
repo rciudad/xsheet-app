@@ -46,7 +46,7 @@ Si dibujás con una tableta gráfica (lápiz óptico), el grosor del trazo respo
 
 ## 3. Capas
 
-Cada capa tiene nombre, visibilidad, opacidad y su propia serie de frames independiente. Los controles viven en el encabezado del panel del xsheet, arriba de la grilla:
+Cada capa tiene nombre (asignado automáticamente como "Layer N" al crearla, no se puede renombrar), visibilidad, opacidad y su propia serie de frames independiente. Los controles viven en el encabezado del panel del xsheet, arriba de la grilla:
 
 - **Opacidad**: slider de 0 a 100% de la capa activa. Se ve reflejada en tiempo real en el escenario mientras se dibuja, no solo al reproducir o exportar.
 - **Visible**: muestra u oculta la capa activa por completo (afecta el escenario, la reproducción y la exportación).
@@ -63,16 +63,19 @@ La grilla tiene una fila por tick y una columna por capa, más una columna de fo
 
 - **Click izquierdo** en una celda selecciona esa capa y ese tick.
 - El número de hold dentro de la celda es editable: cambiarlo ajusta cuántos ticks dura ese frame.
-- **Click derecho** sobre una celda abre el popup **Mover / Copiar**, que permite reubicar un frame (o un rango de frames, marcando la casilla **Rango**) a otra posición del xsheet, dentro de la misma capa.
+- **Click derecho** sobre una celda abre el **menú contextual del frame**, con: Agregar después, Agregar antes, Duplicar, Borrar dibujo, Eliminar cuadro, Mover… y Copiar…. Las primeras cinco acciones (agregar/duplicar/borrar/eliminar) actúan sobre un único frame y se deshabilitan si el menú se abrió sobre un rango seleccionado (ver más abajo); Mover… y Copiar… sí soportan tanto un frame único como un rango.
+- **Selección de un rango de frames**: click izquierdo en un frame lo selecciona; click izquierdo de nuevo sobre ese mismo frame abre un popup **"Hasta"** donde se indica el número de frame final — al confirmar, queda seleccionado el rango completo (resaltado en el xsheet). `Escape` limpia la selección. Abrir el menú contextual con un rango seleccionado aplica ese rango como alcance de Mover…/Copiar.
 - El ancho del panel del xsheet (encabezado + grilla) se puede ajustar arrastrando el borde entre el escenario y el panel.
 
-Controles de frame (diálogo de zoom/rotación, tecla `*` o click derecho sobre el escenario en modo dibujo):
+Controles de frame (diálogo de zoom/rotación, tecla `*` o click derecho sobre el escenario en modo dibujo, o menú contextual descrito arriba):
 
 - **ADD AFTER**: agrega un frame nuevo después del actual.
 - **BEFORE**: inserta un frame nuevo antes del actual.
 - **DUPLICATE**: duplica el frame actual.
 - **CLEAR FRAME**: borra el contenido del frame actual (deja el hold).
 - **DELETE FRAME**: elimina el frame actual de la capa.
+
+> Duplicar, borrar dibujo y eliminar aplicados a un rango completo (en vez de un solo frame) todavía no están implementados — por ahora esas tres quedan deshabilitadas en el menú contextual cuando el alcance es un rango.
 
 Atajos: `PageUp` (frame anterior), `+` (frame siguiente, sin reproducir), `/` (agregar frame después del actual). Todos configurables, ver sección 16.
 
@@ -172,6 +175,8 @@ Desde **ARCHIVO ▾**, sección Exportar:
   - **Zip**: empaqueta la secuencia en un único archivo `.zip`.
   - **Por hold**: si está activo, repite cada frame tantas veces como dura su hold (secuencia "expandida", un archivo por tick real); si se desactiva, exporta un archivo por frame único.
 - **EXPORT WEBM**: graba el rango seleccionado como un video WebM, cuadro a cuadro, respetando el FPS configurado.
+- **Hojas** + **EXPORT CICLO TEJIDO**: reparte el rango configurado entre **N** "hojas" (canvases), asignando cada frame del rango a una hoja por turno (round-robin: frame 1 → hoja 1, frame 2 → hoja 2, ..., frame N+1 → hoja 1 de nuevo, sumándose sobre lo ya dibujado en esa hoja). Exporta las N hojas resultantes como PNGs (o un `.zip` si **Zip** está tildado) — pensado para loops tipo weave/interlace donde varias pasadas del rango se superponen en el mismo juego de hojas.
+- **EXPORT CICLO TEJIDO PROGRESIVO**: mismo reparto round-robin en N hojas, pero en vez de exportar solo el resultado final exporta el estado acumulado de las N hojas después de cada pasada completa del rango (una tanda de N imágenes por pasada) — útil para ver/usar el tejido progresivo, no solo el resultado terminado.
 - **COMANDO FFMPEG**: genera y muestra un comando de `ffmpeg` listo para copiar, útil para convertir la secuencia de PNGs exportada a un video MP4 fuera del navegador.
 
 Si estás exportando a una carpeta de trabajo elegida y ya existe un archivo con ese nombre, se numera automáticamente sin preguntar (igual que la descarga nativa del navegador), para no interrumpir exportaciones de muchos frames seguidos.

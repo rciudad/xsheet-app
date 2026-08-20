@@ -226,21 +226,41 @@ function drawWovenSourceFrame(destCtx, tick) {
   destCtx.drawImage(exportCropCanvas, 0, 0);
 }
 
-function buildWovenFrames(N) {
-  const frames = [];
-  for (let k = 0; k < N; k++) {
-    const canvas = document.createElement("canvas");
-    canvas.width = cropRect.w;
-    canvas.width = cropRect.w;
-    canvas.height = cropRect.h;
-    frames.push(canvas);
-  }
+function cloneCanvas(src) {
+  const c = document.createElement("canvas");
+  c.width = src.width;
+  c.height = src.height;
+  c.getContext("2d").drawImage(src, 0, 0);
+  return c;
+}
+
+function buildWovenProgressiveFrames(N) {
   const total = rangeEnd - rangeStart + 1;
-  for (let i = 0; i < total; i++) {
-    const tick = rangeStart + i;
-    drawWovenSourceFrame(frames[i % N].getContext("2d"), tick);
+  const passCount = Math.ceil(total / N);
+  const sheets = [];
+  for (let k = 0; k < N; k++) {
+    const c = document.createElement("canvas");
+    c.width = cropRect.w;
+    c.height = cropRect.h;
+    sheets.push(c);
   }
-  return frames;
+
+  const output = [];
+  for (let pass = 0; pass < passCount; pass++) {
+    for (let k = 0; k < N; k++) {
+      const i = pass * N + k;
+      if (i < total)
+        drawWovenSourceFrame(sheets[k].getContext("2d"), rangeStart + i);
+    }
+    for (let k = 0; k < N; k++) {
+      output.push(cloneCanvas(sheets[k]));
+    }
+  }
+  return output;
+}
+
+function buildWovenFrames(N) {
+  return buildWovenProgressiveFrames(N).slice(-N);
 }
 
 document.getElementById("export-woven").addEventListener("click", function () {
@@ -270,6 +290,40 @@ document.getElementById("export-woven").addEventListener("click", function () {
     });
   });
 });
+
+document
+  .getElementById("export-woven-progressive")
+  .addEventListener("click", function () {
+    syncActiveToStorage();
+    const N = Math.max(
+      1,
+      Math.round(+document.getElementById("export-woven-sheets").value) || 1
+    );
+    const frames = buildWovenProgressiveFrames(N);
+    const prefix = exportPrefix();
+    const zip = document.getElementById("export-zip-toggle").checked;
+    const total = frames.length;
+
+    if (zip) {
+      const entries = frames.map(function (canvas, i) {
+        return {
+          name: prefix + "-woven-prog-" + padNum(i + 1, total) + ".png",
+          bytes: pngBytesFromCanvas(canvas),
+        };
+      });
+      deliverFile(prefix + "-woven-prog.zip", buildZip(entries));
+      return;
+    }
+
+    frames.forEach(function (canvas, i) {
+      canvas.toBlob(function (blob) {
+        deliverFile(
+          prefix + "-woven-prog-" + padNum(i + 1, total) + ".png",
+          blob
+        );
+      });
+    });
+  });
 
 var exportVideoBtn = document.getElementById("export-video");
 var exportVideoStatusEl = document.getElementById("export-video-status");
