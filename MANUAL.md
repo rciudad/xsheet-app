@@ -210,6 +210,9 @@ Valores por defecto:
 | `=` | Zoom in |
 | `-` | Zoom out |
 | `*` | Abrir/cerrar diálogo de zoom/rotación |
+| `-` (numpad) | Alternar lápiz/goma |
+
+El `-` del numpad es una tecla distinta de la `-` del teclado principal (que hace zoom out) — el sistema de atajos las distingue aunque en algunos teclados representen visualmente el mismo signo.
 
 Además, sin pasar por el diálogo de configuración:
 

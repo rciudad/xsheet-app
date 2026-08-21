@@ -495,12 +495,47 @@
       outline: 2px dashed var(--teal);
       outline-offset: -2px;
     }
+    .xsheet-cell.frame-selected {
+      background: rgba(70, 194, 176, 0.18);
+      outline: 1px solid var(--teal);
+      outline-offset: -1px;
+    }
     #frame-action-popup {
       width: 220px;
       flex-direction: column;
       align-items: stretch;
       gap: 8px;
     }
+    #frame-context-menu {
+      width: 190px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+      padding: 6px;
+    }
+    #frame-select-range-popup {
+      width: 190px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .frame-context-menu-item {
+      text-align: left;
+      font-size: 12px !important;
+      padding: 0 10px !important;
+    }
+    .frame-context-menu-item:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .frame-context-menu-sep {
+      width: 100%;
+      height: 0;
+      margin: 4px 0;
+      border: none;
+      border-top: 1px solid var(--ink-700);
+    }
+
     #zoom-rotate-dialog {
       width: 217px;
       height: 400px;
@@ -1104,6 +1139,19 @@
                   EXPORT SEQUENCE
                 </button>
                 <button type="button" id="export-video">EXPORT WEBM</button>
+                <label for="export-woven-sheets">Hojas:</label>
+                <input
+                  type="number"
+                  id="export-woven-sheets"
+                  min="1"
+                  value="8"
+                />
+                <button type="button" id="export-woven">
+                  EXPORT CICLO TEJIDO
+                </button>
+                <button type="button" id="export-woven-progressive">
+                  EXPORT CICLO TEJIDO PROGRESIVO
+                </button>
                 <span id="export-video-status"></span>
                 <button type="button" id="ffmpeg-cmd-btn">
                   COMANDO FFMPEG
@@ -1223,6 +1271,59 @@
             <button type="button" id="fa-cancel">Cancelar</button>
           </div>
         </div>
+        <div class="floating-bar" id="frame-context-menu" hidden>
+          <button
+            type="button"
+            class="frame-context-menu-item"
+            id="fcm-add-after"
+          >
+            Agregar cuadro después
+          </button>
+          <button
+            type="button"
+            class="frame-context-menu-item"
+            id="fcm-add-before"
+          >
+            Agregar cuadro antes
+          </button>
+          <button
+            type="button"
+            class="frame-context-menu-item"
+            id="fcm-duplicate"
+          >
+            Duplicar
+          </button>
+          <button type="button" class="frame-context-menu-item" id="fcm-clear">
+            Borrar dibujo
+          </button>
+          <button type="button" class="frame-context-menu-item" id="fcm-delete">
+            Eliminar cuadro
+          </button>
+          <hr class="frame-context-menu-sep" />
+          <button type="button" class="frame-context-menu-item" id="fcm-move">
+            Mover…
+          </button>
+          <button type="button" class="frame-context-menu-item" id="fcm-copy">
+            Copiar…
+          </button>
+        </div>
+
+        <div class="floating-bar" id="frame-select-range-popup" hidden>
+          <div class="frame-action-field">
+            <label for="fsr-end">Hasta</label>
+            <input
+              type="number"
+              id="fsr-end"
+              min="1"
+              placeholder="click un frame"
+            />
+          </div>
+          <div class="frame-action-buttons">
+            <button type="button" id="fsr-confirm" disabled>Seleccionar</button>
+            <button type="button" id="fsr-cancel">Cancelar</button>
+          </div>
+        </div>
+
         <div class="docked-bar" id="onion-levels-bar" hidden>
           <div class="onion-levels-list" id="onion-levels-list"></div>
           <label for="ol-range">Rango:</label>
@@ -3755,6 +3856,11 @@ function renderXSheet() {
         frameAction.destFrame != null &&
         runStart <= frameAction.destFrame - 1 &&
         runStart + runLen - 1 >= frameAction.destFrame - 1;
+      const isSelected =
+        frameSelection &&
+        li === frameSelection.li &&
+        runStart <= frameSelection.end - 1 &&
+        runStart + runLen - 1 >= frameSelection.start - 1;
 
       const cell = document.createElement("div");
       //cell.appendChild(holdInput);
@@ -3774,23 +3880,26 @@ function renderXSheet() {
           ? " current"
           : "") +
         (isPicked ? " action-picked" : "") +
-        (isDest ? " action-dest" : "");
+        (isDest ? " action-dest" : "") +
+        (isSelected ? " frame-selected" : "");
+
       cell.style.gridColumn = String(li + 3);
       cell.style.gridRow = runStart + 2 + " / span " + runLen;
 
       (function (li, runStart) {
-        cell.addEventListener("click", function () {
+        cell.addEventListener("click", function (ev) {
           if (frameAction) {
             pickFrameActionCell(li, runStart);
             return;
           }
           selectLayer(li);
           selectTick(runStart);
+          handleFrameSelectClick(li, runStart + 1, ev.clientX, ev.clientY);
         });
         cell.addEventListener("contextmenu", function (ev) {
           ev.preventDefault();
           selectLayer(li);
-          openFrameAction(li, runStart + 1, ev.clientX, ev.clientY);
+          openFrameContextMenu(li, runStart + 1, ev.clientX, ev.clientY);
         });
       })(li, runStart);
 
@@ -3958,10 +4067,103 @@ function copyFrameToPosition(sourceStart, sourceEnd, destNumber) {
 
   var destIdx = tickNumberToRunIdx(L, destNumber);
   var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
+
+  if (insertAt === L.cels.length) {
+    var currentTotal = calcTotalFrames(L.holds);
+    var gap = destNumber - 1 - currentTotal;
+    if (gap > 0 && L.holds.length > 0) {
+      L.holds[L.holds.length - 1] += gap;
+    }
+  }
+
   L.cels.splice.apply(L.cels, [insertAt, 0].concat(newCels));
   L.holds.splice.apply(L.holds, [insertAt, 0].concat(newHolds));
 
   currentTick = runStartForIdx(L, insertAt);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+function duplicateFrameRange(li, startFrame, endFrame) {
+  var L = layers[li];
+  syncActiveToStorage();
+
+  var startIdx = tickNumberToRunIdx(L, startFrame);
+  var endIdx = tickNumberToRunIdx(L, endFrame);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+
+  var newCels = [];
+  var newHolds = [];
+  for (var i = startIdx; i <= endIdx; i++) {
+    var nc = makeCel();
+    nc.ctx.drawImage(L.cels[i].canvas, 0, 0);
+    newCels.push(nc);
+    newHolds.push(L.holds[i]);
+  }
+  L.cels.splice.apply(L.cels, [endIdx + 1, 0].concat(newCels));
+  L.holds.splice.apply(L.holds, [endIdx + 1, 0].concat(newHolds));
+
+  currentTick = runStartForIdx(L, endIdx + 1);
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+function clearFrameRange(li, startFrame, endFrame) {
+  var L = layers[li];
+  syncActiveToStorage();
+
+  var startIdx = tickNumberToRunIdx(L, startFrame);
+  var endIdx = tickNumberToRunIdx(L, endFrame);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+
+  for (var i = startIdx; i <= endIdx; i++) {
+    L.cels[i].ctx.clearRect(0, 0, W, H);
+  }
+  loadActiveFromStorage();
+  renderXSheet();
+  updateOnion();
+}
+
+function deleteFrameRange(li, startFrame, endFrame) {
+  var L = layers[li];
+  syncActiveToStorage();
+
+  var startIdx = tickNumberToRunIdx(L, startFrame);
+  var endIdx = tickNumberToRunIdx(L, endFrame);
+  if (endIdx < startIdx) {
+    var tmp = startIdx;
+    startIdx = endIdx;
+    endIdx = tmp;
+  }
+  startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
+  endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
+
+  if (startIdx === 0 && endIdx === L.cels.length - 1) {
+    // Rango cubre toda la capa: igual que deleteFrame() con un solo frame,
+    // dejamos uno en blanco en vez de vaciar la capa.
+    L.cels[0].ctx.clearRect(0, 0, W, H);
+    L.cels.length = 1;
+    L.holds.length = 1;
+    L.holds[0] = 1;
+  } else {
+    L.cels.splice(startIdx, endIdx - startIdx + 1);
+    L.holds.splice(startIdx, endIdx - startIdx + 1);
+  }
+  currentTick = Math.min(currentTick, sheetTotalTicks() - 1);
   loadActiveFromStorage();
   renderXSheet();
   updateOnion();
@@ -3974,6 +4176,136 @@ document
   .addEventListener("click", duplicateFrame);
 
 var frameAction = null;
+
+var frameSelection = null; // {li, start, end} — grupo de frames seleccionado (1-based, start<=end)
+var frameSelectAnchor = null; // {li, frame} — frame anclado en el primer click
+var frameSelectDialogOpen = false; // true mientras el diálogo "Hasta" está abierto
+
+function positionFrameSelectRangePopup(clientX, clientY) {
+  var popup = document.getElementById("frame-select-range-popup");
+  popup.style.transform = "none";
+  popup.style.left = "0px";
+  popup.style.top = "0px";
+  var rect = popup.getBoundingClientRect();
+  var xsheetRect = document.getElementById("xsheet").getBoundingClientRect();
+  var left = xsheetRect.left - rect.width - 8;
+  var top = Math.min(clientY, window.innerHeight - rect.height - 8);
+  popup.style.left = Math.max(8, left) + "px";
+  popup.style.top = Math.max(8, top) + "px";
+}
+
+function openFrameSelectRangeDialog(clientX, clientY) {
+  frameSelectDialogOpen = true;
+  document.getElementById("fsr-end").value = "";
+  document.getElementById("fsr-confirm").disabled = true;
+  document.getElementById("frame-select-range-popup").hidden = false;
+  positionFrameSelectRangePopup(clientX, clientY);
+}
+
+function closeFrameSelectRangeDialog() {
+  frameSelectDialogOpen = false;
+  document.getElementById("frame-select-range-popup").hidden = true;
+}
+
+function confirmFrameSelectRange(endFrameNumber) {
+  if (!frameSelectAnchor) return;
+  var li = frameSelectAnchor.li;
+  var start = Math.min(frameSelectAnchor.frame, endFrameNumber);
+  var end = Math.max(frameSelectAnchor.frame, endFrameNumber);
+  frameSelection = { li: li, start: start, end: end };
+  closeFrameSelectRangeDialog();
+  renderXSheet();
+}
+
+function clearFrameSelection() {
+  frameSelection = null;
+  frameSelectAnchor = null;
+  closeFrameSelectRangeDialog();
+  renderXSheet();
+}
+
+function handleFrameSelectClick(li, frameNumber, clientX, clientY) {
+  if (frameSelectDialogOpen) {
+    confirmFrameSelectRange(frameNumber);
+    return;
+  }
+  if (
+    frameSelectAnchor &&
+    frameSelectAnchor.li === li &&
+    frameSelectAnchor.frame === frameNumber
+  ) {
+    openFrameSelectRangeDialog(clientX, clientY);
+    return;
+  }
+  frameSelectAnchor = { li: li, frame: frameNumber };
+  frameSelection = { li: li, start: frameNumber, end: frameNumber };
+  renderXSheet();
+}
+
+var frameContextMenu = null; // {li, start, end} — scope sobre el que actúa el menú abierto
+
+function positionFrameContextMenu(clientX, clientY) {
+  var popup = document.getElementById("frame-context-menu");
+  popup.style.transform = "none";
+  popup.style.left = "0px";
+  popup.style.top = "0px";
+  var rect = popup.getBoundingClientRect();
+  var xsheetRect = document.getElementById("xsheet").getBoundingClientRect();
+  var left = xsheetRect.left - rect.width - 8;
+  var top = Math.min(clientY, window.innerHeight - rect.height - 8);
+  popup.style.left = Math.max(8, left) + "px";
+  popup.style.top = Math.max(8, top) + "px";
+}
+
+function openFrameContextMenu(li, frameNumber, clientX, clientY) {
+  var inSelection =
+    frameSelection &&
+    frameSelection.li === li &&
+    frameNumber >= frameSelection.start &&
+    frameNumber <= frameSelection.end;
+  if (!inSelection) {
+    frameSelection = { li: li, start: frameNumber, end: frameNumber };
+    frameSelectAnchor = { li: li, frame: frameNumber };
+  }
+  frameContextMenu = {
+    li: li,
+    start: frameSelection.start,
+    end: frameSelection.end,
+  };
+  var isRange = frameContextMenu.start !== frameContextMenu.end;
+  ["fcm-add-after", "fcm-add-before"].forEach(function (id) {
+    document.getElementById(id).disabled = isRange;
+  });
+  document.getElementById("frame-context-menu").hidden = false;
+  positionFrameContextMenu(clientX, clientY);
+  renderXSheet();
+}
+
+function closeFrameContextMenu() {
+  frameContextMenu = null;
+  document.getElementById("frame-context-menu").hidden = true;
+}
+
+function openFrameActionFromSelection(scope, mode, clientX, clientY) {
+  var isRange = scope.start !== scope.end;
+  frameAction = {
+    mode: mode,
+    originLi: scope.li,
+    originFrame: scope.start,
+    rangeEndFrame: isRange ? scope.end : null,
+    destFrame: null,
+  };
+  setFrameActionMode(mode);
+  document.getElementById("fa-range-check").checked = isRange;
+  document.getElementById("fa-range-end-field").hidden = !isRange;
+  document.getElementById("fa-origin").value = scope.start;
+  document.getElementById("fa-range-end").value = isRange ? scope.end : "";
+  document.getElementById("fa-dest").value = "";
+  document.getElementById("frame-action-popup").hidden = false;
+  positionFrameActionPopup(clientX, clientY);
+  updateFrameActionConfirmState();
+  renderXSheet();
+}
 
 function positionFrameActionPopup(clientX, clientY) {
   var popup = document.getElementById("frame-action-popup");
@@ -4066,6 +4398,8 @@ function closeFrameAction() {
   if (!frameAction) return;
   frameAction = null;
   document.getElementById("frame-action-popup").hidden = true;
+  frameSelection = null;
+  frameSelectAnchor = null;
   renderXSheet();
 }
 
@@ -4159,6 +4493,120 @@ document.addEventListener("mousedown", function (e) {
 });
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape" && frameAction) closeFrameAction();
+});
+
+document.getElementById("fsr-end").addEventListener("input", function (e) {
+  document.getElementById("fsr-confirm").disabled = e.target.value === "";
+});
+document.getElementById("fsr-end").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && !document.getElementById("fsr-confirm").disabled) {
+    document.getElementById("fsr-confirm").click();
+  }
+});
+document.getElementById("fsr-confirm").addEventListener("click", function () {
+  var v = document.getElementById("fsr-end").value;
+  if (v === "") return;
+  confirmFrameSelectRange(Math.round(+v));
+});
+document.getElementById("fsr-cancel").addEventListener("click", function () {
+  frameSelectAnchor = null;
+  closeFrameSelectRangeDialog();
+  renderXSheet();
+});
+
+document
+  .getElementById("frame-select-range-popup")
+  .addEventListener("mousedown", function (e) {
+    e.stopPropagation();
+  });
+document.addEventListener("mousedown", function (e) {
+  if (!frameSelectDialogOpen) return;
+  if (document.getElementById("frame-select-range-popup").contains(e.target))
+    return;
+  if (document.getElementById("xsheet").contains(e.target)) return;
+  frameSelectAnchor = null;
+  closeFrameSelectRangeDialog();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && frameSelectDialogOpen) {
+    frameSelectAnchor = null;
+    closeFrameSelectRangeDialog();
+    return;
+  }
+  if (e.key === "Escape" && frameSelection) {
+    clearFrameSelection();
+  }
+});
+
+document.getElementById("fcm-add-after").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  selectTick(scope.start - 1);
+  addFrame(layers[scope.li], scope.start - 1);
+});
+document
+  .getElementById("fcm-add-before")
+  .addEventListener("click", function () {
+    var scope = frameContextMenu;
+    closeFrameContextMenu();
+    selectTick(scope.start - 1);
+    insertFrameLeft(layers[scope.li], scope.start - 1);
+  });
+
+document.getElementById("fcm-duplicate").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  if (scope.start !== scope.end) {
+    duplicateFrameRange(scope.li, scope.start, scope.end);
+  } else {
+    selectTick(scope.start - 1);
+    duplicateFrame();
+  }
+});
+document.getElementById("fcm-clear").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  if (scope.start !== scope.end) {
+    clearFrameRange(scope.li, scope.start, scope.end);
+  } else {
+    selectTick(scope.start - 1);
+    clearDrawing();
+  }
+});
+document.getElementById("fcm-delete").addEventListener("click", function () {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  if (scope.start !== scope.end) {
+    deleteFrameRange(scope.li, scope.start, scope.end);
+  } else {
+    selectTick(scope.start - 1);
+    deleteFrame(layers[scope.li]);
+  }
+});
+
+document.getElementById("fcm-move").addEventListener("click", function (ev) {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  openFrameActionFromSelection(scope, "move", ev.clientX, ev.clientY);
+});
+document.getElementById("fcm-copy").addEventListener("click", function (ev) {
+  var scope = frameContextMenu;
+  closeFrameContextMenu();
+  openFrameActionFromSelection(scope, "copy", ev.clientX, ev.clientY);
+});
+
+document
+  .getElementById("frame-context-menu")
+  .addEventListener("mousedown", function (e) {
+    e.stopPropagation();
+  });
+document.addEventListener("mousedown", function (e) {
+  if (!frameContextMenu) return;
+  if (document.getElementById("frame-context-menu").contains(e.target)) return;
+  closeFrameContextMenu();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && frameContextMenu) closeFrameContextMenu();
 });
 
 renderXSheet();
@@ -4811,6 +5259,126 @@ document
       drawExportFrame(tmp.getContext("2d"), job.tick);
       tmp.toBlob(function (blob) {
         deliverFile(job.name, blob);
+      });
+    });
+  });
+
+function drawWovenSourceFrame(destCtx, tick) {
+  var src = flattenAt(tick);
+  exportCropCanvas.width = cropRect.w;
+  exportCropCanvas.height = cropRect.h;
+  exportCropCtx.clearRect(0, 0, cropRect.w, cropRect.h);
+  exportCropCtx.drawImage(
+    src,
+    cropRect.x,
+    cropRect.y,
+    cropRect.w,
+    cropRect.h,
+    0,
+    0,
+    cropRect.w,
+    cropRect.h
+  );
+  if (hasColorAdjustments())
+    applyColorAdjustments(exportCropCtx, cropRect.w, cropRect.h);
+  destCtx.drawImage(exportCropCanvas, 0, 0);
+}
+
+function cloneCanvas(src) {
+  const c = document.createElement("canvas");
+  c.width = src.width;
+  c.height = src.height;
+  c.getContext("2d").drawImage(src, 0, 0);
+  return c;
+}
+
+function buildWovenProgressiveFrames(N) {
+  const total = rangeEnd - rangeStart + 1;
+  const passCount = Math.ceil(total / N);
+  const sheets = [];
+  for (let k = 0; k < N; k++) {
+    const c = document.createElement("canvas");
+    c.width = cropRect.w;
+    c.height = cropRect.h;
+    sheets.push(c);
+  }
+
+  const output = [];
+  for (let pass = 0; pass < passCount; pass++) {
+    for (let k = 0; k < N; k++) {
+      const i = pass * N + k;
+      if (i < total)
+        drawWovenSourceFrame(sheets[k].getContext("2d"), rangeStart + i);
+    }
+    for (let k = 0; k < N; k++) {
+      output.push(cloneCanvas(sheets[k]));
+    }
+  }
+  return output;
+}
+
+function buildWovenFrames(N) {
+  return buildWovenProgressiveFrames(N).slice(-N);
+}
+
+document.getElementById("export-woven").addEventListener("click", function () {
+  syncActiveToStorage();
+  const N = Math.max(
+    1,
+    Math.round(+document.getElementById("export-woven-sheets").value) || 1
+  );
+  const frames = buildWovenFrames(N);
+  const prefix = exportPrefix();
+  const zip = document.getElementById("export-zip-toggle").checked;
+
+  if (zip) {
+    const entries = frames.map(function (canvas, i) {
+      return {
+        name: prefix + "-woven-" + padNum(i + 1, N) + ".png",
+        bytes: pngBytesFromCanvas(canvas),
+      };
+    });
+    deliverFile(prefix + "-woven.zip", buildZip(entries));
+    return;
+  }
+
+  frames.forEach(function (canvas, i) {
+    canvas.toBlob(function (blob) {
+      deliverFile(prefix + "-woven-" + padNum(i + 1, N) + ".png", blob);
+    });
+  });
+});
+
+document
+  .getElementById("export-woven-progressive")
+  .addEventListener("click", function () {
+    syncActiveToStorage();
+    const N = Math.max(
+      1,
+      Math.round(+document.getElementById("export-woven-sheets").value) || 1
+    );
+    const frames = buildWovenProgressiveFrames(N);
+    const prefix = exportPrefix();
+    const zip = document.getElementById("export-zip-toggle").checked;
+    const total = frames.length;
+
+    if (zip) {
+      const entries = frames.map(function (canvas, i) {
+        return {
+          name: prefix + "-woven-prog-" + padNum(i + 1, total) + ".png",
+          bytes: pngBytesFromCanvas(canvas),
+        };
+      });
+      deliverFile(prefix + "-woven-prog.zip", buildZip(entries));
+      return;
+    }
+
+    frames.forEach(function (canvas, i) {
+      canvas.toBlob(function (blob) {
+        deliverFile(
+          prefix + "-woven-prog-" + padNum(i + 1, total) + ".png",
+          blob
+        );
       });
     });
   });

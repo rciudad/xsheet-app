@@ -56,6 +56,14 @@ var shortcutActions = [
     },
   },
   {
+    id: "toolToggle",
+    label: "Alternar lápiz/goma",
+    defaultKey: "NumpadSubtract",
+    run: function () {
+      setTool(tool === "eraser" ? "pencil" : "eraser");
+    },
+  },
+  {
     id: "toggleDrawingMode",
     label: "Modo dibujo",
     defaultKey: "D",
@@ -136,7 +144,7 @@ var shortcutBindings = loadShortcutBindings();
 function keyEventToCombo(e) {
   var parts = [];
   if (e.ctrlKey || e.metaKey) parts.push("Ctrl");
-  var key = e.key;
+  var key = e.code && e.code.indexOf("Numpad") === 0 ? e.code : e.key;
   if (key === " ") key = "Space";
   parts.push(key.length === 1 ? key.toUpperCase() : key);
   return parts.join("+");

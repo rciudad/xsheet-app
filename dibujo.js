@@ -5,6 +5,7 @@ let tool = "pencil";
 
 const colorInput = document.getElementById("selectedColor");
 const sizeInput = document.getElementById("brushSize");
+const eraserSizeInput = document.getElementById("eraserSize");
 
 const resolutionInput = document.getElementById("resolution");
 var W = 800;
@@ -244,7 +245,8 @@ function pressureFactor(e) {
 }
 
 function currentWidth(e) {
-  var base = parseFloat(sizeInput.value) || 4;
+  var input = tool === "eraser" ? eraserSizeInput : sizeInput;
+  var base = parseFloat(input.value) || 4;
   if (e && e.pointerType === "pen" && e.pressure > 0) {
     return base * (0.35 + 0.9 * e.pressure);
   }
