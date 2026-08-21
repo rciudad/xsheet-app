@@ -1195,8 +1195,22 @@
             <option value="1080x1440">1080×1440</option>
             <option value="1080x1920">1080×1920</option>
           </select>
+
           <input type="color" id="selectedColor" />
-          <input type="number" id="brushSize" value="4" min="1" />
+          <input
+            type="number"
+            id="brushSize"
+            value="4"
+            min="1"
+            title="Tamaño lápiz"
+          />
+          <input
+            type="number"
+            id="eraserSize"
+            value="12"
+            min="1"
+            title="Tamaño goma"
+          />
 
           <select id="brush-style">
             <option value="hard">Duro</option>
@@ -2002,6 +2016,11 @@ let tool = "pencil";
 
 const colorInput = document.getElementById("selectedColor");
 const sizeInput = document.getElementById("brushSize");
+const eraserSizeInput = document.getElementById("eraserSize");
+
+colorInput.addEventListener("input", updateBrushCursor);
+sizeInput.addEventListener("input", updateBrushCursor);
+eraserSizeInput.addEventListener("input", updateBrushCursor);
 
 const resolutionInput = document.getElementById("resolution");
 var W = 800;
@@ -2172,6 +2191,33 @@ function setTool(name) {
     var btn = document.getElementById(TOOL_BUTTON_IDS[key]);
     if (btn) btn.classList.toggle("active", key === name);
   });
+  updateBrushCursor();
+}
+
+function updateBrushCursor() {
+  if (tool !== "pencil" && tool !== "eraser") {
+    canvas.style.cursor = "";
+    return;
+  }
+  var input = tool === "eraser" ? eraserSizeInput : sizeInput;
+  var baseSize = parseFloat(input.value) || 4;
+  var vr = stageViewport.getBoundingClientRect();
+  var screenScale = vr.width ? (vr.width / W) * viewZoom : 1;
+  var diameter = Math.max(4, Math.min(100, baseSize * screenScale));
+  var r = diameter / 2;
+  var size = Math.ceil(diameter + 4);
+  var c = size / 2;
+  var fill = tool === "pencil" ? colorInput.value : "none";
+  var fillOpacity = tool === "pencil" ? 0.35 : 0;
+
+  var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
+    <circle cx="${c}" cy="${c}" r="${r}" fill="${fill}" fill-opacity="${fillOpacity}"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="white" stroke-width="3"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="black" stroke-width="1"/>
+  </svg>`;
+
+  var url = "data:image/svg+xml," + encodeURIComponent(svg);
+  canvas.style.cursor = 'url("' + url + '") ' + c + " " + c + ", crosshair";
 }
 
 function applyStageSize() {
@@ -2191,6 +2237,7 @@ function applyStageSize() {
   playCanvas.height = H;
   stageViewport.style.aspectRatio = W + " / " + H;
   resetCropToFullFrame();
+  updateBrushCursor();
 }
 function endStroke() {
   if (!dibujando) return;
@@ -2241,7 +2288,8 @@ function pressureFactor(e) {
 }
 
 function currentWidth(e) {
-  var base = parseFloat(sizeInput.value) || 4;
+  var input = tool === "eraser" ? eraserSizeInput : sizeInput;
+  var base = parseFloat(input.value) || 4;
   if (e && e.pointerType === "pen" && e.pressure > 0) {
     return base * (0.35 + 0.9 * e.pressure);
   }
@@ -3300,6 +3348,14 @@ var shortcutActions = [
     },
   },
   {
+    id: "toolToggle",
+    label: "Alternar lápiz/goma",
+    defaultKey: "NumpadSubtract",
+    run: function () {
+      setTool(tool === "eraser" ? "pencil" : "eraser");
+    },
+  },
+  {
     id: "toggleDrawingMode",
     label: "Modo dibujo",
     defaultKey: "D",
@@ -3380,7 +3436,7 @@ var shortcutBindings = loadShortcutBindings();
 function keyEventToCombo(e) {
   var parts = [];
   if (e.ctrlKey || e.metaKey) parts.push("Ctrl");
-  var key = e.key;
+  var key = e.code && e.code.indexOf("Numpad") === 0 ? e.code : e.key;
   if (key === " ") key = "Space";
   parts.push(key.length === 1 ? key.toUpperCase() : key);
   return parts.join("+");
@@ -6170,6 +6226,7 @@ function zoomAt(newZoom, clientX, clientY) {
   viewPanX = clientX - cx - rx; // pan recalculado para que el punto siga bajo el cursor
   viewPanY = clientY - cy - ry;
   applyViewTransform();
+  updateBrushCursor();
 }
 
 function setRotation(deg) {
@@ -6642,6 +6699,9 @@ olOnionFalloffInput.addEventListener("change", function () {
   olOnionFalloffInput.value = v;
   updateOnion();
 });
+
+window.addEventListener("resize", updateBrushCursor);
+updateBrushCursor();
 </script>
   </body>
 </html>
