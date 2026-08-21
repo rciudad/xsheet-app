@@ -69,6 +69,7 @@ function zoomAt(newZoom, clientX, clientY) {
   viewPanX = clientX - cx - rx; // pan recalculado para que el punto siga bajo el cursor
   viewPanY = clientY - cy - ry;
   applyViewTransform();
+  updateBrushCursor();
 }
 
 function setRotation(deg) {
@@ -541,3 +542,6 @@ olOnionFalloffInput.addEventListener("change", function () {
   olOnionFalloffInput.value = v;
   updateOnion();
 });
+
+window.addEventListener("resize", updateBrushCursor);
+updateBrushCursor();

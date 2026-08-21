@@ -7,6 +7,10 @@ const colorInput = document.getElementById("selectedColor");
 const sizeInput = document.getElementById("brushSize");
 const eraserSizeInput = document.getElementById("eraserSize");
 
+colorInput.addEventListener("input", updateBrushCursor);
+sizeInput.addEventListener("input", updateBrushCursor);
+eraserSizeInput.addEventListener("input", updateBrushCursor);
+
 const resolutionInput = document.getElementById("resolution");
 var W = 800;
 var H = 600;
@@ -176,6 +180,33 @@ function setTool(name) {
     var btn = document.getElementById(TOOL_BUTTON_IDS[key]);
     if (btn) btn.classList.toggle("active", key === name);
   });
+  updateBrushCursor();
+}
+
+function updateBrushCursor() {
+  if (tool !== "pencil" && tool !== "eraser") {
+    canvas.style.cursor = "";
+    return;
+  }
+  var input = tool === "eraser" ? eraserSizeInput : sizeInput;
+  var baseSize = parseFloat(input.value) || 4;
+  var vr = stageViewport.getBoundingClientRect();
+  var screenScale = vr.width ? (vr.width / W) * viewZoom : 1;
+  var diameter = Math.max(4, Math.min(100, baseSize * screenScale));
+  var r = diameter / 2;
+  var size = Math.ceil(diameter + 4);
+  var c = size / 2;
+  var fill = tool === "pencil" ? colorInput.value : "none";
+  var fillOpacity = tool === "pencil" ? 0.35 : 0;
+
+  var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">
+    <circle cx="${c}" cy="${c}" r="${r}" fill="${fill}" fill-opacity="${fillOpacity}"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="white" stroke-width="3"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="black" stroke-width="1"/>
+  </svg>`;
+
+  var url = "data:image/svg+xml," + encodeURIComponent(svg);
+  canvas.style.cursor = 'url("' + url + '") ' + c + " " + c + ", crosshair";
 }
 
 function applyStageSize() {
@@ -195,6 +226,7 @@ function applyStageSize() {
   playCanvas.height = H;
   stageViewport.style.aspectRatio = W + " / " + H;
   resetCropToFullFrame();
+  updateBrushCursor();
 }
 function endStroke() {
   if (!dibujando) return;

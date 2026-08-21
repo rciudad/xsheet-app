@@ -42,7 +42,8 @@ Si dibujás con una tableta gráfica (lápiz óptico), el grosor del trazo respo
 ### Color y tamaño
 
 - El cuadro de color (arriba) define el color del lápiz. La goma no usa color: borra hasta la transparencia.
-- El número junto al color define el grosor en píxeles del trazo.
+- El lápiz y la goma tienen cada uno su propio campo de tamaño (grosor en píxeles), independientes entre sí — cambiar de herramienta no obliga a reajustar el tamaño cada vez.
+- El cursor sobre el escenario, mientras la herramienta activa es lápiz o goma, se dibuja como un círculo del tamaño real que va a tener el trazo (ajustado según el zoom actual), en vez de la flecha genérica — para lápiz se ve levemente relleno con el color seleccionado, para goma solo el contorno.
 
 ## 3. Capas
 
