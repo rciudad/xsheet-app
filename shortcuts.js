@@ -183,13 +183,13 @@ window.addEventListener("keydown", function (e) {
   var tag = document.activeElement && document.activeElement.tagName;
   var inField = tag === "INPUT" || tag === "TEXTAREA";
 
+  if (inField) return;
+
   if (e.key === " ") {
     e.preventDefault();
     togglePlay();
     return;
   }
-
-  if (inField) return;
 
   var action = findActionByCombo(keyEventToCombo(e));
   if (!action) return;
