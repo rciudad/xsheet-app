@@ -92,15 +92,11 @@ function updateOnion() {
   renderLayerComposites();
 }
 
-var onionToggleInput = document.getElementById("onion-toggle");
-var onionOpacityInput = document.getElementById("onion-opacity");
-
 var qdOnionToggleInput = document.getElementById("qd-onion-toggle");
 var qdOnionOpacityInput = document.getElementById("qd-onion-opacity");
 
 qdOnionToggleInput.addEventListener("change", function () {
   onionEnabled = qdOnionToggleInput.checked;
-  //olOnionToggleInput.classList.toggle("active", onionEnabled);
   zrOnionToggleInput.classList.toggle("active", onionEnabled);
   updateOnion();
 });
@@ -110,6 +106,5 @@ qdOnionOpacityInput.addEventListener("change", function () {
   if (!isFinite(v)) v = onionOpacity;
   onionOpacity = v;
   qdOnionOpacityInput.value = v;
-  onionOpacityInput.value = v;
   updateOnion();
 });

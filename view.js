@@ -322,69 +322,6 @@ function centerFloatingBar(el) {
   el.style.top = Math.max(8, (window.innerHeight - rect.height) / 2) + "px";
 }
 
-var zoomKeyHeld = false;
-var rotateKeyHeld = false;
-
-window.addEventListener("keydown", function (e) {
-  //if (e.code === "NumpadDivide") zoomKeyHeld = true;
-  //if (e.code === "NumpadMultiply" && !e.repeat) toggleZoomRotateDialog();
-  //if (e.code === "NumpadDivide" && !e.repeat) toggleDrawingDialog();
-});
-
-var zoomDragging = false;
-var zoomDragAnchorX = 0;
-var zoomDragAnchorY = 0;
-var zoomDragValue = 1;
-
-function startZoomDrag(e) {
-  zoomDragging = true;
-  zoomDragAnchorX = e.clientX;
-  zoomDragAnchorY = e.clientY;
-  zoomDragValue = viewZoom;
-  canvas.requestPointerLock();
-}
-
-function doZoomDrag(e) {
-  var factor = Math.pow(1.04, e.movementX);
-  zoomDragValue = Math.min(8, Math.max(0.2, zoomDragValue * factor));
-  zoomAt(zoomDragValue, zoomDragAnchorX, zoomDragAnchorY);
-}
-
-function endZoomDrag() {
-  if (zoomDragging && document.pointerLockElement === canvas) {
-    document.exitPointerLock();
-  }
-  zoomDragging = false;
-}
-
-var rotateDragging = false;
-var rotateDragValue = 0;
-
-function startRotateDrag(e) {
-  rotateDragging = true;
-  rotateDragValue = viewRotation;
-  canvas.requestPointerLock();
-}
-
-function doRotateDrag(e) {
-  rotateDragValue += e.movementX * 2;
-  setRotation(rotateDragValue);
-}
-
-function endRotateDrag() {
-  if (rotateDragging && document.pointerLockElement === canvas) {
-    document.exitPointerLock();
-  }
-  rotateDragging = false;
-}
-
-document.addEventListener("pointerlockchange", function () {
-  if (!document.pointerLockElement) {
-    zoomDragging = false;
-    rotateDragging = false;
-  }
-});
-
 var zoomRotateDialog = document.getElementById("zoom-rotate-dialog");
 var zrDialogHandle = document.getElementById("zoom-rotate-dialog-drag-handle");
 var zrDragging = false;
@@ -484,7 +421,6 @@ function renderOnionLevelsList() {
 
 var onionLevelsBar = document.getElementById("onion-levels-bar");
 var olRangeInput = document.getElementById("ol-range");
-//var olOnionToggleInput = document.getElementById("ol-onion-toggle");
 var zrOnionToggleInput = document.getElementById("zr-onion-toggle");
 var olOnionOpacityInput = document.getElementById("ol-onion-opacity");
 var olOnionFalloffInput = document.getElementById("ol-onion-falloff");
@@ -495,7 +431,6 @@ document
     onionLevelsBar.hidden = !onionLevelsBar.hidden;
     if (!onionLevelsBar.hidden) {
       olRangeInput.value = MINI_XSHEET_RANGE;
-      //olOnionToggleInput.classList.toggle("active", onionEnabled);
       olOnionOpacityInput.value = onionOpacity;
       olOnionFalloffInput.value = onionFalloff;
       renderOnionLevelsList();
@@ -509,17 +444,8 @@ olRangeInput.addEventListener("change", function () {
   renderOnionLevelsList();
 });
 
-/*olOnionToggleInput.addEventListener("click", function () {
-  onionEnabled = !onionEnabled;
-  olOnionToggleInput.classList.toggle("active", onionEnabled);
-  zrOnionToggleInput.classList.toggle("active", onionEnabled);
-  qdOnionToggleInput.checked = onionEnabled;
-  updateOnion();
-});*/
-
 zrOnionToggleInput.addEventListener("click", function () {
   onionEnabled = !onionEnabled;
-  //olOnionToggleInput.classList.toggle("active", onionEnabled);
   zrOnionToggleInput.classList.toggle("active", onionEnabled);
   qdOnionToggleInput.checked = onionEnabled;
   updateOnion();
@@ -530,7 +456,6 @@ olOnionOpacityInput.addEventListener("change", function () {
   if (!isFinite(v)) v = onionOpacity;
   onionOpacity = v;
   olOnionOpacityInput.value = v;
-  onionOpacityInput.value = v;
   qdOnionOpacityInput.value = v;
   updateOnion();
 });

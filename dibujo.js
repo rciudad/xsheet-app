@@ -49,15 +49,6 @@ resolutionInput.addEventListener("change", function (e) {
 canvas.addEventListener("pointerdown", function (e) {
   if (e.button === 2) return;
 
-  if (zoomKeyHeld) {
-    startZoomDrag(e);
-    return;
-  }
-
-  if (rotateKeyHeld) {
-    startRotateDrag(e);
-    return;
-  }
   if (
     tool === "move-transform" ||
     tool === "scale-transform" ||
@@ -107,14 +98,6 @@ canvas.addEventListener("pointerdown", function (e) {
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener("pointermove", function (e) {
-  if (zoomDragging) {
-    doZoomDrag(e);
-    return;
-  }
-  if (rotateDragging) {
-    doRotateDrag(e);
-    return;
-  }
   if (transformState) {
     updateTransform(e);
     return;
@@ -144,16 +127,12 @@ canvas.addEventListener("pointermove", function (e) {
 
 canvas.addEventListener("pointerup", function (e) {
   endStroke();
-  endZoomDrag();
-  endRotateDrag();
   endTransform();
   canvas.releasePointerCapture(e.pointerId);
 });
 
 canvas.addEventListener("pointercancel", function (e) {
   endStroke();
-  endZoomDrag();
-  endRotateDrag();
   endTransform();
   canvas.releasePointerCapture(e.pointerId);
 });

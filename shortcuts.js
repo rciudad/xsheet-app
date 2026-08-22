@@ -49,8 +49,9 @@ var shortcutActions = [
   },
   {
     id: "toolPan",
-    label: "Herramienta mano",
+    label: "Herramienta mano (mantener)",
     defaultKey: "H",
+    hold: true,
     run: function () {
       setTool("pan");
     },
@@ -195,7 +196,34 @@ window.addEventListener("keydown", function (e) {
   if (!action) return;
   if (action.guard && !action.guard()) return;
   e.preventDefault();
+
+  if (action.hold) {
+    if (!activeHoldAction) {
+      activeHoldAction = action;
+      toolBeforeHold = tool;
+      action.run();
+    }
+    return;
+  }
   action.run();
+});
+
+var activeHoldAction = null;
+var toolBeforeHold = null;
+
+window.addEventListener("keyup", function (e) {
+  if (!activeHoldAction) return;
+  if (keyEventToCombo(e) !== shortcutBindings[activeHoldAction.id]) return;
+  setTool(toolBeforeHold);
+  activeHoldAction = null;
+  toolBeforeHold = null;
+});
+
+window.addEventListener("blur", function () {
+  if (!activeHoldAction) return;
+  setTool(toolBeforeHold);
+  activeHoldAction = null;
+  toolBeforeHold = null;
 });
 
 // --- Diálogo de configuración de atajos ---
