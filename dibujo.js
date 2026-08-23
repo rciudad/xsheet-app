@@ -252,13 +252,13 @@ var bristleDist = 0;
 var lastHardPos = null;
 
 function pressureFactor(e) {
-  return e && e.pointerType === "pen" && e.pressure > 0 ? e.pressure : 1;
+  return e && e.pointerType === "pen" ? e.pressure : 1;
 }
 
 function currentWidth(e) {
   var input = tool === "eraser" ? eraserSizeInput : sizeInput;
   var base = parseFloat(input.value) || 4;
-  if (e && e.pointerType === "pen" && e.pressure > 0) {
+  if (e && e.pointerType === "pen") {
     return base * (0.35 + 0.9 * e.pressure);
   }
   return base;

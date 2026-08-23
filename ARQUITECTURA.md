@@ -85,7 +85,9 @@ Un único canvas recibe eventos de puntero; `pointerdown` decide qué hacer seg�
 
 ### Sensibilidad a presión (lápiz óptico)
 
-`pressureFactor(e)` devuelve `e.pressure` solo si `pointerType === "pen"` y hay presión real (`> 0`); si no, `1` (mouse/touch no varían grosor). `currentWidth()` y `dabParams()` la usan con fórmulas distintas: `currentWidth` escala el grosor base entre 35%–125% (`base * (0.35 + 0.9 * pressure)`); `dabParams` en cambio deja el diámetro fijo y solo varía la opacidad (`0.25`–`1`) — el grosor del trazo "duro" responde a la presión, pero el tamaño de cada sello de `stamp`/`bristles` no.
+`pressureFactor(e)` devuelve `e.pressure` tal cual si `pointerType === "pen"`; si no, `1` (mouse/touch no varían grosor). `currentWidth()` y `dabParams()` la usan con fórmulas distintas: `currentWidth` escala el grosor base entre 35%–125% (`base * (0.35 + 0.9 * pressure)`); `dabParams` en cambio deja el diámetro fijo y solo varía la opacidad (`0.25`–`1`) — el grosor del trazo "duro" responde a la presión, pero el tamaño de cada sello de `stamp`/`bristles` no.
+
+**Bug corregido**: ambas funciones exigían antes `e.pressure > 0` para aplicar la fórmula, cayendo a `1`/`base` (presión máxima) en caso contrario. Al soltar el lápiz óptico, la presión real baja gradualmente hasta llegar a exactamente `0` en los últimos eventos antes de despegar — justo ahí la condición se volvía falsa y el trazo saltaba a ancho/opacidad completos en vez de afinarse, dejando un bulto redondo al final de cada trazo (más notorio en trazos de poca presión, donde el salto es proporcionalmente mayor). Se sacó el `&& e.pressure > 0` de las dos condiciones para que una presión real de `0` se interprete como "trazo casi nulo", no como "sin datos de presión".
 
 ### Texturas de pincel
 
