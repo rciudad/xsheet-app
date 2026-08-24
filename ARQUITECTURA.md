@@ -14,7 +14,7 @@ pegholereg.js → project.js → view.js
 
 El estado central vive en `cels.js`:
 
-- `layers`: array de `{ name, visible, opacity, cels, holds }`.
+- `layers`: array de `{ name, visible, opacity, blendMode, cels, holds }`. `blendMode` es `"source-over"` (normal) o `"multiply"`, seleccionable desde `#xh-layer-blend-mode` en el header del xsheet.
 - `cels`: array paralelo de `{ canvas, ctx }` — un `<canvas>` offscreen real por frame (el contenido del dibujo vive ahí, no en una estructura de píxeles serializada).
 - `holds`: array paralelo a `cels` — cuántos ticks dura cada cel en pantalla.
 - `activeLayer`, `currentTick`: punteros al estado actualmente visible/editable.
@@ -51,18 +51,27 @@ Solo existe un canvas interactivo, `#drawingTable` (`canvas`/`ctx` en `dibujo.js
 Canvases apilados con `position: absolute`, en este orden dentro del DOM (de atrás hacia adelante):
 
 1. `#onion` — onion skin (solo lectura).
-2. `#layersBelow` — capas con índice menor a la activa, compositadas con su opacity (solo lectura).
-3. `#drawingTable` — el canvas activo/editable; único que recibe eventos de puntero.
-4. `#layersAbove` — capas con índice mayor a la activa, compositadas con su opacity (solo lectura).
-5. `#playCanvas` — oculto por defecto; reemplaza a todo lo anterior durante reproducción o vista previa de grading.
+2. `#layersStack` — wrapper con `isolation: isolate` (ver "Blend modes" más abajo), contiene:
+   1. `#layersBelow` — capas con índice menor a la activa, compositadas con su opacity (solo lectura).
+   2. `#drawingTable` — el canvas activo/editable; único que recibe eventos de puntero.
+   3. `#layersAbove` — capas con índice mayor a la activa, compositadas con su opacity (solo lectura).
+3. `#playCanvas` — oculto por defecto; reemplaza a todo lo anterior durante reproducción o vista previa de grading.
 
 `applyStageSize()` (`dibujo.js`) es el único punto que redimensiona **todos** los canvases del stage (`drawingTable`, `onion`, `layersBelow/Above`, `flattenCanvas`, `tintCanvas`, `playCanvas`) a `W×H`, ajusta el `aspect-ratio` de `#stageViewport`, resetea el crop a full-frame y recalcula el cursor de pincel — se llama tanto al cambiar resolución como al cargar un proyecto.
+
+### Blend modes por capa y aislamiento CSS
+
+Cada capa puede mezclarse en `"multiply"` en vez de `"source-over"` (normal). El compositing offscreen (`flattenAt()`, usado por export/onion/grade preview) lo aplica seteando `ctx.globalCompositeOperation = L.blendMode` antes de cada `drawImage` — trivial, porque ahí todo pasa por un solo canvas 2D. La vista en vivo es más delicada porque la capa activa es un `<canvas>` DOM real (no se puede "dibujar" su blend con un context 2D): se usa CSS `mix-blend-mode` sobre `#drawingTable`, seteado en `renderLayerComposites()` junto con `canvas.style.opacity`.
+
+**Por qué existe `#layersStack`:** `mix-blend-mode` sin un ancestro con `isolation: isolate` mezcla contra *todo* lo pintado detrás en el stacking context — no solo contra las otras capas reales. Sin aislamiento, `multiply` en la capa activa terminaba mezclándose tanto con el fondo de la página (`body`, gris azulado) como con los fantasmas del onion skin (que están *detrás* en el stack pero no deberían participar del blend). La solución es aislar solo el subárbol de capas reales: `#layersStack` (que envuelve `layersBelow`/`drawingTable`/`layersAbove`) lleva `isolation: isolate`, mientras que `#onion` queda **afuera** de ese wrapper — así el `multiply` de la capa activa se mezcla únicamente contra `#layersBelow`, y el resultado del grupo aislado se compone con `source-over` normal sobre el onion, que se ve intacto detrás.
 
 ## Motor de dibujo y pinceles (`dibujo.js`)
 
 ### Cambio de resolución
 
 El listener de `#resolution` recorre **todos los cels de todas las capas** (no solo el activo) y los redimensiona con `resizeCanvasKeepContent()`: copia el canvas viejo a un buffer temporal, cambia el tamaño real del canvas (lo que lo limpia), y redibuja el buffer encima — mismo patrón de "no se puede leer y escribir el mismo canvas a la vez" que se repite en otros módulos (ver "Patrones recurrentes"). Si estaba reproduciendo, para el play antes de tocar nada.
+
+**Bug corregido — `#stageViewport` colapsaba a proporción incorrecta en resoluciones ≠ 800×600:** `#stageViewport` calcula su alto automáticamente a partir de `width` + `aspect-ratio` (seteado dinámicamente por `applyStageSize()`). Por un bug de layout de Chromium, los canvases absolutamente posicionados dentro de `#stage` (con atributos `width`/`height` grandes, ej. `3840×2160`) "filtraban" su tamaño intrínseco hacia el cálculo del alto automático del contenedor, pisando el valor derivado de `aspect-ratio` con el alto crudo en píxeles del canvas — visualmente, cualquier resolución con otra proporción se veía angosta y estirada verticalmente. Se agregó `contain: size;` a `#stageViewport`: fuerza al navegador a calcular su tamaño únicamente a partir de sus propias propiedades (`width` + `aspect-ratio`), ignorando el contenido interno — seguro acá porque `#stageViewport` siempre tiene ambas propiedades explícitas, nunca depende de sus hijos para el tamaño.
 
 ### Loop de puntero sobre `#drawingTable`
 
@@ -285,7 +294,7 @@ Llama primero a `syncActiveToStorage()` (vuelca el canvas visible al cel activo 
 
 - `version: 1` — se guarda pero no se usa todavía para ninguna rama de compatibilidad: al ser una reescritura desde cero (a diferencia de `~/cel/cel/xsheet.html`, que a esta altura ya iba por `version: 8` con varias ramas de formato viejo) todavía no existe un formato anterior que soportar.
 - `w`, `h`, `fps`, `currentTick`, `activeLayer`.
-- `layers`: cada capa como `{ name, visible, opacity, holds, cels }`, con cada `cel` serializado vía `canvas.toDataURL("image/png")` (lossless, un data URL por frame).
+- `layers`: cada capa como `{ name, visible, opacity, blendMode, holds, cels }`, con cada `cel` serializado vía `canvas.toDataURL("image/png")` (lossless, un data URL por frame).
 - `audio`: solo se incluye (`{ data, name, muted }`) si hay una pista cargada (`audioDataURL` truthy); si no, `null`.
 - `pegRegion1` / `pegRegion2` (sección "Registro de agujeros de perforadora"), siempre presentes.
 
@@ -302,7 +311,7 @@ Defensiva en cada paso, pensada para tolerar un archivo incompleto o editado a m
 - Si estaba reproduciendo, `stopPlay()` antes de reemplazar el estado.
 - `W`/`H` solo se aplican si ambos son `number` (`applyStageSize()` + reflejar el input de resolución); si faltan, se conserva la resolución actual del proyecto en memoria.
 - Cada cel se reconstruye como `Image` (carga asíncrona, `Promise.all` por capa y luego `Promise.all` de todas las capas): `onload` dibuja la imagen escalada a `W×H` sobre un `makeCel()` nuevo; `onerror` **no** rechaza la promesa — resuelve igual con un `makeCel()` en blanco, así un data URL corrupto en un solo frame no tira abajo la carga de todo el proyecto.
-- Por capa: `name` cae a `"Layer"` si falta, `visible` es `true` salvo que venga explícitamente `false`, `opacity` se valida `typeof === "number"` (si no, default `1`), `cels` nunca queda vacío (`[makeCel()]` si el array vino vacío), y cada `hold` pasa por `Math.max(1, Math.round(+h) || 1)` — coacciona a número, redondea, y garantiza mínimo 1 tick incluso ante un valor no numérico o negativo.
+- Por capa: `name` cae a `"Layer"` si falta, `visible` es `true` salvo que venga explícitamente `false`, `opacity` se valida `typeof === "number"` (si no, default `1`), `blendMode` solo se acepta si es exactamente `"multiply"` (cualquier otro valor, incluido faltante, cae a `"source-over"`), `cels` nunca queda vacío (`[makeCel()]` si el array vino vacío), y cada `hold` pasa por `Math.max(1, Math.round(+h) || 1)` — coacciona a número, redondea, y garantiza mínimo 1 tick incluso ante un valor no numérico o negativo.
 - Después de reconstruir todas las capas, se reconcilia la longitud de `holds` contra `cels` (se completa con `1`s de más corto, se trunca si vino más largo) — protege contra un JSON donde ambos arrays no coincidan en longitud.
 - `activeLayer` y `currentTick` se clampean con `Math.min`/`Math.max` contra los datos ya cargados (`layers.length - 1`, `sheetTotalTicks() - 1`), no contra lo que traía el JSON crudo.
 - `fps` se valida `typeof === "number"` y se clampea 1–30.
