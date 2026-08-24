@@ -814,6 +814,12 @@
       position: absolute;
       inset: 0;
       transform-origin: 50% 50%;
+      background: #ffffff;
+    }
+    #layersStack {
+      position: absolute;
+      inset: 0;
+      isolation: isolate;
     }
     #stage canvas {
       position: absolute;
@@ -1521,13 +1527,13 @@
         <div class="main-row">
           <div class="canvas-area">
             <div id="stageViewport">
+              <canvas
+                id="onion"
+                width="800"
+                height="600"
+                style="pointer-events: none"
+              ></canvas>
               <div id="stage">
-                <canvas
-                  id="onion"
-                  width="800"
-                  height="600"
-                  style="pointer-events: none"
-                ></canvas>
                 <canvas
                   id="layersBelow"
                   width="800"
@@ -1541,43 +1547,42 @@
                   height="600"
                   style="pointer-events: none"
                 ></canvas>
-                <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) 
-mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
-                <canvas
-                  id="playCanvas"
-                  width="800"
-                  height="600"
-                  style="display: none"
-                ></canvas>
-
-                <div
-                  id="pegOverlay1"
-                  style="
-                    position: absolute;
-                    border: 2px solid red;
-                    pointer-events: none;
-                    display: none;
-                  "
-                ></div>
-                <div
-                  id="pegOverlay2"
-                  style="
-                    position: absolute;
-                    border: 2px solid blue;
-                    pointer-events: none;
-                    display: none;
-                  "
-                ></div>
-                <div
-                  id="cropOverlay"
-                  style="
-                    position: absolute;
-                    border: 2px dashed lime;
-                    pointer-events: none;
-                    display: none;
-                  "
-                ></div>
               </div>
+              <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
+              <canvas
+                id="playCanvas"
+                width="800"
+                height="600"
+                style="display: none"
+              ></canvas>
+
+              <div
+                id="pegOverlay1"
+                style="
+                  position: absolute;
+                  border: 2px solid red;
+                  pointer-events: none;
+                  display: none;
+                "
+              ></div>
+              <div
+                id="pegOverlay2"
+                style="
+                  position: absolute;
+                  border: 2px solid blue;
+                  pointer-events: none;
+                  display: none;
+                "
+              ></div>
+              <div
+                id="cropOverlay"
+                style="
+                  position: absolute;
+                  border: 2px dashed lime;
+                  pointer-events: none;
+                  display: none;
+                "
+              ></div>
             </div>
           </div>
 
@@ -1977,7 +1982,13 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
             <label class="xsheet-header-checkbox" for="xh-layer-visible">
               <input type="checkbox" id="xh-layer-visible" checked /> Visible
             </label>
+            <label for="xh-layer-blend-mode">Mezcla</label>
+            <select id="xh-layer-blend-mode">
+              <option value="source-over">Normal</option>
+              <option value="multiply">Multiplicar</option>
+            </select>
           </div>
+
           <div class="xsheet-header-field">
             <label for="xh-layer-hold-all">Todos los holds</label>
             <input

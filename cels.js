@@ -28,12 +28,19 @@ document.getElementById("delete-frame").addEventListener("click", function () {
 
 var xhLayerOpacityInput = document.getElementById("xh-layer-opacity");
 var xhLayerOpacityReadout = document.getElementById("xh-layer-opacity-readout");
+var xhLayerBlendModeInput = document.getElementById("xh-layer-blend-mode");
 
 xhLayerOpacityInput.addEventListener("input", function () {
   var v = +xhLayerOpacityInput.value / 100;
   layers[activeLayer].opacity = v;
   xhLayerOpacityReadout.textContent = Math.round(v * 100) + "%";
 
+  updateOnion();
+  refreshGradePreview();
+});
+
+xhLayerBlendModeInput.addEventListener("change", function () {
+  layers[activeLayer].blendMode = xhLayerBlendModeInput.value;
   updateOnion();
   refreshGradePreview();
 });
@@ -98,8 +105,16 @@ function makeCel() {
 //var currentTick = 0;
 
 var layers = [
-  { name: "Layer 1", visible: true, opacity: 1, cels: [makeCel()], holds: [1] },
+  {
+    name: "Layer 1",
+    visible: true,
+    opacity: 1,
+    blendMode: "source-over",
+    cels: [makeCel()],
+    holds: [1],
+  },
 ];
+
 var activeLayer = 0;
 var currentTick = 0;
 
@@ -126,6 +141,10 @@ function syncLayerOpacityInput() {
     Math.round(layers[activeLayer].opacity * 100) + "%";
 }
 
+function syncLayerBlendModeInput() {
+  xhLayerBlendModeInput.value = layers[activeLayer].blendMode || "source-over";
+}
+
 function syncLayerVisibleInput() {
   xhLayerVisibleInput.checked = layers[activeLayer].visible;
 }
@@ -134,6 +153,7 @@ populateLayerSelector(layers, activeLayer);
 
 syncLayerOpacityInput();
 syncLayerVisibleInput();
+syncLayerBlendModeInput();
 
 // "guarda lo que hay en pantalla en el cel activo"
 function syncActiveToStorage() {
@@ -211,6 +231,7 @@ function selectLayer(li) {
   loadActiveFromStorage();
   syncLayerOpacityInput();
   syncLayerVisibleInput();
+  syncLayerBlendModeInput();
   renderXSheet();
   updateOnion();
 }
@@ -223,6 +244,7 @@ function addLayer() {
     opacity: 1,
     cels: [makeCel()],
     holds: [1],
+    blendMode: "source-over",
   };
   var insertAt = activeLayer + 1;
   layers.splice(insertAt, 0, L);
@@ -232,6 +254,7 @@ function addLayer() {
   syncLayerOpacityInput();
   syncLayerVisibleInput();
   loadActiveFromStorage();
+  syncLayerBlendModeInput();
   renderXSheet();
   updateOnion();
 }

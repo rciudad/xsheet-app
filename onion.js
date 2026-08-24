@@ -13,9 +13,11 @@ function renderLayerComposites() {
     if (!L.visible) continue;
     var run = layerCelAtTick(L, currentTick);
     layersBelowCtx.globalAlpha = L.opacity;
+    layersBelowCtx.globalCompositeOperation = L.blendMode || "source-over";
     layersBelowCtx.drawImage(L.cels[run.idx].canvas, 0, 0);
   }
   layersBelowCtx.globalAlpha = 1;
+  layersBelowCtx.globalCompositeOperation = "source-over";
 
   layersAboveCtx.clearRect(0, 0, W, H);
   for (var j = activeLayer + 1; j < layers.length; j++) {
@@ -23,12 +25,16 @@ function renderLayerComposites() {
     if (!L2.visible) continue;
     var run2 = layerCelAtTick(L2, currentTick);
     layersAboveCtx.globalAlpha = L2.opacity;
+    layersAboveCtx.globalCompositeOperation = L2.blendMode || "source-over";
     layersAboveCtx.drawImage(L2.cels[run2.idx].canvas, 0, 0);
   }
   layersAboveCtx.globalAlpha = 1;
+  layersAboveCtx.globalCompositeOperation = "source-over";
 
   var active = layers[activeLayer];
   canvas.style.opacity = active.visible ? active.opacity : 0;
+  canvas.style.mixBlendMode =
+    active.blendMode === "multiply" ? "multiply" : "normal";
 }
 
 const flattenCanvas = document.createElement("canvas");
@@ -43,9 +49,11 @@ function flattenAt(tick) {
     const r = layerCelAtTickForRender(L, tick);
     if (!r) return;
     flattenCtx.globalAlpha = L.opacity;
+    flattenCtx.globalCompositeOperation = L.blendMode || "source-over";
     flattenCtx.drawImage(L.cels[r.idx].canvas, 0, 0);
   });
   flattenCtx.globalAlpha = 1;
+  flattenCtx.globalCompositeOperation = "source-over";
   return flattenCanvas;
 }
 

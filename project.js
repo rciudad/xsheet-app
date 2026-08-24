@@ -12,6 +12,7 @@ function saveProject() {
         name: L.name,
         visible: L.visible,
         opacity: L.opacity,
+        blendMode: L.blendMode,
         holds: L.holds,
         cels: L.cels.map(function (c) {
           return c.canvas.toDataURL("image/png");
@@ -93,6 +94,7 @@ function loadProjectFromJSON(text) {
         name: Ldef.name || "Layer",
         visible: Ldef.visible !== false,
         opacity: typeof Ldef.opacity === "number" ? Ldef.opacity : 1,
+        blendMode: Ldef.blendMode === "multiply" ? "multiply" : "source-over",
         cels: cels.length ? cels : [makeCel()],
         holds: (Ldef.holds || []).map(function (h) {
           return Math.max(1, Math.round(+h) || 1);
