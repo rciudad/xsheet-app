@@ -233,11 +233,6 @@ function duplicateFrame() {
   updateOnion();
 }
 
-//Mover (saca el bloque [sourceStart..sourceEnd] de una posición y lo reinserta en
-//otra):
-//Cuando sourceStart === sourceEnd, count es 1 y el cálculo de insertAt es idéntico al
-//original — mismo comportamiento de siempre para mover un solo frame.
-
 function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
   var L = layers[activeLayer];
   syncActiveToStorage();
@@ -252,17 +247,32 @@ function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
   startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
   endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
 
-  // Guardamos los dibujos originales (los objetos reales, no copias) y
-  // dejamos frames en blanco en su lugar — el frame-slot de origen no se
-  // saca del arreglo, así que 2, 3, 4... nunca se corren de numeración.
-  var movedCels = L.cels.slice(startIdx, endIdx + 1);
-  var movedHolds = L.holds.slice(startIdx, endIdx + 1);
-  for (var i = startIdx; i <= endIdx; i++) {
-    L.cels[i] = makeCel();
-  }
-
+  // El destino se resuelve contra el arreglo tal cual está antes de sacar
+  // el bloque de origen — todavía no se corrió ninguna numeración.
   var destIdx = tickNumberToRunIdx(L, destNumber);
-  var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
+  destIdx = Math.max(0, Math.min(destIdx, L.cels.length));
+
+  var blockLen = endIdx - startIdx + 1;
+
+  // Sacamos el bloque real del arreglo (mismos objetos, no copias) — a
+  // diferencia de copyFrameToPosition, acá el origen sí se vacía de verdad.
+  var movedCels = L.cels.splice(startIdx, blockLen);
+  var movedHolds = L.holds.splice(startIdx, blockLen);
+
+  // destIdx se calculó antes del splice de salida: si el destino caía
+  // después del bloque movido, hay que correrlo hacia atrás lo que el
+  // bloque medía, porque esos índices ya no existen más.
+  var insertAt;
+  if (destIdx <= startIdx) {
+    insertAt = destIdx;
+  } else if (destIdx > endIdx) {
+    insertAt = destIdx - blockLen;
+  } else {
+    // El destino caía dentro del propio bloque movido: no tiene sentido,
+    // lo dejamos donde estaba.
+    insertAt = startIdx;
+  }
+  insertAt = Math.max(0, Math.min(insertAt, L.cels.length));
 
   // Si el destino cae más allá del último tick ocupado, rellenamos el hueco
   // extendiendo el hold del último frame — así el dibujo movido aterriza
@@ -286,9 +296,6 @@ function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
     renderMiniXsheet();
   }
 }
-
-//Ojo con el orden: primero splice para sacar, y destIdx se calculó antes de sacar el original — el comentario del original explica que, aunque parezca que habría que ajustar el índice
-//en ±1 tras el splice de salida, no hace falta (verificado a mano).
 
 //Copiar (igual, pero sin sacar el bloque original, solo duplicándolo en el destino):
 function copyFrameToPosition(sourceStart, sourceEnd, destNumber) {
