@@ -1,3 +1,15 @@
+var xhShowThumbnailsInput = document.getElementById("xh-show-thumbnails");
+var XSHEET_THUMBS_KEY = "xsheetShowThumbnails";
+var xsheetShowThumbnails = localStorage.getItem(XSHEET_THUMBS_KEY) === "1";
+xhShowThumbnailsInput.checked = xsheetShowThumbnails;
+
+xhShowThumbnailsInput.addEventListener("change", function () {
+  xsheetShowThumbnails = xhShowThumbnailsInput.checked;
+  localStorage.setItem(XSHEET_THUMBS_KEY, xsheetShowThumbnails ? "1" : "0");
+  syncActiveToStorage();
+  renderXSheet();
+});
+
 function renderXSheet() {
   clampRange();
   const xsheetEl = document.getElementById("xsheet");
@@ -6,7 +18,9 @@ function renderXSheet() {
 
   xsheetEl.style.gridTemplateColumns =
     "40px 50px repeat(" + layers.length + ", 88px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
-  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 28px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
+
+  xsheetEl.style.gridTemplateRows =
+    "24px repeat(" + rows + ", " + (xsheetShowThumbnails ? 84 : 28) + "px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
 
   const corner = document.createElement("div");
   corner.style.gridColumn = "1";
@@ -113,6 +127,26 @@ function renderXSheet() {
 
       const cell = document.createElement("div");
       //cell.appendChild(holdInput);
+
+      if (xsheetShowThumbnails) {
+        const thumb = document.createElement("canvas");
+        thumb.className = "xsheet-thumb";
+        thumb.width = 176;
+        thumb.height = Math.max(1, Math.round((176 * H) / W));
+        const thumbCtx = thumb.getContext("2d");
+        thumbCtx.imageSmoothingEnabled = true;
+        thumbCtx.imageSmoothingQuality = "high";
+        thumbCtx.drawImage(
+          L.cels[celIdx].canvas,
+          0,
+          0,
+          thumb.width,
+          thumb.height
+        );
+
+        cell.appendChild(thumb);
+      }
+
       const numEl = document.createElement("span");
       numEl.className = "xsheet-num";
       numEl.textContent = runStart + 1;
