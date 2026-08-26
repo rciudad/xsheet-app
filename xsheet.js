@@ -1,6 +1,6 @@
 var xhShowThumbnailsInput = document.getElementById("xh-show-thumbnails");
 var XSHEET_THUMBS_KEY = "xsheetShowThumbnails";
-var xsheetShowThumbnails = localStorage.getItem(XSHEET_THUMBS_KEY) === "1";
+var xsheetShowThumbnails = localStorage.getItem(XSHEET_THUMBS_KEY) === "0";
 xhShowThumbnailsInput.checked = xsheetShowThumbnails;
 
 xhShowThumbnailsInput.addEventListener("change", function () {
@@ -17,10 +17,14 @@ function renderXSheet() {
   const rows = sheetTotalTicks();
 
   xsheetEl.style.gridTemplateColumns =
-    "40px 50px repeat(" + layers.length + ", 88px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
+    "40px 50px repeat(" +
+    layers.length +
+    ", " +
+    (xsheetShowThumbnails ? 176 : 88) +
+    "px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
 
   xsheetEl.style.gridTemplateRows =
-    "24px repeat(" + rows + ", " + (xsheetShowThumbnails ? 84 : 28) + "px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
+    "24px repeat(" + rows + ", " + (xsheetShowThumbnails ? 132 : 28) + "px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
 
   const corner = document.createElement("div");
   corner.style.gridColumn = "1";

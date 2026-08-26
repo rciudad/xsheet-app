@@ -11,7 +11,8 @@ function renderLayerComposites() {
   for (var i = 0; i < activeLayer; i++) {
     var L = layers[i];
     if (!L.visible) continue;
-    var run = layerCelAtTick(L, currentTick);
+    var run = layerCelAtTickForRender(L, currentTick);
+    if (!run) continue;
     layersBelowCtx.globalAlpha = L.opacity;
     layersBelowCtx.globalCompositeOperation = L.blendMode || "source-over";
     layersBelowCtx.drawImage(L.cels[run.idx].canvas, 0, 0);
@@ -23,7 +24,8 @@ function renderLayerComposites() {
   for (var j = activeLayer + 1; j < layers.length; j++) {
     var L2 = layers[j];
     if (!L2.visible) continue;
-    var run2 = layerCelAtTick(L2, currentTick);
+    var run2 = layerCelAtTickForRender(L2, currentTick);
+    if (!run2) continue;
     layersAboveCtx.globalAlpha = L2.opacity;
     layersAboveCtx.globalCompositeOperation = L2.blendMode || "source-over";
     layersAboveCtx.drawImage(L2.cels[run2.idx].canvas, 0, 0);
