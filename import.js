@@ -98,14 +98,33 @@ document
         alert("No se pudieron abrir esas imágenes.");
         return;
       }
+      const holds = cels.map(function () {
+        return 1;
+      });
+      const appendToActive = document.getElementById(
+        "import-batch-active"
+      ).checked;
+
+      if (appendToActive) {
+        const L = layers[activeLayer];
+        const run = layerCelAtTick(L, currentTick);
+        const insertAt = run.idx + 1;
+        L.cels.splice.apply(L.cels, [insertAt, 0].concat(cels));
+        L.holds.splice.apply(L.holds, [insertAt, 0].concat(holds));
+        currentTick = run.localStart + run.runLen;
+        loadActiveFromStorage();
+        renderXSheet();
+        updateOnion();
+        return;
+      }
+
       const L = {
         name: "Layer " + (layers.length + 1),
         visible: true,
         opacity: 1,
+        blendMode: "source-over",
         cels: cels,
-        holds: cels.map(function () {
-          return 1;
-        }),
+        holds: holds,
       };
       const insertAt = activeLayer + 1;
       layers.splice(insertAt, 0, L);

@@ -1,6 +1,6 @@
 var xhShowThumbnailsInput = document.getElementById("xh-show-thumbnails");
 var XSHEET_THUMBS_KEY = "xsheetShowThumbnails";
-var xsheetShowThumbnails = localStorage.getItem(XSHEET_THUMBS_KEY) === "0";
+var xsheetShowThumbnails = localStorage.getItem(XSHEET_THUMBS_KEY) === "1";
 xhShowThumbnailsInput.checked = xsheetShowThumbnails;
 
 xhShowThumbnailsInput.addEventListener("change", function () {
