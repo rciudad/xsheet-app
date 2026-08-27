@@ -804,16 +804,24 @@
       justify-content: center;
       overflow: auto;
     }
+
     #stageViewport {
       flex-shrink: 0;
       position: relative;
       width: min(100%, 800px);
       aspect-ratio: 800 / 600;
+      contain: size;
     }
     #stage {
       position: absolute;
       inset: 0;
       transform-origin: 50% 50%;
+      background: #ffffff;
+    }
+    #layersStack {
+      position: absolute;
+      inset: 0;
+      isolation: isolate;
     }
     #stage canvas {
       position: absolute;
@@ -844,7 +852,9 @@
       font-size: 12px;
       color: var(--text-dim);
     }
+
     .xsheet-cell {
+      position: relative;
       border: 1px solid var(--cell-border);
       background-color: #ffffff;
       cursor: pointer;
@@ -866,6 +876,8 @@
     }
 
     .xsheet-cell .xsheet-hold {
+      position: relative;
+      z-index: 1;
       width: 32px;
       background: var(--ink-800);
       color: var(--text);
@@ -873,12 +885,28 @@
     }
 
     .xsheet-num {
+      position: relative;
+      z-index: 1;
       font-size: 14px;
       color: var(--text-dim);
       line-height: 1;
       margin-top: 2px;
       font-weight: bold;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 2px;
+      padding: 0 2px;
     }
+    .xsheet-thumb {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: 0;
+      pointer-events: none;
+      background: #ffffff;
+    }
+
     .xsheet-tick.current {
       /*background-color: var(--accent);
       color: var(--ink-950);*/
@@ -1528,21 +1556,22 @@
                   height="600"
                   style="pointer-events: none"
                 ></canvas>
-                <canvas
-                  id="layersBelow"
-                  width="800"
-                  height="600"
-                  style="pointer-events: none"
-                ></canvas>
-                <canvas id="drawingTable" width="800" height="600"></canvas>
-                <canvas
-                  id="layersAbove"
-                  width="800"
-                  height="600"
-                  style="pointer-events: none"
-                ></canvas>
-                <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) 
-mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
+                <div id="layersStack">
+                  <canvas
+                    id="layersBelow"
+                    width="800"
+                    height="600"
+                    style="pointer-events: none"
+                  ></canvas>
+                  <canvas id="drawingTable" width="800" height="600"></canvas>
+                  <canvas
+                    id="layersAbove"
+                    width="800"
+                    height="600"
+                    style="pointer-events: none"
+                  ></canvas>
+                </div>
+                <!--Se mantiene oculto mientras se dibuja, y se muestra (ocultando el canvas de dibujo) mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
                 <canvas
                   id="playCanvas"
                   width="800"
@@ -1977,7 +2006,11 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
             <label class="xsheet-header-checkbox" for="xh-layer-visible">
               <input type="checkbox" id="xh-layer-visible" checked /> Visible
             </label>
+            <label class="xsheet-header-checkbox" for="xh-show-thumbnails">
+              <input type="checkbox" id="xh-show-thumbnails" /> Miniaturas
+            </label>
           </div>
+
           <div class="xsheet-header-field">
             <label for="xh-layer-hold-all">Todos los holds</label>
             <input
@@ -1991,6 +2024,11 @@ mientras se reproduce — la misma idea que el original con drawEl/playEl.-->
             <button type="button" id="xh-new-layer" title="Agregar capa">
               + Capa
             </button>
+            <label for="xh-layer-blend-mode">Mezcla</label>
+            <select id="xh-layer-blend-mode">
+              <option value="source-over">Normal</option>
+              <option value="multiply">Multiplicar</option>
+            </select>
           </div>
         </div>
         <div class="xsheet" id="xsheet"></div>
@@ -2573,24 +2611,32 @@ function renderLayerComposites() {
   for (var i = 0; i < activeLayer; i++) {
     var L = layers[i];
     if (!L.visible) continue;
-    var run = layerCelAtTick(L, currentTick);
+    var run = layerCelAtTickForRender(L, currentTick);
+    if (!run) continue;
     layersBelowCtx.globalAlpha = L.opacity;
+    layersBelowCtx.globalCompositeOperation = L.blendMode || "source-over";
     layersBelowCtx.drawImage(L.cels[run.idx].canvas, 0, 0);
   }
   layersBelowCtx.globalAlpha = 1;
+  layersBelowCtx.globalCompositeOperation = "source-over";
 
   layersAboveCtx.clearRect(0, 0, W, H);
   for (var j = activeLayer + 1; j < layers.length; j++) {
     var L2 = layers[j];
     if (!L2.visible) continue;
-    var run2 = layerCelAtTick(L2, currentTick);
+    var run2 = layerCelAtTickForRender(L2, currentTick);
+    if (!run2) continue;
     layersAboveCtx.globalAlpha = L2.opacity;
+    layersAboveCtx.globalCompositeOperation = L2.blendMode || "source-over";
     layersAboveCtx.drawImage(L2.cels[run2.idx].canvas, 0, 0);
   }
   layersAboveCtx.globalAlpha = 1;
+  layersAboveCtx.globalCompositeOperation = "source-over";
 
   var active = layers[activeLayer];
   canvas.style.opacity = active.visible ? active.opacity : 0;
+  canvas.style.mixBlendMode =
+    active.blendMode === "multiply" ? "multiply" : "normal";
 }
 
 const flattenCanvas = document.createElement("canvas");
@@ -2605,9 +2651,11 @@ function flattenAt(tick) {
     const r = layerCelAtTickForRender(L, tick);
     if (!r) return;
     flattenCtx.globalAlpha = L.opacity;
+    flattenCtx.globalCompositeOperation = L.blendMode || "source-over";
     flattenCtx.drawImage(L.cels[r.idx].canvas, 0, 0);
   });
   flattenCtx.globalAlpha = 1;
+  flattenCtx.globalCompositeOperation = "source-over";
   return flattenCanvas;
 }
 
@@ -2965,12 +3013,19 @@ document.getElementById("delete-frame").addEventListener("click", function () {
 
 var xhLayerOpacityInput = document.getElementById("xh-layer-opacity");
 var xhLayerOpacityReadout = document.getElementById("xh-layer-opacity-readout");
+var xhLayerBlendModeInput = document.getElementById("xh-layer-blend-mode");
 
 xhLayerOpacityInput.addEventListener("input", function () {
   var v = +xhLayerOpacityInput.value / 100;
   layers[activeLayer].opacity = v;
   xhLayerOpacityReadout.textContent = Math.round(v * 100) + "%";
 
+  updateOnion();
+  refreshGradePreview();
+});
+
+xhLayerBlendModeInput.addEventListener("change", function () {
+  layers[activeLayer].blendMode = xhLayerBlendModeInput.value;
   updateOnion();
   refreshGradePreview();
 });
@@ -3035,8 +3090,16 @@ function makeCel() {
 //var currentTick = 0;
 
 var layers = [
-  { name: "Layer 1", visible: true, opacity: 1, cels: [makeCel()], holds: [1] },
+  {
+    name: "Layer 1",
+    visible: true,
+    opacity: 1,
+    blendMode: "source-over",
+    cels: [makeCel()],
+    holds: [1],
+  },
 ];
+
 var activeLayer = 0;
 var currentTick = 0;
 
@@ -3063,6 +3126,10 @@ function syncLayerOpacityInput() {
     Math.round(layers[activeLayer].opacity * 100) + "%";
 }
 
+function syncLayerBlendModeInput() {
+  xhLayerBlendModeInput.value = layers[activeLayer].blendMode || "source-over";
+}
+
 function syncLayerVisibleInput() {
   xhLayerVisibleInput.checked = layers[activeLayer].visible;
 }
@@ -3071,6 +3138,7 @@ populateLayerSelector(layers, activeLayer);
 
 syncLayerOpacityInput();
 syncLayerVisibleInput();
+syncLayerBlendModeInput();
 
 // "guarda lo que hay en pantalla en el cel activo"
 function syncActiveToStorage() {
@@ -3148,6 +3216,7 @@ function selectLayer(li) {
   loadActiveFromStorage();
   syncLayerOpacityInput();
   syncLayerVisibleInput();
+  syncLayerBlendModeInput();
   renderXSheet();
   updateOnion();
 }
@@ -3160,6 +3229,7 @@ function addLayer() {
     opacity: 1,
     cels: [makeCel()],
     holds: [1],
+    blendMode: "source-over",
   };
   var insertAt = activeLayer + 1;
   layers.splice(insertAt, 0, L);
@@ -3169,6 +3239,7 @@ function addLayer() {
   syncLayerOpacityInput();
   syncLayerVisibleInput();
   loadActiveFromStorage();
+  syncLayerBlendModeInput();
   renderXSheet();
   updateOnion();
 }
@@ -3795,6 +3866,18 @@ rangeEndInput.addEventListener("change", function () {
 });
 </script>
 <script>
+var xhShowThumbnailsInput = document.getElementById("xh-show-thumbnails");
+var XSHEET_THUMBS_KEY = "xsheetShowThumbnails";
+var xsheetShowThumbnails = localStorage.getItem(XSHEET_THUMBS_KEY) === "0";
+xhShowThumbnailsInput.checked = xsheetShowThumbnails;
+
+xhShowThumbnailsInput.addEventListener("change", function () {
+  xsheetShowThumbnails = xhShowThumbnailsInput.checked;
+  localStorage.setItem(XSHEET_THUMBS_KEY, xsheetShowThumbnails ? "1" : "0");
+  syncActiveToStorage();
+  renderXSheet();
+});
+
 function renderXSheet() {
   clampRange();
   const xsheetEl = document.getElementById("xsheet");
@@ -3802,8 +3885,14 @@ function renderXSheet() {
   const rows = sheetTotalTicks();
 
   xsheetEl.style.gridTemplateColumns =
-    "40px 50px repeat(" + layers.length + ", 88px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
-  xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 28px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
+    "40px 50px repeat(" +
+    layers.length +
+    ", " +
+    (xsheetShowThumbnails ? 176 : 88) +
+    "px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
+
+  xsheetEl.style.gridTemplateRows =
+    "24px repeat(" + rows + ", " + (xsheetShowThumbnails ? 132 : 28) + "px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
 
   const corner = document.createElement("div");
   corner.style.gridColumn = "1";
@@ -3910,6 +3999,26 @@ function renderXSheet() {
 
       const cell = document.createElement("div");
       //cell.appendChild(holdInput);
+
+      if (xsheetShowThumbnails) {
+        const thumb = document.createElement("canvas");
+        thumb.className = "xsheet-thumb";
+        thumb.width = 176;
+        thumb.height = Math.max(1, Math.round((176 * H) / W));
+        const thumbCtx = thumb.getContext("2d");
+        thumbCtx.imageSmoothingEnabled = true;
+        thumbCtx.imageSmoothingQuality = "high";
+        thumbCtx.drawImage(
+          L.cels[celIdx].canvas,
+          0,
+          0,
+          thumb.width,
+          thumb.height
+        );
+
+        cell.appendChild(thumb);
+      }
+
       const numEl = document.createElement("span");
       numEl.className = "xsheet-num";
       numEl.textContent = runStart + 1;
@@ -4030,11 +4139,6 @@ function duplicateFrame() {
   updateOnion();
 }
 
-//Mover (saca el bloque [sourceStart..sourceEnd] de una posición y lo reinserta en
-//otra):
-//Cuando sourceStart === sourceEnd, count es 1 y el cálculo de insertAt es idéntico al
-//original — mismo comportamiento de siempre para mover un solo frame.
-
 function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
   var L = layers[activeLayer];
   syncActiveToStorage();
@@ -4049,17 +4153,32 @@ function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
   startIdx = Math.max(0, Math.min(startIdx, L.cels.length - 1));
   endIdx = Math.max(0, Math.min(endIdx, L.cels.length - 1));
 
-  // Guardamos los dibujos originales (los objetos reales, no copias) y
-  // dejamos frames en blanco en su lugar — el frame-slot de origen no se
-  // saca del arreglo, así que 2, 3, 4... nunca se corren de numeración.
-  var movedCels = L.cels.slice(startIdx, endIdx + 1);
-  var movedHolds = L.holds.slice(startIdx, endIdx + 1);
-  for (var i = startIdx; i <= endIdx; i++) {
-    L.cels[i] = makeCel();
-  }
-
+  // El destino se resuelve contra el arreglo tal cual está antes de sacar
+  // el bloque de origen — todavía no se corrió ninguna numeración.
   var destIdx = tickNumberToRunIdx(L, destNumber);
-  var insertAt = Math.max(0, Math.min(destIdx, L.cels.length));
+  destIdx = Math.max(0, Math.min(destIdx, L.cels.length));
+
+  var blockLen = endIdx - startIdx + 1;
+
+  // Sacamos el bloque real del arreglo (mismos objetos, no copias) — a
+  // diferencia de copyFrameToPosition, acá el origen sí se vacía de verdad.
+  var movedCels = L.cels.splice(startIdx, blockLen);
+  var movedHolds = L.holds.splice(startIdx, blockLen);
+
+  // destIdx se calculó antes del splice de salida: si el destino caía
+  // después del bloque movido, hay que correrlo hacia atrás lo que el
+  // bloque medía, porque esos índices ya no existen más.
+  var insertAt;
+  if (destIdx <= startIdx) {
+    insertAt = destIdx;
+  } else if (destIdx > endIdx) {
+    insertAt = destIdx - blockLen;
+  } else {
+    // El destino caía dentro del propio bloque movido: no tiene sentido,
+    // lo dejamos donde estaba.
+    insertAt = startIdx;
+  }
+  insertAt = Math.max(0, Math.min(insertAt, L.cels.length));
 
   // Si el destino cae más allá del último tick ocupado, rellenamos el hueco
   // extendiendo el hold del último frame — así el dibujo movido aterriza
@@ -4083,9 +4202,6 @@ function moveFrameToPosition(sourceStart, sourceEnd, destNumber) {
     renderMiniXsheet();
   }
 }
-
-//Ojo con el orden: primero splice para sacar, y destIdx se calculó antes de sacar el original — el comentario del original explica que, aunque parezca que habría que ajustar el índice
-//en ±1 tras el splice de salida, no hace falta (verificado a mano).
 
 //Copiar (igual, pero sin sacar el bloque original, solo duplicándolo en el destino):
 function copyFrameToPosition(sourceStart, sourceEnd, destNumber) {
@@ -6006,6 +6122,7 @@ function saveProject() {
         name: L.name,
         visible: L.visible,
         opacity: L.opacity,
+        blendMode: L.blendMode,
         holds: L.holds,
         cels: L.cels.map(function (c) {
           return c.canvas.toDataURL("image/png");
@@ -6087,6 +6204,7 @@ function loadProjectFromJSON(text) {
         name: Ldef.name || "Layer",
         visible: Ldef.visible !== false,
         opacity: typeof Ldef.opacity === "number" ? Ldef.opacity : 1,
+        blendMode: Ldef.blendMode === "multiply" ? "multiply" : "source-over",
         cels: cels.length ? cels : [makeCel()],
         holds: (Ldef.holds || []).map(function (h) {
           return Math.max(1, Math.round(+h) || 1);

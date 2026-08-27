@@ -16,34 +16,37 @@ var W = 800;
 var H = 600;
 
 function resizeCanvasKeepContent(canvas, ctx, newW, newH) {
-  var tmp = document.createElement("canvas");
-  tmp.width = canvas.width;
-  tmp.height = canvas.height;
-  tmp.getContext("2d").drawImage(canvas, 0, 0);
-  canvas.width = newW;
+  var tmp = document.createElement("canvas"); //Create a temporal canvas in memory to contain data from canvas that is going to be modified
+  tmp.width = canvas.width; //Use original canvas dimensions to define temporal canvas dimensions
+  tmp.height = canvas.height; //
+  tmp.getContext("2d").drawImage(canvas, 0, 0); //Draw original canvas image on temporal canvas
+  canvas.width = newW; //Change original canvas dimensions, this delete original canvas content
   canvas.height = newH;
-  ctx.clearRect(0, 0, newW, newH);
-  ctx.drawImage(tmp, 0, 0);
+  ctx.clearRect(0, 0, newW, newH); //Clears new canvas (it is already empty, but this is a defensive guaranty)
+  ctx.drawImage(tmp, 0, 0); //Draws back original content on new canvas
 }
 
+/*Activates when resolution input is used
+ */
 resolutionInput.addEventListener("change", function (e) {
-  const [newWidth, newHeight] = e.target.value.split("x");
-  const newW = parseInt(newWidth, 10);
-  const newH = parseInt(newHeight, 10);
-  if (!newW || !newH || (newW === W && newH === H)) return;
-  if (playing) stopPlay();
-  syncActiveToStorage();
+  const [newWidth, newHeight] = e.target.value.split("x"); //Separates resolution string to get width and height
+  const newW = parseInt(newWidth, 10); //Saves new canvas width
+  const newH = parseInt(newHeight, 10); //Saves new canva height
+  if (!newW || !newH || (newW === W && newH === H)) return; //If there is no newW or newH, or there equal to the already used one, do nothing
+  if (playing) stopPlay(); //If there is playback activated stop it
+  syncActiveToStorage(); //Saves canvas content to active cel
   layers.forEach(function (L) {
+    //Applies resizeCanvasKeepContent to every frame in memory/xsheet/layer
     L.cels.forEach(function (c) {
       resizeCanvasKeepContent(c.canvas, c.ctx, newW, newH);
     });
   });
   W = newW;
   H = newH;
-  applyStageSize();
-  loadActiveFromStorage();
-  renderXSheet();
-  updateOnion();
+  applyStageSize(); //resize canvas/drawingTable, onion canvas, layersBelow, layersAbove, flattenCanvas, tintCanvas, playCanvas
+  loadActiveFromStorage(); //gets content from active cel to canvas/drawingTable
+  renderXSheet(); //Refresh xsheet
+  updateOnion(); //Refresh onion
 });
 
 canvas.addEventListener("pointerdown", function (e) {
