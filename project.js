@@ -1,6 +1,6 @@
-function saveProject() {
+function buildProjectData() {
   syncActiveToStorage();
-  const data = {
+  return {
     version: 1,
     w: W,
     h: H,
@@ -25,8 +25,12 @@ function saveProject() {
     pegRegion1: pegRegion1,
     pegRegion2: pegRegion2,
   };
+}
+
+function saveProjectToFile(name) {
+  const data = buildProjectData();
   const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-  deliverFile("project.json", blob, { askOverwrite: true })
+  return deliverFile(name, blob, { askOverwrite: true })
     .then(function () {
       folderStatusEl.textContent = dirHandle
         ? "→ " + dirHandle.name + " (guardado ✓)"
@@ -37,7 +41,22 @@ function saveProject() {
     });
 }
 
+function saveProject() {
+  saveProjectToFile("project.json");
+}
+
+function saveProjectAs() {
+  const name = prompt("Guardar proyecto como:", "project.json");
+  if (!name) return;
+  saveProjectToFile(
+    name.toLowerCase().endsWith(".json") ? name : name + ".json"
+  );
+}
+
 document.getElementById("save-project").addEventListener("click", saveProject);
+document
+  .getElementById("save-project-as")
+  .addEventListener("click", saveProjectAs);
 
 document
   .getElementById("import-project")

@@ -304,9 +304,9 @@ Los menús desplegables `file-menu`/`links-menu` (ARCHIVO ▾ / LINKS ▾) son c
 
 No se usa `localStorage` para el proyecto (sí para bindings de atajos, ver `shortcuts.js`). `project.js` serializa/deserializa el proyecto completo a un `.json` propio.
 
-### Guardado (`saveProject()`)
+### Guardado (`buildProjectData()`, `saveProjectToFile(name)`, `saveProject()`, `saveProjectAs()`)
 
-Llama primero a `syncActiveToStorage()` (vuelca el canvas visible al cel activo — mismo patrón de la sección "Patrón de canvas único editable") para no perder el trazo en curso, y arma:
+`buildProjectData()` llama primero a `syncActiveToStorage()` (vuelca el canvas visible al cel activo — mismo patrón de la sección "Patrón de canvas único editable") para no perder el trazo en curso, y arma el objeto a serializar:
 
 - `version: 1` — se guarda pero no se usa todavía para ninguna rama de compatibilidad: al ser una reescritura desde cero (a diferencia de `~/cel/cel/xsheet.html`, que a esta altura ya iba por `version: 8` con varias ramas de formato viejo) todavía no existe un formato anterior que soportar.
 - `w`, `h`, `fps`, `currentTick`, `activeLayer`.
@@ -314,9 +314,11 @@ Llama primero a `syncActiveToStorage()` (vuelca el canvas visible al cel activo 
 - `audio`: solo se incluye (`{ data, name, muted }`) si hay una pista cargada (`audioDataURL` truthy); si no, `null`.
 - `pegRegion1` / `pegRegion2` (sección "Registro de agujeros de perforadora"), siempre presentes.
 
-No se serializan crop ni color grading (`adjust.js`) — hoy se pierden al recargar un proyecto; no hay ninguna rama de código que los toque en `saveProject()`/`loadProjectFromJSON()`.
+No se serializan crop ni color grading (`adjust.js`) — hoy se pierden al recargar un proyecto; no hay ninguna rama de código que los toque en `buildProjectData()`/`loadProjectFromJSON()`.
 
-El blob resultante se entrega vía `deliverFile("project.json", blob, { askOverwrite: true })` (`folder.js`): si hay una carpeta de trabajo elegida vía File System Access API se escribe ahí directamente (preguntando antes de pisar un archivo existente), si no, dispara una descarga normal del navegador. Éxito actualiza `folderStatusEl`; el error se muestra con `alert()`.
+`saveProjectToFile(name)` arma el blob a partir de `buildProjectData()` y lo entrega vía `deliverFile(name, blob, { askOverwrite: true })` (`folder.js`): si hay una carpeta de trabajo elegida vía File System Access API se escribe ahí directamente (preguntando antes de pisar un archivo existente), si no, dispara una descarga normal del navegador. Éxito actualiza `folderStatusEl`; el error se muestra con `alert()`.
+
+Dos botones del menú "Archivo" comparten esa función con distinto nombre de archivo: `saveProject()` (botón `GUARDAR PROYECTO`) siempre guarda como `"project.json"`; `saveProjectAs()` (botón `GUARDAR PROYECTO COMO...`) pide el nombre con `prompt()` (agregando `.json` si el usuario no lo puso) antes de delegar en `saveProjectToFile`. Si el usuario cancela el prompt (`null`), no hace nada.
 
 ### Carga (`loadProjectFromJSON()`)
 

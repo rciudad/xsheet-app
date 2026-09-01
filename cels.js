@@ -64,6 +64,16 @@ document.getElementById("xh-new-layer").addEventListener("click", function () {
   addLayer();
 });
 
+var moveLayerUpBtn = document.getElementById("move-layer-up");
+var moveLayerDownBtn = document.getElementById("move-layer-down");
+
+moveLayerUpBtn.addEventListener("click", function () {
+  moveLayer(activeLayer, 1);
+});
+moveLayerDownBtn.addEventListener("click", function () {
+  moveLayer(activeLayer, -1);
+});
+
 function addFrame(L, position) {
   syncActiveToStorage();
   const run = layerCelAtTick(L, position);
@@ -232,6 +242,7 @@ function selectLayer(li) {
   syncLayerOpacityInput();
   syncLayerVisibleInput();
   syncLayerBlendModeInput();
+  syncLayerMoveButtons();
   renderXSheet();
   updateOnion();
 }
@@ -255,6 +266,28 @@ function addLayer() {
   syncLayerVisibleInput();
   loadActiveFromStorage();
   syncLayerBlendModeInput();
+  syncLayerMoveButtons();
+  renderXSheet();
+  updateOnion();
+}
+
+function syncLayerMoveButtons() {
+  moveLayerUpBtn.disabled = activeLayer >= layers.length - 1;
+  moveLayerDownBtn.disabled = activeLayer <= 0;
+}
+
+function moveLayer(li, dir) {
+  var target = li + dir;
+  if (target < 0 || target >= layers.length) return;
+  syncActiveToStorage();
+  var tmp = layers[li];
+  layers[li] = layers[target];
+  layers[target] = tmp;
+  if (activeLayer === li) activeLayer = target;
+  else if (activeLayer === target) activeLayer = li;
+  loadActiveFromStorage();
+  populateLayerSelector(layers, activeLayer);
+  syncLayerMoveButtons();
   renderXSheet();
   updateOnion();
 }

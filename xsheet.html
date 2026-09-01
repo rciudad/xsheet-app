@@ -786,6 +786,13 @@
     .xsheet-header-field button:hover {
       background: var(--ink-800);
     }
+    .xsheet-header-field button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .xsheet-header-field button:disabled:hover {
+      background: var(--ink-850);
+    }
     .xsheet-resizer {
       flex: 0 0 auto;
       width: 6px;
@@ -1095,6 +1102,9 @@
                 <span class="file-menu-heading">Proyecto</span>
                 <button type="button" id="save-project">
                   GUARDAR PROYECTO
+                </button>
+                <button type="button" id="save-project-as">
+                  GUARDAR PROYECTO COMO...
                 </button>
                 <button type="button" id="import-project-btn">
                   ABRIR PROYECTO
@@ -2033,6 +2043,20 @@
               value="1"
             />
             <button type="button" id="xh-apply-layer-hold">Aplicar</button>
+            <button
+              type="button"
+              id="move-layer-up"
+              title="Subir capa (más adelante)"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              id="move-layer-down"
+              title="Bajar capa (más atrás)"
+            >
+              ▼
+            </button>
             <button type="button" id="xh-new-layer" title="Agregar capa">
               + Capa
             </button>

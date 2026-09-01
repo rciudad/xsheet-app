@@ -896,6 +896,7 @@
       border-radius: 2px;
       padding: 0 2px;
     }
+
     .xsheet-thumb {
       position: absolute;
       inset: 0;
@@ -3896,70 +3897,6 @@ function renderXSheet() {
   clampRange();
   const xsheetEl = document.getElementById("xsheet");
   xsheetEl.innerHTML = "";
-  const rows = sheetTotalTicks();
-
-  xsheetEl.style.gridTemplateColumns =
-    "40px 50px repeat(" +
-    layers.length +
-    ", " +
-    (xsheetShowThumbnails ? 176 : 88) +
-    "px)"; // "{pos-col-width}px {audio-col-width}px repeat(" + layers.length + ", {layer-col-width}px)"
-
-  xsheetEl.style.gridTemplateRows =
-    "24px repeat(" + rows + ", " + (xsheetShowThumbnails ? 132 : 28) + "px)"; // {header-height}px repeat(" + rows + ", {row-height}px")
-
-  const corner = document.createElement("div");
-  corner.style.gridColumn = "1";
-  corner.style.gridRow = "1";
-  xsheetEl.appendChild(corner);
-
-  const audioTh = document.createElement("div");
-  audioTh.className = "xsheet-th";
-  audioTh.textContent = "Audio";
-  audioTh.style.gridColumn = "2";
-  audioTh.style.gridRow = "1";
-  xsheetEl.appendChild(audioTh);
-
-  layers.forEach(function (layer, li) {
-    const th = document.createElement("div");
-    th.className = "xsheet-th" + (li === activeLayer ? " active" : "");
-    th.textContent = layer.name;
-    th.style.gridColumn = String(li + 3);
-    th.style.gridRow = "1";
-    th.addEventListener("click", function () {
-      selectLayer(li);
-    });
-    xsheetEl.appendChild(th);
-  });
-
-  function createAudioCell(t) {
-    const audioCell = document.createElement("div");
-    audioCell.className =
-      "xsheet-audio-cell" + (t === currentTick ? " current" : "");
-    audioCell.style.gridColumn = "2";
-    audioCell.style.gridRow = String(t + 2);
-    if (audioBuffer) {
-      const amp = audioAmplitudeAtTick(t);
-      const bar = document.createElement("div");
-      bar.className = "xsheet-audio-bar";
-      bar.style.height = Math.max(2, Math.round(amp * 15)) + "px";
-      audioCell.appendChild(bar);
-    }
-    audioCell.addEventListener("click", function () {
-      selectTick(t);
-    });
-    xsheetEl.appendChild(audioCell);
-  }
-
-  for (let t = 0; t < rows; t++) {
-    const tickEl = document.createElement("div");
-    tickEl.className = "xsheet-tick" + (t === currentTick ? " current" : "");
-    tickEl.textContent = t + 1;
-    tickEl.style.gridColumn = "1";
-    tickEl.style.gridRow = String(t + 2);
-    xsheetEl.appendChild(tickEl);
-    createAudioCell(t);
-  }
 
   var pickedLo = null;
   var pickedHi = null;
@@ -3971,129 +3908,235 @@ function renderXSheet() {
     }
   }
 
-  layers.forEach(function (L, li) {
-    const ownTotal = calcTotalFrames(L.holds);
-    let idx = 0;
-    let rem = L.holds[0];
-    let t = 0;
-    while (t < rows && t < ownTotal) {
-      const runStart = t;
-      const runLen = Math.min(rem, rows - t);
+  function buildCell(
+    L,
+    li,
+    idx,
+    runStart,
+    runLen,
+    gridColumn,
+    gridRow,
+    showThumb
+  ) {
+    const holdInput = document.createElement("input");
+    holdInput.type = "number";
+    holdInput.className = "xsheet-hold";
+    holdInput.min = "1";
+    holdInput.value = L.holds[idx];
+    holdInput.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+    });
+    holdInput.addEventListener("change", function () {
+      setFrameHold(li, idx, holdInput.value);
+    });
 
-      const celIdx = idx;
+    const isActionLayer = !!frameAction && li === frameAction.originLi;
+    const isPicked =
+      isActionLayer &&
+      runStart <= pickedHi - 1 &&
+      runStart + runLen - 1 >= pickedLo - 1;
+    const isDest =
+      isActionLayer &&
+      frameAction.destFrame != null &&
+      runStart <= frameAction.destFrame - 1 &&
+      runStart + runLen - 1 >= frameAction.destFrame - 1;
+    const isSelected =
+      frameSelection &&
+      li === frameSelection.li &&
+      runStart <= frameSelection.end - 1 &&
+      runStart + runLen - 1 >= frameSelection.start - 1;
 
-      const holdInput = document.createElement("input");
-      holdInput.type = "number";
-      holdInput.className = "xsheet-hold";
-      holdInput.min = "1";
-      holdInput.value = L.holds[celIdx];
-      holdInput.addEventListener("click", function (ev) {
-        ev.stopPropagation();
+    const cell = document.createElement("div");
+
+    if (showThumb) {
+      const thumb = document.createElement("canvas");
+      thumb.className = "xsheet-thumb";
+      thumb.width = 352;
+      thumb.height = Math.max(1, Math.round((352 * H) / W));
+      const thumbCtx = thumb.getContext("2d");
+      thumbCtx.imageSmoothingEnabled = true;
+      thumbCtx.imageSmoothingQuality = "high";
+      thumbCtx.drawImage(L.cels[idx].canvas, 0, 0, thumb.width, thumb.height);
+      cell.appendChild(thumb);
+    }
+
+    const numEl = document.createElement("span");
+    numEl.className = "xsheet-num";
+    numEl.textContent = runStart + 1;
+    cell.appendChild(numEl);
+
+    cell.appendChild(holdInput);
+
+    cell.className =
+      "xsheet-cell" +
+      (li === activeLayer ? " active-col" : "") +
+      (li === activeLayer &&
+      currentTick >= runStart &&
+      currentTick < runStart + runLen
+        ? " current"
+        : "") +
+      (isPicked ? " action-picked" : "") +
+      (isDest ? " action-dest" : "") +
+      (isSelected ? " frame-selected" : "");
+
+    cell.style.gridColumn = gridColumn;
+    cell.style.gridRow = gridRow;
+
+    cell.addEventListener("click", function (ev) {
+      if (frameAction) {
+        pickFrameActionCell(li, runStart);
+        return;
+      }
+      selectLayer(li);
+      selectTick(runStart);
+      handleFrameSelectClick(li, runStart + 1, ev.clientX, ev.clientY);
+    });
+    cell.addEventListener("contextmenu", function (ev) {
+      ev.preventDefault();
+      selectLayer(li);
+      openFrameContextMenu(li, runStart + 1, ev.clientX, ev.clientY);
+    });
+
+    xsheetEl.appendChild(cell);
+  }
+
+  if (xsheetShowThumbnails) {
+    const maxRuns = layers.reduce(function (max, L) {
+      return Math.max(max, L.cels.length);
+    }, 0);
+
+    xsheetEl.style.gridTemplateColumns = "repeat(" + layers.length + ", 352px)";
+    xsheetEl.style.gridTemplateRows = "24px repeat(" + maxRuns + ", 264px)";
+
+    layers.forEach(function (layer, li) {
+      const th = document.createElement("div");
+      th.className = "xsheet-th" + (li === activeLayer ? " active" : "");
+      th.textContent = layer.name;
+      th.style.gridColumn = String(li + 1);
+      th.style.gridRow = "1";
+      th.addEventListener("click", function () {
+        selectLayer(li);
       });
+      xsheetEl.appendChild(th);
+    });
 
-      holdInput.addEventListener("change", function () {
-        setFrameHold(li, celIdx, holdInput.value);
+    layers.forEach(function (L, li) {
+      for (let idx = 0; idx < L.cels.length; idx++) {
+        const runStart = runStartForIdx(L, idx);
+        const runLen = L.holds[idx];
+        buildCell(
+          L,
+          li,
+          idx,
+          runStart,
+          runLen,
+          String(li + 1),
+          idx + 2 + " / span 1",
+          true
+        );
+      }
+    });
+  } else {
+    const rows = sheetTotalTicks();
+
+    xsheetEl.style.gridTemplateColumns =
+      "40px 50px repeat(" + layers.length + ", 88px)";
+    xsheetEl.style.gridTemplateRows = "24px repeat(" + rows + ", 28px)";
+
+    const corner = document.createElement("div");
+    corner.style.gridColumn = "1";
+    corner.style.gridRow = "1";
+    xsheetEl.appendChild(corner);
+
+    const audioTh = document.createElement("div");
+    audioTh.className = "xsheet-th";
+    audioTh.textContent = "Audio";
+    audioTh.style.gridColumn = "2";
+    audioTh.style.gridRow = "1";
+    xsheetEl.appendChild(audioTh);
+
+    layers.forEach(function (layer, li) {
+      const th = document.createElement("div");
+      th.className = "xsheet-th" + (li === activeLayer ? " active" : "");
+      th.textContent = layer.name;
+      th.style.gridColumn = String(li + 3);
+      th.style.gridRow = "1";
+      th.addEventListener("click", function () {
+        selectLayer(li);
       });
+      xsheetEl.appendChild(th);
+    });
 
-      const isActionLayer = !!frameAction && li === frameAction.originLi;
-      const isPicked =
-        isActionLayer &&
-        runStart <= pickedHi - 1 &&
-        runStart + runLen - 1 >= pickedLo - 1;
-      const isDest =
-        isActionLayer &&
-        frameAction.destFrame != null &&
-        runStart <= frameAction.destFrame - 1 &&
-        runStart + runLen - 1 >= frameAction.destFrame - 1;
-      const isSelected =
-        frameSelection &&
-        li === frameSelection.li &&
-        runStart <= frameSelection.end - 1 &&
-        runStart + runLen - 1 >= frameSelection.start - 1;
+    function createAudioCell(t) {
+      const audioCell = document.createElement("div");
+      audioCell.className =
+        "xsheet-audio-cell" + (t === currentTick ? " current" : "");
+      audioCell.style.gridColumn = "2";
+      audioCell.style.gridRow = String(t + 2);
+      if (audioBuffer) {
+        const amp = audioAmplitudeAtTick(t);
+        const bar = document.createElement("div");
+        bar.className = "xsheet-audio-bar";
+        bar.style.height = Math.max(2, Math.round(amp * 15)) + "px";
+        audioCell.appendChild(bar);
+      }
+      audioCell.addEventListener("click", function () {
+        selectTick(t);
+      });
+      xsheetEl.appendChild(audioCell);
+    }
 
-      const cell = document.createElement("div");
-      //cell.appendChild(holdInput);
+    for (let t = 0; t < rows; t++) {
+      const tickEl = document.createElement("div");
+      tickEl.className = "xsheet-tick" + (t === currentTick ? " current" : "");
+      tickEl.textContent = t + 1;
+      tickEl.style.gridColumn = "1";
+      tickEl.style.gridRow = String(t + 2);
+      xsheetEl.appendChild(tickEl);
+      createAudioCell(t);
+    }
 
-      if (xsheetShowThumbnails) {
-        const thumb = document.createElement("canvas");
-        thumb.className = "xsheet-thumb";
-        thumb.width = 176;
-        thumb.height = Math.max(1, Math.round((176 * H) / W));
-        const thumbCtx = thumb.getContext("2d");
-        thumbCtx.imageSmoothingEnabled = true;
-        thumbCtx.imageSmoothingQuality = "high";
-        thumbCtx.drawImage(
-          L.cels[celIdx].canvas,
-          0,
-          0,
-          thumb.width,
-          thumb.height
+    layers.forEach(function (L, li) {
+      const ownTotal = calcTotalFrames(L.holds);
+      let idx = 0;
+      let rem = L.holds[0];
+      let t = 0;
+      while (t < rows && t < ownTotal) {
+        const runStart = t;
+        const runLen = Math.min(rem, rows - t);
+        buildCell(
+          L,
+          li,
+          idx,
+          runStart,
+          runLen,
+          String(li + 3),
+          runStart + 2 + " / span " + runLen,
+          false
         );
 
-        cell.appendChild(thumb);
+        t += runLen;
+        rem -= runLen;
+        if (rem <= 0 && t < rows) {
+          idx = (idx + 1) % L.cels.length;
+          rem = L.holds[idx];
+        }
       }
+    });
+  }
 
-      const numEl = document.createElement("span");
-      numEl.className = "xsheet-num";
-      numEl.textContent = runStart + 1;
-      cell.appendChild(numEl);
-
-      cell.appendChild(holdInput);
-
-      cell.className =
-        "xsheet-cell" +
-        (li === activeLayer ? " active-col" : "") +
-        (li === activeLayer &&
-        currentTick >= runStart &&
-        currentTick < runStart + runLen
-          ? " current"
-          : "") +
-        (isPicked ? " action-picked" : "") +
-        (isDest ? " action-dest" : "") +
-        (isSelected ? " frame-selected" : "");
-
-      cell.style.gridColumn = String(li + 3);
-      cell.style.gridRow = runStart + 2 + " / span " + runLen;
-
-      (function (li, runStart) {
-        cell.addEventListener("click", function (ev) {
-          if (frameAction) {
-            pickFrameActionCell(li, runStart);
-            return;
-          }
-          selectLayer(li);
-          selectTick(runStart);
-          handleFrameSelectClick(li, runStart + 1, ev.clientX, ev.clientY);
-        });
-        cell.addEventListener("contextmenu", function (ev) {
-          ev.preventDefault();
-          selectLayer(li);
-          openFrameContextMenu(li, runStart + 1, ev.clientX, ev.clientY);
-        });
-      })(li, runStart);
-
-      xsheetEl.appendChild(cell);
-
-      t += runLen;
-      rem -= runLen;
-      if (rem <= 0 && t < rows) {
-        idx = (idx + 1) % L.cels.length;
-        rem = L.holds[idx];
-      }
-    }
-  });
-  const currentTickEl = xsheetEl.querySelector(".xsheet-tick.current");
-  if (currentTickEl) {
+  const currentCellEl = xsheetEl.querySelector(".xsheet-cell.current");
+  if (currentCellEl) {
     const margin = 90; // px de aire que queremos dejar debajo del frame actual
     const xsheetRect = xsheetEl.getBoundingClientRect();
-    const tickRect = currentTickEl.getBoundingClientRect();
-    const tickTop = tickRect.top - xsheetRect.top + xsheetEl.scrollTop;
-    const bottomNeeded = tickTop + currentTickEl.offsetHeight + margin;
+    const cellRect = currentCellEl.getBoundingClientRect();
+    const cellTop = cellRect.top - xsheetRect.top + xsheetEl.scrollTop;
+    const bottomNeeded = cellTop + currentCellEl.offsetHeight + margin;
 
     if (bottomNeeded - xsheetEl.scrollTop > xsheetEl.clientHeight) {
       xsheetEl.scrollTop = bottomNeeded - xsheetEl.clientHeight;
-    } else if (tickTop < xsheetEl.scrollTop) {
-      xsheetEl.scrollTop = tickTop;
+    } else if (cellTop < xsheetEl.scrollTop) {
+      xsheetEl.scrollTop = cellTop;
     }
   }
 }
