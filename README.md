@@ -1,6 +1,7 @@
 # xsheet
 
-Editor de dibujo cuadro por cuadro (xsheet) para animación 2D tradicional, con capas, onion skin, registro de agujeros de perforadora (peg holes), y exportación a PNG/ZIP/WebM/ciclo tejido. Corre entero en el navegador, sin instalación ni backend.
+Editor de dibujo cuadro por cuadro (xsheet) para animación 2D tradicional, con capas, onion skin, registro de agujeros de perforadora (peg holes), y exportación a PNG/ZIP/MP4/WebM/ciclo
+tejido. Corre entero en el navegador, sin instalación ni backend.
 
 **[Probar la demo →](https://bonzo.bz/xsheet-app.html)**
 
@@ -13,7 +14,7 @@ Editor de dibujo cuadro por cuadro (xsheet) para animación 2D tradicional, con 
 - **Herramientas de dibujo**: lápiz, goma, mover/escalar/rotar, con soporte de presión de tableta gráfica.
 - **Estilos de pincel**: trazo duro, textura (estampado), cerdas.
 - **Audio** sincronizado con forma de onda en el xsheet.
-- **Exportación**: PNG, secuencia (con o sin dedupe por hold), ZIP, WebM, ciclo tejido (weave) y ciclo tejido progresivo, comando ffmpeg de referencia.
+- **Exportación**: PNG, secuencia (con o sin dedupe por hold), ZIP, vídeo MP4/WebM, ciclo tejido (weave) y ciclo tejido progresivo, comando ffmpeg de referencia.
 - **Ajustes de color**: brillo, contraste, saturación, balance de blancos, crop.
 - **Atajos de teclado configurables**
 - **Integración con el sistema de archivos** (File System Access API en navegadores Chromium) — guardar/exportar directo a una carpeta de trabajo.
@@ -21,7 +22,9 @@ Editor de dibujo cuadro por cuadro (xsheet) para animación 2D tradicional, con 
 
 ## Stack técnico
 
-JavaScript vanilla, sin build step ni dependencias externas. Canvas 2D para todo el renderizado. Implementación propia de ZIP (sin librerías) para exportación por lotes.
+JavaScript vanilla, sin build step.
+Única dependencia: Mediabunny (MPL-2.0), incluida como un archivo, para codificar MP4/WebM.
+Canvas 2D para todo el renderizado. Implementación propia de ZIP (sin librerías) para exportación por lotes.
 
 El repo incluye los módulos `.js` por separado para facilitar el desarrollo; `xsheet-app.html` los trae todos incluidos, así que para usar la app alcanza con ese archivo.
 
@@ -35,4 +38,9 @@ Ver [MANUAL.md](./MANUAL.md) para la guía completa de uso.
 
 ## Licencia
 
-[AGPL-3.0](./LICENSE)
+xsheet se distribuye bajo [AGPL-3.0](./LICENSE).
+
+Incluye [Mediabunny](https://github.com/Vanilagy/mediabunny) v1.62.0
+(`mediabunny.cjs`), © Vanilagy y colaboradores, bajo
+[MPL-2.0](./LICENSES/MPL-2.0.txt). Su código fuente está disponible en
+https://github.com/Vanilagy/mediabunny/tree/v1.62.0.

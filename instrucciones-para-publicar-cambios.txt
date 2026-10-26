@@ -1,0 +1,70 @@
+La clave para que esto funcione sin filtraciones es que **nunca uses `git push`/`pull`/`merge` entre los dos repos** — solo copias archivos. Así el repo público nunca "hereda" nada del historial del privado, porque no hay ninguna relación git entre ambos.
+
+Flujo sugerido:
+
+**1. Trabajas normal en `~/xsheet` (privado)**
+Commits libres, cuantos quieras, sin preocuparte de cómo se ven.
+
+**2. Cuando quieres publicar un avance, copias los archivos finales a `~/xsheet-limpio` (tu copia de trabajo de `xsheet-app`)**
+```bash
+rsync -av --exclude='.git' --exclude='build-standalone.sh' \
+  --exclude='xsheet-standalone.html' --exclude='xsheet-standalone.zip' \
+  ~/xsheet/ ~/xsheet-limpio/
+```
+El `--exclude` es para que no copies archivos de desarrollo que no quieres en el repo público (ajusta la lista según qué decidiste no publicar).
+
+**3. Commiteas en el repo público con un mensaje descriptivo del cambio (no del proceso)**
+```bash
+cd ~/xsheet-limpio
+git add -A
+git commit -m "Mejora detección de peg holes"
+git push origin main
+```
+
+Con esto, cada "publicación" es un commit nuevo y autocontenido en `xsheet-app`, sin ningún rastro de los commits intermedios que hiciste en `xsheet` mientras trabajabas.
+
+Un detalle a decidir: ¿quieres mantener granularidad (un commit público por cada avance significativo) o prefieres que el repo público sea más bien "snapshots" ocasionales (ej. una vez por semana, cuando sientes que hay algo terminado)? Lo primero da más trazabilidad para quien mire el repo; lo segundo es menos trabajo para ti y más fácil de mantener consistente.
+
+
+Para granularidad real, conviene pensar en términos de **features o fixes concretos**, no de "cada vez que guardo". Un patrón que funciona bien:
+
+**Mientras trabajas en `~/xsheet`**, commitea como quieras — pruebas, revertir, "WIP", lo que sea. Eso se queda ahí, privado, para siempre.
+
+**Cuando una pieza de trabajo está realmente terminada** (ej. "arreglé el bug de presión del lápiz", "agregué exportación a WebP"), ahí haces el ciclo de publicación — un commit público por cada unidad de trabajo completa, con mensaje que describe el cambio, no el proceso para llegar a él.
+
+Para que el ciclo sea rápido y no se te olvide ningún paso, te armo un script simple:
+
+```bash
+#!/bin/bash
+# publicar.sh — sincroniza xsheet -> xsheet-app y commitea
+set -e
+
+MSG="$1"
+if [ -z "$MSG" ]; then
+  echo "Uso: ./publicar.sh \"mensaje del commit\""
+  exit 1
+fi
+
+rsync -av --exclude='.git' \
+  --exclude='build-standalone.sh' \
+  --exclude='xsheet-standalone.html' \
+  --exclude='xsheet-standalone.zip' \
+  ~/xsheet/ ~/xsheet-limpio/
+
+cd ~/xsheet-limpio
+git add -A
+git commit -m "$MSG"
+git push origin main
+
+echo "Publicado: $MSG"
+```
+
+Guárdalo como `~/publicar.sh`, dale permiso de ejecución (`chmod +x ~/publicar.sh`), y cada vez que termines algo:
+
+```bash
+~/publicar.sh "Arregla detección de holds en xsheet con capas ocultas"
+```
+
+Así tienes la granularidad que quieres en el repo público (un commit por avance real), sin exponer nunca el ruido de tu proceso privado, y sin tener que recordar los pasos manuales cada vez.
+
+¿Quieres que ajustemos la lista de `--exclude` según los archivos que realmente no quieres en el repo público?

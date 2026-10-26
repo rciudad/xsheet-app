@@ -1,5 +1,5 @@
-var pegRegion1 = { x: 140, y: 430, w: 90, h: 60 };
-var pegRegion2 = { x: 570, y: 430, w: 90, h: 60 };
+var pegRegion1 = { x: 140, y: 430, w: 100, h: 80 };
+var pegRegion2 = { x: 570, y: 430, w: 100, h: 80 };
 var pegRefCenters = null; // {c1:{x,y}, c2:{x,y}} una vez fijada la referencia
 var HOLE_THRESHOLD = 80; // luma más oscura que esto cuenta como "hoyo"
 var MIN_HOLE_AREA = 100; // área mínima de blob (px²) para no ser ruido
@@ -194,7 +194,7 @@ function pegAlignActiveCel() {
     alert(
       "Sin detección del " +
         (res.reason === "hole1" ? "hoyo 1" : "hoyo 2") +
-        " en este cel."
+        " en este cel.",
     );
     return;
   }
@@ -217,7 +217,7 @@ function alignLayerCels(li) {
   renderXSheet();
   updateOnion();
   alert(
-    "Alineados " + okCount + "/" + L.cels.length + ' cels en "' + L.name + '".'
+    "Alineados " + okCount + "/" + L.cels.length + ' cels en "' + L.name + '".',
   );
 }
 

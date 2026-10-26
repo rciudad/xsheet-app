@@ -1,14 +1,33 @@
 # Arquitectura de xsheet
 
-Reescritura desde cero de `~/cel/cel/xsheet.html`: editor de dibujo cuadro por cuadro (xsheet) para animación, en JavaScript vanilla sin build step. No hay módulos ES ni bundler: todos los archivos se cargan como `<script>` en orden fijo dentro de `xsheet.html` y comparten un mismo scope global. Las referencias adelantadas entre archivos (una función definida más abajo en el orden de carga, usada por código definido más arriba) son seguras porque ninguna de esas referencias se *ejecuta* hasta después de que todos los scripts terminaron de cargar — solo se declaran.
+Reescritura desde cero de `~/cel/cel/xsheet.html`: editor de dibujo cuadro por cuadro (xsheet) para animación, en JavaScript vanilla sin build step. No hay módulos ES ni bundler: todos los archivos se cargan como `<script>` en orden fijo dentro de `xsheet.html` y comparten un mismo scope global. Las referencias adelantadas entre archivos (una función definida más abajo en el orden de carga, usada por código definido más arriba) son seguras porque ninguna de esas referencias se _ejecuta_ hasta después de que todos los scripts terminaron de cargar — solo se declaran.
 
 ## Orden de carga
 
 ```
-dibujo.js → onion.js → adjust.js → cels.js → undo.js → shortcuts.js →
-audio.js → playback.js → xsheet.js → folder.js → export.js → import.js →
-pegholereg.js → project.js → view.js
+  mediabunny.cjs → dibujo.js → onion.js → adjust.js → cels.js → undo.js →
+  shortcuts.js → audio.js → playback.js → xsheet.js → folder.js → export.js →
+  import.js → pegholereg.js → project.js → view.js
 ```
+
+`mediabunny.cjs` es la única dependencia externa: un bundle IIFE ya compilado de la biblioteca
+[Mediabunny](https://mediabunny.dev) (licencia MPL-2.0) que define el global `Mediabunny`. Se carga
+primero aunque hoy solo lo usa `export.js`, para que el global ya exista cuando cualquier otro script lo
+necesite.
+
+## Build standalone (`build-standalone.sh`)
+
+Genera `xsheet-app.html`, una copia de un único archivo que se puede abrir sin servidor ni archivos
+sueltos. Recorre la lista `SCRIPTS` y, con `awk`, reemplaza cada `<script src="X.js"></script>` de
+`xsheet.html` por un `<script>` con el contenido de `X.js` incrustado. También arma `xsheet-app.zip`.
+
+La lista `SCRIPTS` está escrita a mano y debe coincidir con el orden de carga de `xsheet.html`. Un script
+que esté en el HTML pero no en esa lista se queda como `<script src>` externo en el standalone, y no va
+a cargar si el `.html` se distribuye solo.
+
+`mediabunny.cjs` va primero en `SCRIPTS`, igual que en el HTML. Es seguro incrustarlo porque el bundle no contiene ningún `</script` ni `<!--` que pueda cerrar el `<script>` antes de tiempo. Además, el standalone **tiene** que llevarlo incrustado: si queda como `<script src="mediabunny.cjs">` externo, muchos servidores sirven `.cjs` sin `Content-Type` y Chrome se niega a ejecutarlo ("Refused to execute script… MIME type ('') is not executable"), así que el global `Mediabunny` no existe y la exportación de vídeo falla.
+
+**Licencia en el standalone**: en `xsheet.html`, justo antes de `<script src="mediabunny.cjs">`, hay un comentario HTML con la versión, el copyright, la licencia (MPL-2.0) y la URL del código fuente de Mediabunny. Como el `awk` solo reemplaza la línea del `<script src>`, ese comentario queda en el standalone justo encima del código incrustado, y la cabecera MPL del propio bundle se conserva intacta. Esto es lo que cubre la obligación de la sección 3.2(a) de la MPL (informar dónde está el código fuente) cuando `xsheet-app.html` se distribuye sin el README ni `LICENSES/`. Para quien no mira el código, el menú **LINKS** tiene un link "Mediabunny (MPL-2.0)" al repo de Mediabunny en el tag de la versión incluida. Al actualizar Mediabunny hay que cambiar la versión en esos dos lugares y en el README.
 
 ## Modelo de datos
 
@@ -64,7 +83,7 @@ Canvases apilados con `position: absolute`, en este orden dentro del DOM (de atr
 
 Cada capa puede mezclarse en `"multiply"` en vez de `"source-over"` (normal). El compositing offscreen (`flattenAt()`, usado por export/onion/grade preview) lo aplica seteando `ctx.globalCompositeOperation = L.blendMode` antes de cada `drawImage` — trivial, porque ahí todo pasa por un solo canvas 2D. La vista en vivo es más delicada porque la capa activa es un `<canvas>` DOM real (no se puede "dibujar" su blend con un context 2D): se usa CSS `mix-blend-mode` sobre `#drawingTable`, seteado en `renderLayerComposites()` junto con `canvas.style.opacity`.
 
-**Por qué existe `#layersStack`:** `mix-blend-mode` sin un ancestro con `isolation: isolate` mezcla contra *todo* lo pintado detrás en el stacking context — no solo contra las otras capas reales. Sin aislamiento, `multiply` en la capa activa terminaba mezclándose tanto con el fondo de la página (`body`, gris azulado) como con los fantasmas del onion skin (que están *detrás* en el stack pero no deberían participar del blend). La solución es aislar solo el subárbol de capas reales: `#layersStack` (que envuelve `layersBelow`/`drawingTable`/`layersAbove`) lleva `isolation: isolate`, mientras que `#onion` queda **afuera** de ese wrapper — así el `multiply` de la capa activa se mezcla únicamente contra `#layersBelow`, y el resultado del grupo aislado se compone con `source-over` normal sobre el onion, que se ve intacto detrás.
+**Por qué existe `#layersStack`:** `mix-blend-mode` sin un ancestro con `isolation: isolate` mezcla contra _todo_ lo pintado detrás en el stacking context — no solo contra las otras capas reales. Sin aislamiento, `multiply` en la capa activa terminaba mezclándose tanto con el fondo de la página (`body`, gris azulado) como con los fantasmas del onion skin (que están _detrás_ en el stack pero no deberían participar del blend). La solución es aislar solo el subárbol de capas reales: `#layersStack` (que envuelve `layersBelow`/`drawingTable`/`layersAbove`) lleva `isolation: isolate`, mientras que `#onion` queda **afuera** de ese wrapper — así el `multiply` de la capa activa se mezcla únicamente contra `#layersBelow`, y el resultado del grupo aislado se compone con `source-over` normal sobre el onion, que se ve intacto detrás.
 
 ## Motor de dibujo y pinceles (`dibujo.js`)
 
@@ -108,6 +127,7 @@ Un único canvas recibe eventos de puntero; `pointerdown` decide qué hacer seg�
 `computeContentCenter()` escanea el canvas completo (`getImageData` de `W×H`) buscando el bounding box de píxeles con alpha > 0, para centrar la escala/rotación en el contenido real en vez del centro geométrico del canvas; si está vacío, cae al centro. Es un escaneo O(ancho×alto) por cada inicio de transformación, no incremental.
 
 `startTransform()` copia el cel completo a un canvas offscreen (`transformOriginal`, el "original" sin tocar) y guarda el punto de partida del drag. `updateTransform()` calcula, según el modo:
+
 - `move`: delta directo del puntero.
 - `scale`: razón entre la distancia actual al centro y la distancia inicial (clampeada a mínimo `0.1`).
 - `rotate`: diferencia de ángulo (`atan2`) entre la posición inicial y la actual, ambas relativas al centro.
@@ -118,9 +138,10 @@ Un único canvas recibe eventos de puntero; `pointerdown` decide qué hacer seg�
 
 Tres canvases de solo lectura, recalculados desde el modelo de datos (nunca se dibuja "a mano" sobre ellos):
 
-- **`renderLayerComposites()`**: dibuja en `layersBelowEl`/`layersAboveEl` todas las capas visibles con índice menor/mayor a la activa, en el **tick actual**, vía `layerCelAtTickForRender` (la variante *sin* wrap-around, que devuelve `null` pasada la duración real de la capa — en ese caso la capa simplemente no se dibuja en ese tick) y con la `opacity`/`blendMode` propios de cada capa. La capa activa en sí no se redibuja en ningún canvas — su opacidad/visibilidad se aplica directamente como `canvas.style.opacity`/`mixBlendMode` (CSS) sobre el `#drawingTable` editable.
+- **`renderLayerComposites()`**: dibuja en `layersBelowEl`/`layersAboveEl` todas las capas visibles con índice menor/mayor a la activa, en el **tick actual**, vía `layerCelAtTickForRender` (la variante _sin_ wrap-around, que devuelve `null` pasada la duración real de la capa — en ese caso la capa simplemente no se dibuja en ese tick) y con la `opacity`/`blendMode` propios de cada capa. La capa activa en sí no se redibuja en ningún canvas — su opacidad/visibilidad se aplica directamente como `canvas.style.opacity`/`mixBlendMode` (CSS) sobre el `#drawingTable` editable.
 
-  (Antes usaba `layerCelAtTick`, la variante *con* wrap-around: una capa más corta que el resto del sheet hacía loop de su contenido y "se filtraba" — con multiply activo, por ejemplo, el único frame dibujado de una capa corta se veía mezclado en todos los ticks de las demás capas, no solo en el suyo. Se corrigió para que la vista en vivo se comporte igual que `flattenAt`/export.)
+  (Antes usaba `layerCelAtTick`, la variante _con_ wrap-around: una capa más corta que el resto del sheet hacía loop de su contenido y "se filtraba" — con multiply activo, por ejemplo, el único frame dibujado de una capa corta se veía mezclado en todos los ticks de las demás capas, no solo en el suyo. Se corrigió para que la vista en vivo se comporte igual que `flattenAt`/export.)
+
 - **`flattenAt(tick)`**: aplana **todas** las capas visibles (incluida la activa) en un tick dado sobre un único canvas offscreen (`flattenCanvas`), usando `layerCelAtTickForRender`. Por eso una capa corta **no** contribuye más allá de su propio largo real, ni en el onion skin ni (desde la corrección de arriba) en la vista en vivo.
 - **`tintDraw(srcCanvas, tint, alpha)`**: tiñe un frame aplanado a un color sólido (compositing `source-in`: dibuja la imagen, rellena con el color solo donde ya había alpha) y lo dibuja sobre `onionEl` a una opacidad dada. Se reutiliza para pasado y futuro con distinto color.
 
@@ -140,6 +161,7 @@ Estado: `cropRect { x, y, w, h }` (en píxeles del canvas, no del viewport), `co
 `buildBrightnessContrastLUT(brightness, contrast)` arma una tabla de 256 entradas: normaliza a `0–1`, aplica `(v - 0.5) * contrast + 0.5 + brightness`, clampea a `[0,1]` y vuelve a `0–255`. `buildGainLUT(gain)` es una tabla de multiplicación simple, usada solo para balance de blancos.
 
 `applyColorAdjustments(ctx, w, h)` hace un único `getImageData`/`putImageData` sobre toda el área, iterando pixel por pixel:
+
 1. Brillo/contraste vía la LUT, sobre R/G/B.
 2. Saturación: luminancia por pesos estándar (`0.299R + 0.587G + 0.114B`), cada canal se interpola hacia/desde esa luminancia según `saturation` (1 = sin cambio, 0 = escala de grises, >1 exagera).
 3. Balance de blancos: la ganancia (`wbR`/`wbB`) se aplica **solo a R y B** — G queda como canal de referencia neutro, que es como se define balance de blancos (rojo/azul relativos al verde), no una limitación accidental.
@@ -148,7 +170,7 @@ Estado: `cropRect { x, y, w, h }` (en píxeles del canvas, no del viewport), `co
 
 ### Export vs. preview en vivo — mismo grading, distinto alcance
 
-`drawExportFrame(destCtx, tick, forceOpaqueBg)` es la función compartida por **todos** los paths de exportación (PNG suelto, secuencia, WebM — ver sección de exportación), aunque vive acá y no en `export.js`: toma el frame aplanado (`flattenAt(tick)`, `onion.js`), lo recorta de verdad (dibuja solo la sub-región `cropRect` sobre un canvas temporal del tamaño exacto del crop — este es el único lugar donde el crop se aplica de forma destructiva), aplica grading si corresponde, y lo vuelca al contexto destino que le pasen. El fondo (opaco con `exportBgColor`, o transparente) se decide antes de dibujar encima; `forceOpaqueBg` permite que un caller fuerce fondo opaco aunque el usuario tenga configurado exportar con transparencia.
+`drawExportFrame(destCtx, tick, forceOpaqueBg)` es la función compartida por **todos** los paths de exportación (PNG suelto, secuencia, ciclo tejido, vídeo — ver sección de exportación), aunque vive acá y no en `export.js`: toma el frame aplanado (`flattenAt(tick)`, `onion.js`), lo recorta de verdad (dibuja solo la sub-región `cropRect` sobre un canvas temporal del tamaño exacto del crop — este es el único lugar donde el crop se aplica de forma destructiva), aplica grading si corresponde, y lo vuelca al contexto destino que le pasen. El fondo (opaco con `exportBgColor`, o transparente) se decide antes de dibujar encima; `forceOpaqueBg` permite que un caller fuerce fondo opaco aunque el usuario tenga configurado exportar con transparencia.
 
 `renderGradePreviewFrame()` es la contraparte para trabajar en vivo: reutiliza `playCanvas`/`playCtx` (el mismo canvas que intercambia `playback.js` durante la reproducción) para previsualizar **solo el grading, nunca el crop**, sobre el frame actual. `updateStageVisibility()` alterna entre mostrar el stage normal (`onion` + `drawingTable`) o el `playCanvas` con la preview, y se abstiene por completo si `playing` es `true` (ahí manda `playback.js`). `refreshGradePreview()` es el punto de entrada barato que se llama desde todo el resto de la app (onion, cels, dibujo) tras cualquier cambio visual — no hace nada si la preview está apagada o si se está reproduciendo, así que llamarlo "por las dudas" en cualquier lugar no tiene costo cuando no aplica.
 
@@ -181,7 +203,7 @@ Carga vía `<input type=file>` → `FileReader.readAsDataURL` (no `URL.createObj
 
 ### Rango de reproducción/exportación
 
-`rangeStart`/`rangeEnd`/`rangeCustom` son compartidos entre reproducción (loop) y exportación (secuencia/WebM usan el mismo rango, ver sección de exportación). `rangeCustom` distingue "el usuario tocó los inputs de rango a mano" de "todavía no, usar el sheet completo": `clampRange()` pinea a `[0, total-1]` completo mientras `rangeCustom` sea `false`, y una vez que pasa a `true` clampea ambos extremos por separado (forzando `end ≥ start` si se cruzan) contra el largo actual del sheet. Se llama después de cualquier operación que cambie el largo del sheet (agregar/borrar frames) para no dejar un rango apuntando fuera de rango, y se resetea a `false` al cargar un proyecto (ver "Persistencia").
+`rangeStart`/`rangeEnd`/`rangeCustom` son compartidos entre reproducción (loop) y exportación (secuencia y vídeo usan el mismo rango, ver sección de exportación). `rangeCustom` distingue "el usuario tocó los inputs de rango a mano" de "todavía no, usar el sheet completo": `clampRange()` pinea a `[0, total-1]` completo mientras `rangeCustom` sea `false`, y una vez que pasa a `true` clampea ambos extremos por separado (forzando `end ≥ start` si se cruzan) contra el largo actual del sheet. Se llama después de cualquier operación que cambie el largo del sheet (agregar/borrar frames) para no dejar un rango apuntando fuera de rango, y se resetea a `false` al cargar un proyecto (ver "Persistencia").
 
 ## Xsheet — grilla, holds y frames (`xsheet.js`, el módulo más grande)
 
@@ -227,10 +249,11 @@ Todas las funciones de mover/copiar/duplicar/borrar por rango (abajo) trabajan e
   1. Resuelve inicio/fin (números de frame) a índices de run, los intercambia si vinieron invertidos, y los clampea a los límites de la capa.
   2. Resuelve **también** el destino a índice de run (`destIdx`) contra el arreglo tal cual está, **antes** de sacar nada — todavía no se corrió ninguna numeración.
   3. Recién ahí extrae de verdad (`splice`, no copias) los objetos `cels`/`holds` del bloque de origen — a diferencia de `copyFrameToPosition`, acá el origen se vacía realmente, no quedan placeholders en blanco.
-  4. Como `destIdx` se calculó contra el arreglo *antes* del splice de salida, hay que recalcularlo: si caía después del bloque movido se corre hacia atrás lo que el bloque medía (esos índices ya no existen), si caía antes queda igual, y si caía dentro del propio bloque movido (destino sin sentido) se lo deja donde estaba.
+  4. Como `destIdx` se calculó contra el arreglo _antes_ del splice de salida, hay que recalcularlo: si caía después del bloque movido se corre hacia atrás lo que el bloque medía (esos índices ya no existen), si caía antes queda igual, y si caía dentro del propio bloque movido (destino sin sentido) se lo deja donde estaba.
   5. Caso borde: si el destino cae más allá del final actual de la capa, extiende el hold del **último** frame para rellenar el hueco — así el bloque movido aterriza exactamente en el número pedido, en vez de insertar frames en blanco de relleno.
 
   (Antes de este comportamiento, mover un frame dejaba los slots de origen vacíos en vez de eliminarlos — se cambió a pedido explícito porque en el uso real resultaba menos cómodo que la numeración se corriera.)
+
 - `copyFrameToPosition()`: misma forma, pero clona el bloque origen (`makeCel` + `drawImage` por cada cel) en vez de mover los objetos reales, y nunca toca los slots de origen.
 - `duplicateFrameRange(li, startFrame, endFrame)`: clona un rango completo y lo reinserta justo después de su propio final (usado por "Duplicar" del menú contextual sobre una selección).
 - `clearFrameRange()` / `deleteFrameRange()`: versiones en lote de limpiar/eliminar; `deleteFrameRange` respeta la misma regla que `deleteFrame()` de un solo frame — si el rango cubre toda la capa, colapsa a un único frame en blanco en vez de vaciarla.
@@ -272,7 +295,7 @@ Lo usan tanto `project.js` (guardar) como **todos** los paths de `export.js`. Ra
 Navega el árbol de la carpeta de trabajo elegida sin salir nunca de la app (sin diálogo nativo del SO) cuando hay una carpeta seteada:
 
 - `collectAsyncIterable` drena el iterador async de `handle.entries()` a un array plano encadenando `.then` recursivamente (no `for await`, para no requerir una función `async` en un archivo que por lo demás es todo callbacks/promesas encadenadas).
-- Carpetas y archivos se listan por separado (carpetas primero), cada grupo ordenado con `localeCompare` numérico (`"frame2" < "frame10"`, no orden lexicográfico puro). El filtro por extensión (`matchesExtensions`) es un simple *suffix match* sobre el nombre en minúsculas, sin inspeccionar el contenido/MIME real.
+- Carpetas y archivos se listan por separado (carpetas primero), cada grupo ordenado con `localeCompare` numérico (`"frame2" < "frame10"`, no orden lexicográfico puro). El filtro por extensión (`matchesExtensions`) es un simple _suffix match_ sobre el nombre en minúsculas, sin inspeccionar el contenido/MIME real.
 - La promesa que devuelve `browseDirHandle` resuelve a tres resultados distintos y hay que distinguirlos explícitamente: `null` (el usuario apretó "Buscar en otro lado..." → usar el picker nativo), `[]` (canceló sin elegir nada), o un array de `File` con la selección real.
 - Selección: modo single resuelve apenas se clickea un archivo; modo múltiple usa checkboxes con **selección de rango por shift-click** (`lastClickedIndex` ancla el rango; un shift-click en otra fila selecciona todo lo que hay entre medio, **reemplazando** la selección previa en vez de sumarse a ella).
 - `pathStack` (array de handles de directorio) es la navegación manual: "Subir" hace `pop()` (deshabilitado en la raíz); entrar a una subcarpeta hace `push()` y **resetea la selección** — las selecciones no viajan entre carpetas.
@@ -283,19 +306,19 @@ Los menús desplegables `file-menu`/`links-menu` (ARCHIVO ▾ / LINKS ▾) son c
 
 ## Responsabilidad de cada módulo
 
-| Archivo | Responsabilidad |
-|---|---|
-| `dibujo.js` | Canvas activo (`canvas`/`ctx`), herramientas (pencil, eraser, pan, move/scale/rotate-transform), estilos de pincel, `applyStageSize()` (redimensiona todos los canvases del stage), `resizeCanvasKeepContent()`, transformaciones sobre el cel activo. |
-| `onion.js` | Onion skin (`updateOnion()`, `flattenAt()`, `tintDraw()`) y compositing de capas en vivo (`renderLayerComposites()`, canvases `layersBelow`/`layersAbove`). |
-| `adjust.js` | Crop (`cropRect`) y grading de color (brillo/contraste/saturación/balance de blancos vía LUTs), aplicado tanto a exportación (`drawExportFrame()`) como a una vista previa en vivo opcional (`gradePreviewEnabled`). |
-| `cels.js` | Modelo de datos central (`layers`, `activeLayer`, `currentTick`), CRUD de capas y frames, patrón `syncActiveToStorage()`/`loadActiveFromStorage()`. |
-| `undo.js` | Stack de undo (niveles configurables, default 1), basado en `getImageData`/`putImageData` sobre el canvas activo; se invalida si cambió la capa o el cel activo desde el snapshot. |
-| `shortcuts.js` | Atajos de teclado configurables (`shortcutActions`, bindings en `localStorage`), diálogo de configuración y lista de atajos del diálogo de ayuda. |
-| `audio.js` | Carga de pista de audio, forma de onda (`audioAmplitudeAtTick()`), sincronización con la reproducción. |
-| `playback.js` | Reproducción: `playCanvas`, compone todas las capas visibles por tick, independiente del sistema `layersBelow`/`layersAbove` (que se ocultan durante el play). |
-| `xsheet.js` | Grilla xsheet (`renderXSheet()`), edición de holds, mover/copiar/duplicar frames, resize del panel. |
-| `folder.js` | Integración con File System Access API: carpeta de trabajo, explorador de archivos in-app, fallback a `<input type=file>` nativo. |
-| `export.js` | Exportación: PNG único, secuencia PNG (opcionalmente en .zip, implementación propia del formato sin dependencias), ciclo tejido y ciclo tejido progresivo (round-robin sobre N hojas), video WebM vía `MediaRecorder`, comando ffmpeg de referencia. |
+| Archivo        | Responsabilidad                                                                                                                                                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `dibujo.js`    | Canvas activo (`canvas`/`ctx`), herramientas (pencil, eraser, pan, move/scale/rotate-transform), estilos de pincel, `applyStageSize()` (redimensiona todos los canvases del stage), `resizeCanvasKeepContent()`, transformaciones sobre el cel activo. |
+| `onion.js`     | Onion skin (`updateOnion()`, `flattenAt()`, `tintDraw()`) y compositing de capas en vivo (`renderLayerComposites()`, canvases `layersBelow`/`layersAbove`).                                                                                            |
+| `adjust.js`    | Crop (`cropRect`) y grading de color (brillo/contraste/saturación/balance de blancos vía LUTs), aplicado tanto a exportación (`drawExportFrame()`) como a una vista previa en vivo opcional (`gradePreviewEnabled`).                                   |
+| `cels.js`      | Modelo de datos central (`layers`, `activeLayer`, `currentTick`), CRUD de capas y frames, patrón `syncActiveToStorage()`/`loadActiveFromStorage()`.                                                                                                    |
+| `undo.js`      | Stack de undo (niveles configurables, default 1), basado en `getImageData`/`putImageData` sobre el canvas activo; se invalida si cambió la capa o el cel activo desde el snapshot.                                                                     |
+| `shortcuts.js` | Atajos de teclado configurables (`shortcutActions`, bindings en `localStorage`), diálogo de configuración y lista de atajos del diálogo de ayuda.                                                                                                      |
+| `audio.js`     | Carga de pista de audio, forma de onda (`audioAmplitudeAtTick()`), sincronización con la reproducción.                                                                                                                                                 |
+| `playback.js`  | Reproducción: `playCanvas`, compone todas las capas visibles por tick, independiente del sistema `layersBelow`/`layersAbove` (que se ocultan durante el play).                                                                                         |
+| `xsheet.js`    | Grilla xsheet (`renderXSheet()`), edición de holds, mover/copiar/duplicar frames, resize del panel.                                                                                                                                                    |
+| `folder.js`    | Integración con File System Access API: carpeta de trabajo, explorador de archivos in-app, fallback a `<input type=file>` nativo.                                                                                                                      |
+| `export.js`    | Exportación: PNG único, secuencia PNG (opcionalmente en .zip, implementación propia del formato), ciclo tejido y ciclo tejido progresivo (round-robin sobre N hojas), vídeo MP4/WebM cuadro por cuadro vía Mediabunny, comando ffmpeg de referencia. |
 | `import.js` | Importar una imagen o lote de imágenes como frame(s) nuevos. |
 | `pegholereg.js` | Registro de agujeros de perforadora (peg holes) para alinear escaneos de animación tradicional entre cels. |
 | `project.js` | Persistencia del proyecto completo a un archivo `.json`. |
@@ -343,13 +366,15 @@ Defensiva en cada paso, pensada para tolerar un archivo incompleto o editado a m
 
 ### ZIP propio, sin dependencias
 
-`buildZip(entries)` implementa el formato ZIP a mano: header local + directorio central + End Of Central Directory, byte a byte con `DataView`. Solo soporta **almacenamiento sin comprimir** (método `0x21`/stored, no deflate) — aceptable porque son PNGs (ya comprimidos internamente) y no vale la pena implementar deflate desde cero para esto. `crc32`/`CRC_TABLE` son la tabla e implementación estándar del algoritmo. `pngBytesFromCanvas` obtiene los bytes crudos de un PNG re-decodificando a mano el `toDataURL()` (`atob` sobre la parte base64) en vez de usar `canvas.toBlob` — necesario porque construir el zip requiere los bytes de forma síncrona.
+`buildZip(entries)` implementa el formato ZIP a mano: header local + directorio central + End Of Central Directory, byte a byte con `DataView`. Solo soporta **almacenamiento sin comprimir** (método `0` = stored, no deflate; el `0x21` que aparece en los headers es el campo de fecha DOS, no el
+método) — aceptable porque son PNGs (ya comprimidos internamente) y no vale la pena implementar deflate desde cero para esto. `crc32`/`CRC_TABLE` son la tabla e implementación estándar del algoritmo. `pngBytesFromCanvas` obtiene los bytes crudos de un PNG re-decodificando a mano el `toDataURL()` (`atob` sobre la parte base64) en vez de usar `canvas.toBlob` — necesario porque construir el zip requiere los bytes de forma síncrona.
 
 ### PNG único y secuencia
 
 `EXPORT PNG` es directo: `drawExportFrame` (`adjust.js`) sobre un canvas del tamaño del crop, entregado vía `deliverFile`.
 
 `buildSequenceJobs(expand)` tiene dos modos:
+
 - **`expand` (Por hold) activado**: un job por cada tick del rango — la secuencia "expandida", necesaria para ensamblar video con ffmpeg (necesita un archivo por cuadro real, no por frame único).
 - **`expand` desactivado**: modo dedupe — solo emite un job en los ticks "de borde": el primero del rango, o cualquier tick donde alguna capa visible arranca un run nuevo (`layerCelAtTick(L,t).runStart === t`) o se queda sin cels y pasa a blanco (`t === layerTotal`). Incluso en un borde, compara los píxeles reales contra el último frame emitido (`framesEqual`, releyendo el buffer como `Uint32Array` para comparar 4 bytes a la vez en vez de 1 a 1) y lo saltea si son idénticos — así dos "bordes" de distintas capas que resultan en el mismo composite no generan dos archivos iguales.
 
@@ -357,21 +382,25 @@ Con el toggle de Zip activo, se renderizan todos los canvases de la tanda y se e
 
 ### Ciclo tejido (weave) — el reparto round-robin
 
-`drawWovenSourceFrame(destCtx, tick)` es casi idéntica a `drawExportFrame`, con una diferencia deliberada: **no limpia el canvas destino** antes de dibujar (solo limpia el canvas temporal de crop/grading). Esa es la pieza clave de "tejido": cada pasada dibuja *encima* de lo que ya había en esa hoja de pasadas anteriores, en vez de reemplazarlo. Por eso es una función aparte y no una reutilización directa de la de `adjust.js`.
+`drawWovenSourceFrame(destCtx, tick)` es casi idéntica a `drawExportFrame`, con una diferencia deliberada: **no limpia el canvas destino** antes de dibujar (solo limpia el canvas temporal de crop/grading). Esa es la pieza clave de "tejido": cada pasada dibuja _encima_ de lo que ya había en esa hoja de pasadas anteriores, en vez de reemplazarlo. Por eso es una función aparte y no una reutilización directa de la de `adjust.js`.
 
 `buildWovenProgressiveFrames(N)` reparte los frames del rango en `N` hojas por turno (round-robin: frame `i` → hoja `i % N`) y, después de **cada pasada completa** sobre las `N` hojas, clona (`cloneCanvas`, copia profunda — las hojas siguen acumulando en pasadas futuras) el estado de las `N` hojas al array de salida. El resultado final tiene `passCount × N` canvases: un juego completo de `N` hojas por cada pasada, mostrando el estado acumulado del tejido hasta ese punto.
 
 `buildWovenFrames(N)` (la exportación NO progresiva) es literalmente `buildWovenProgressiveFrames(N).slice(-N)` — el último juego de `N` hojas, o sea el resultado final ya tejido — implementado como caso particular de la versión progresiva en vez de tener su propio loop.
 
-### Vídeo WebM
+### Vídeo MP4/WebM con Mediabunny (`#export-media-bunny`, `#export-video-format`)
 
-Captura cuadro a cuadro a mano (`track.requestFrame()`) en vez de confiar en el muestreo libre de `captureStream(fps)` — comentario explícito en el código: si el reloj de muestreo del stream y el `setTimeout` del loop de grabación se desincronizan (máquina lenta, pestaña en segundo plano), el video podría terminar con menos frames efectivos que ticks reales; pedir un frame exacto por tick compuesto garantiza la correspondencia 1 a 1. Si el navegador no soporta `requestFrame` (`manualCapture` da `false`), cae a `captureStream(fps)` con muestreo propio.
+Único exportador de vídeo (hubo uno anterior basado en `MediaRecorder`, que grababa en tiempo real y se eliminó). No depende del tiempo real: compone cada cuadro con `drawExportFrame(ctx, tick, true)` (mismo crop, grading y fondo opaco que el resto de los exports, dentro del rango `rangeStart`/`rangeEnd`), lo codifica con `CanvasSource` y le asigna su marca de tiempo exacta con `source.add(timestamp, duration)`. Así, la cantidad y el timing de los cuadros no dependen de cuánto tarde en codificarse cada uno ni de si la pestaña pasa a segundo plano.
 
-Tres puntos de fallo distintos (`captureStream`, construir el `MediaRecorder`, ausencia de la API) reportan el mismo mensaje "Vídeo no soportado en este navegador" vía `exportVideoStatusEl`. `compositeExportFrame` siempre fuerza fondo opaco (`drawExportFrame(..., true)`) — un video no puede codificar transparencia. Si estaba reproduciendo, se detiene la reproducción normal primero; la grabación maneja su propio loop (`step()` con `setTimeout`) en vez de reutilizar el `setInterval` de `playback.js`.
+- **Formato y códec**: `VIDEO_FORMATS` asocia cada opción del selector con una fábrica de `OutputFormat` (`Mp4OutputFormat`/`WebMOutputFormat`) y una lista de códecs en orden de preferencia: MP4 → `avc`, `hevc`, `av1`; WebM → `vp9`, `vp8`, `av1`. `getFirstEncodableVideoCodec()` elige el primero que el navegador puede codificar a esa resolución (H.264 va primero en MP4 porque es el que reproduce cualquier reproductor o editor). El códec elegido se muestra en el mensaje de progreso, porque un MP4 sin H.264 (p. ej. en un Chromium sin códecs propietarios) es válido pero se reproduce en menos lugares. La extensión y el MIME del archivo salen del propio formato (`format.fileExtension`, `format.mimeType`).
+- **Dimensiones pares**: H.264/HEVC (4:2:0) exigen ancho y alto pares, así que el canvas del encoder se redondea hacia arriba a par (p. ej. 600×399 → 600×400). Antes del loop se rellena entero con el mismo color de fondo que usa `drawExportFrame()`. Como esa función solo limpia y pinta la zona `cropRect.w × cropRect.h`, la fila o columna extra conserva ese relleno en todos los cuadros.
+- **Duraciones variables con "Por hold"**: reutiliza `buildSequenceJobs(expand)` con el mismo checkbox `#export-expand-toggle` de la secuencia PNG. Con "Por hold" tildado sale un cuadro por tick (frame rate constante). Sin tildar, sale un cuadro por dibujo distinto, cuya duración es la distancia hasta el siguiente job (o hasta `rangeEnd + 1` para el último): un hold de 6 ticks se codifica una sola vez, con duración `6 / fps`. `addVideoTrack(source, { frameRate: fps })` ajusta las marcas a múltiplos de `1 / fps`, que de todas formas ya son exactas.
+- **Salida en memoria vía `deliverFile()`**: usa `BufferTarget`, así que el vídeo completo queda en memoria antes de entregarse (aceptable para animaciones de segundos o pocos minutos), pero a cambio respeta la carpeta de trabajo y la descarga normal como cualquier otro export. Con `BufferTarget`, Mediabunny usa por defecto `fastStart: "in-memory"` en MP4 (el índice `moov` va al principio del archivo).
+- **`async`/`await`**, a diferencia del resto de la app, que usa callbacks y promesas encadenadas. El botón se deshabilita durante la exportación (en `finally` se vuelve a habilitar) y, si algo falla después de crear el `Output`, se llama a `output.cancel()`. El progreso y los errores se muestran en `#export-video-status` (`exportVideoStatusEl`), que se vacía al terminar bien.
 
 ### Comando ffmpeg
 
-No exporta nada — genera un comando de shell copiable, alternativa offline sin la restricción de tiempo real del grabador WebM. Asume que ya se exportó la secuencia con "Por hold" tildado (numeración contigua, un archivo por tick) y compone esos PNGs sobre un fondo de color sólido del tamaño de exportación con el filtro `overlay` de ffmpeg — así la transparencia de los PNG (si se exportaron sin fondo opaco) se aplana a un color sólido recién al generar el MP4, no al exportar la secuencia. `refreshFfmpegCmd()` avisa explícitamente si "Por hold" no está tildado: el comando generado asume numeración contigua por tick, así que con la secuencia deduplicada ffmpeg tomaría solo el primer PNG e ignoraría el resto.
+No exporta nada — genera un comando de shell copiable, alternativa offline para quien prefiera codificar con ffmpeg (más control sobre códec y calidad que EXPORT VIDEO). Asume que ya se exportó la secuencia con "Por hold" tildado (numeración contigua, un archivo por tick) y compone esos PNGs sobre un fondo de color sólido del tamaño de exportación con el filtro `overlay` de ffmpeg — así la transparencia de los PNG (si se exportaron sin fondo opaco) se aplana a un color sólido recién al generar el MP4, no al exportar la secuencia. `refreshFfmpegCmd()` avisa explícitamente si "Por hold" no está tildado: el comando generado asume numeración contigua por tick, así que con la secuencia deduplicada ffmpeg tomaría solo el primer PNG e ignoraría el resto.
 
 ## Importar (`import.js`)
 
@@ -428,7 +457,7 @@ El stage entero (`#stage`) se transforma como una unidad vía CSS: `applyViewTra
 
 `setRotation(deg)` normaliza el ángulo a `(-180, 180]` (módulo 360 y luego desplazado) antes de guardarlo — un dial de rotación se siente más natural envolviendo en ese rango que acumulando grados sin límite.
 
-**Pan**: `startPan`/`doPan`/`endPan` son un arrastre simple (offset desde el punto inicial), disparado por la herramienta `pan` o el botón central del mouse (`dibujo.js`) — hace falta click sostenido + arrastre, mantener `H` por sí solo (sin click) no mueve nada. La tecla `H` es un atajo de tipo `hold` (`toolPan` en `shortcuts.js`, flag `hold: true`): al presionarla guarda la herramienta activa (`toolBeforeHold`) y cambia a `pan`; al soltarla (`keyup`, comparado contra `shortcutBindings[activeHoldAction.id]` para respetar reasignación) vuelve a la herramienta anterior. Un listener de `blur` en `window` hace de red de seguridad — si se cambia de ventana/pestaña con `H` apretada y el navegador no llega a mandar el `keyup`, restaura la herramienta igual. Es el único atajo de tipo `hold` hoy; el resto de `shortcutActions` son de un solo disparo por `keydown`.
+**Pan**: `startPan`/`doPan`/`endPan` implementan un arrastre simple (offset desde el punto inicial) y se activan con la herramienta `pan` o con el botón central del mouse (`dibujo.js`). Mantener `H` apretada cambia temporalmente a la herramienta `pan` (ver "Atajos de tipo `hold`" en `shortcuts.js`), pero igual hace falta hacer clic y arrastrar: la tecla sola no mueve nada.
 
 **Modo dibujo**: `setDrawingMode(on)`/`toggleDrawingMode()` alternan una clase CSS (`.drawing-mode` en `.app`) que oculta el resto de la interfaz vía CSS, y cambian el texto del botón (`MODO DIBUJO` ⇄ `SALIR`). Atajo `D`, sin guard — funciona siempre, estando donde estés.
 
@@ -438,15 +467,16 @@ El stage entero (`#stage`) se transforma como una unidad vía CSS: `applyViewTra
 
 Sistema de atajos configurable, no hardcodeado: `shortcutActions` es un array de `{ id, label, defaultKey, guard?, run }`. Las asignaciones reales viven en `shortcutBindings` (un mapa `id → combo`), inicializado desde los `defaultKey` y con overrides desde `localStorage` (`xsheetShortcutBindings`) — un binding guardado para un `id` que ya no existe en `shortcutActions` se ignora en silencio al cargar.
 
-`keyEventToCombo(e)` arma un string canónico a partir del evento: prefijo `Ctrl+` si `ctrlKey`/`metaKey`, y para la tecla en sí usa `e.key` **salvo un único caso especial**: `e.code === "NumpadSubtract"` usa `e.code` en vez de `e.key`. Es un caso especial deliberadamente angosto — el `-` del numpad y el `-` de la fila principal producen el mismo `e.key` ("-"), así que hace falta `e.code` para distinguirlos; pero forzar `e.code` para *cualquier* tecla que empiece con `"Numpad"` (una versión anterior de esta función, corregida en este mismo período de trabajo) rompe el alias existente de `NumpadMultiply`/`NumpadDivide`/`NumpadAdd`/`Numpad9` (con NumLock apagado, `key: "PageUp"`) hacia los atajos ya asignados a `*`/`/`/`+`/`PageUp` del teclado principal — esas teclas del numpad "simplemente funcionaban" antes de tocar nada acá, porque coincidían solas vía `e.key`. `findActionByCombo(combo)` devuelve la primera acción cuyo binding coincide, en el orden en que aparece en `shortcutActions`.
+`keyEventToCombo(e)` arma un string canónico a partir del evento: prefijo `Ctrl+` si `ctrlKey`/`metaKey`, y para la tecla en sí usa `e.key` **salvo un único caso especial**: `e.code === "NumpadSubtract"` usa `e.code` en vez de `e.key`. Es un caso especial deliberadamente angosto — el `-` del numpad y el `-` de la fila principal producen el mismo `e.key` ("-"), así que hace falta `e.code` para distinguirlos; pero forzar `e.code` para _cualquier_ tecla que empiece con `"Numpad"` (una versión anterior de esta función, corregida en este mismo período de trabajo) rompe el alias existente de `NumpadMultiply`/`NumpadDivide`/`NumpadAdd`/`Numpad9` (con NumLock apagado, `key: "PageUp"`) hacia los atajos ya asignados a `*`/`/`/`+`/`PageUp` del teclado principal — esas teclas del numpad "simplemente funcionaban" antes de tocar nada acá, porque coincidían solas vía `e.key`. `findActionByCombo(combo)` devuelve la primera acción cuyo binding coincide, en el orden en que aparece en `shortcutActions`.
 
 `window.addEventListener("keydown", ...)` es el único listener global de atajos, con esta prioridad:
+
 1. Si se está capturando una tecla nueva para reasignar un atajo (`capturingActionId`), la próxima tecla (salvo `Escape`, que cancela) se valida contra colisiones con otra acción (`alert` y se rechaza si choca) y se guarda como nuevo binding.
 2. Un caso hardcodeado, fuera de `shortcutActions` y por lo tanto no reasignable: `e.key === " "` siempre llama `togglePlay()`.
 3. Si el foco está en un `<input>`/`<textarea>` (`inField`), no se procesa ningún atajo — así se puede escribir libremente en cualquier campo de texto.
 4. Si no, resuelve la acción por combo y, si tiene `guard`, la respeta antes de ejecutar `run()` — salvo que la acción tenga `hold: true` (ver abajo), en cuyo caso se maneja aparte.
 
-**Bug corregido en este período de trabajo**: el chequeo de `inField` estaba escrito *después* del caso especial de la barra espaciadora — así que escribir un espacio dentro de un campo de texto (p. ej. el prefijo de exportación) disparaba `togglePlay()` en vez de escribir el espacio. El orden correcto (ya aplicado) es `inField` primero.
+**Bug corregido en este período de trabajo**: el chequeo de `inField` estaba escrito _después_ del caso especial de la barra espaciadora — así que escribir un espacio dentro de un campo de texto (p. ej. el prefijo de exportación) disparaba `togglePlay()` en vez de escribir el espacio. El orden correcto (ya aplicado) es `inField` primero.
 
 ### Atajos de tipo `hold` (mantener apretado)
 
@@ -458,7 +488,7 @@ Lista todas las acciones con su tecla actual; click en la tecla entra en modo "e
 
 ### Diálogo de ayuda (`#help-overlay`)
 
-`renderHelpShortcutsList()` recorre el mismo `shortcutActions` y muestra label + tecla actual (ya con cualquier reasignación del usuario) — se mantiene sincronizado solo. Las secciones "Mouse" y "Diálogos" del mismo panel, en cambio, son markup estático escrito a mano en `xsheet.html` — no reflejan cambios de código automáticamente, hay que actualizarlas manualmente cada vez que cambia una interacción de mouse o el contenido de un diálogo (ver el historial de este documento: se actualizó a mano para el menú contextual de frame y la exportación de ciclo tejido).
+`renderHelpShortcutsList()` recorre el mismo `shortcutActions` y muestra label + tecla actual (ya con cualquier reasignación del usuario) — se mantiene sincronizado solo. Las secciones "Mouse" y "Diálogos" del mismo panel, en cambio, son markup estático escrito a mano en `xsheet.html` — no reflejan cambios de código automáticamente, hay que actualizarlas manualmente cada vez que cambia una interacción de mouse o el contenido de un diálogo (por ejemplo, se tuvo que actualizar a mano para el menú contextual de frame y para la exportación de ciclo tejido).
 
 ## Diálogos flotantes
 
@@ -467,7 +497,6 @@ UI reutilizable de tipo `.floating-bar`. Dos helpers de posicionamiento genéric
 - **`#zoom-rotate-dialog`** (`zr-` prefijo): se abre con el atajo `*` (acción `zoomRotateDialog`) **o** con click derecho sobre el canvas — el click derecho **no** está limitado al modo dibujo pese a que el código todavía tiene la línea `if (!appEl.classList.contains("drawing-mode")) return;`: está comentada, así que hoy el click derecho alterna este diálogo siempre, dentro o fuera de modo dibujo. Arrastrable por su propio handle (`zr-dialog-drag-handle`); si se abre por atajo de teclado, aparece en la última posición conocida del mouse (`lastMouseX/Y`). Sliders de zoom/rotación llaman `zoomAt`/`setRotation` directo en el evento `input` (en vivo, sin esperar a soltar). También aloja herramientas, controles de frame, y selector/opacidad/visibilidad de capa + batch hold.
 - **`#onion-levels-dialog`** (`ol-` prefijo, botón **LIGHTBOX**): rango/opacidad/falloff de onion, más una lista de checkboxes por nivel (`renderOnionLevelsList()`, offsets de `-MINI_XSHEET_RANGE` a `+MINI_XSHEET_RANGE` salteando el 0 — reutiliza `MINI_XSHEET_RANGE`, una variable pensada originalmente para el mini-xsheet del diálogo rápido, ver abajo). Activar/desactivar onion desde la UI funciona vía el checkbox `zr-onion-toggle` del diálogo de zoom/rotación (un botón de onion aparte en el footer, junto a **LIGHTBOX**, existió en algún momento pero ya se quitó por completo — era redundante).
 - **`#quick-dialog`** (`qd-` prefijo) — **inalcanzable en la práctica**: `openQuickDialog()` empieza con un `return;` incondicional (comentario `// deshabilitado temporalmente`) antes de hacer nada, así que el atajo `Q` (ya de por sí con guard de modo-dibujo) no tiene ningún efecto hoy. El código de mini-xsheet (`renderMiniXsheet()`) y sus atajos de frame/onion siguen ahí, completos, solo que nunca se muestran.
-- **`#drawing-dialog`** — declarado pero sin trigger de apertura activo (`toggleDrawingDialog()` y su listener están comentados).
 - **`#folder-browse-overlay`** — explorador de archivos in-app (`folder.js`, ver "Carpeta de trabajo y archivos").
 - **`#frame-action-popup`** (`fa-` prefijo) — mover/copiar frame(s) (`xsheet.js`, ver esa sección).
 
@@ -480,9 +509,8 @@ UI reutilizable de tipo `.floating-bar`. Dos helpers de posicionamiento genéric
 
 ## Deuda conocida
 
-- `xsheet.html` conserva un bloque de markup viejo dentro de un comentario HTML (~líneas 1327-1355) con los IDs `layers`, `layer-opacity`, `onion-toggle`, `onion-opacity`. `layers`/`layer-opacity` sí tienen versión viva con otro id; `onion-toggle`/`onion-opacity` ya no tienen ninguna versión viva con esos nombres (las actuales son `qd-`/`ol-`/`zr-onion-toggle` y `qd-`/`ol-onion-opacity`) — hasta hace poco `onion.js` seguía apuntando a esos dos IDs muertos y eso causaba un `TypeError` al cambiar la opacidad de onion desde LIGHTBOX (bug ya corregido, ver "Onion skin y compositing de capas"). El bloque comentado en sí sigue siendo inerte para el DOM, riesgo de confusión si alguien lo descomenta sin revisar contra la UI actual.
-- El **diálogo rápido** (`#quick-dialog`, prefijo `qd-`) es inalcanzable: `openQuickDialog()` (`view.js:233`) empieza con un `return;` incondicional antes de mostrar nada. El atajo `Q` (con guard de modo-dibujo) no tiene ningún efecto observable. Todo el código de `renderMiniXsheet()` y sus controles (mover frame por número, onion por nivel, agregar/borrar frame) sigue completo y funcional en el código, solo que nunca se muestra en pantalla.
-- `#drawing-dialog` (`view.js`) no tiene ningún trigger de apertura activo — su función y listener están comentados.
-- `#edit-frames-bar` / `#frames-bar-toggle` son código muerto: el div existe en `xsheet.html:1006` (`hidden`), pero el único código que lo maneja está comentado en `xsheet.js:492-509`. Nada activo lo abre.
-- `adjust.js` no persiste `crop`/color grading en `project.json` (ver "Persistencia") — se pierden al recargar un proyecto guardado.
-- `buildFfmpegCommand()` (`export.js`) declara `total`/`digits`/`prefix`/`pattern` dos veces seguidas con `var` — redundante pero inofensivo (no es un bug funcional, `var` permite la redeclaración).
+- El **diálogo rápido** (`#quick-dialog`, prefijo `qd-`) es inalcanzable: `openQuickDialog()` (`view.js:233`) empieza con un `return;` incondicional antes de mostrar nada. El atajo `Q` (con guard de modo dibujo) no tiene ningún efecto visible. El código de `renderMiniXsheet()` y sus controles (mover frame por número, onion por nivel, agregar/borrar frame) sigue completo y funcional, pero nunca se muestra en pantalla.
+- `#edit-frames-bar` (`xsheet.html:1348`) es un `<div hidden>` vacío y huérfano: ya no queda código en `xsheet.js`, ni siquiera comentado, que lo use. Se puede borrar.
+- `<input type=file id="import-batch">` está duplicado en `xsheet.html` (líneas ~1151-1164, dos elementos idénticos). `getElementById` siempre devuelve el primero, así que el segundo es inerte, pero es un ID repetido en el DOM. Se puede borrar cualquiera de los dos.
+- `adjust.js` no guarda el crop ni el color grading en `project.json` (ver "Persistencia"), así que se pierden al recargar un proyecto guardado.
+- `buildFfmpegCommand()` (`export.js:338-345`) declara `total`/`digits`/`prefix`/`pattern` dos veces seguidas con `var`. Es redundante pero inofensivo: no es un bug funcional, porque `var` permite redeclarar.

@@ -6,6 +6,7 @@
   OUT="${1:-xsheet-app.html}"
 
   SCRIPTS=(
+    mediabunny.cjs
     dibujo.js onion.js adjust.js cels.js undo.js shortcuts.js
     audio.js playback.js xsheet.js folder.js export.js import.js
     pegholereg.js project.js view.js

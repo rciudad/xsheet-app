@@ -38,8 +38,9 @@
       --text: #1c1e24;
       --text-dim: #565968;
       --text-faint: #868999;
-      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
-        Arial, sans-serif;
+      --font-ui:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial,
+        sans-serif;
     }
     html,
     body {
@@ -195,9 +196,9 @@
       z-index: 600;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      min-width: 306px;
-      padding: 12px;
+      gap: 28px;
+      min-width: 387px;
+      padding: 34px 12px;
       background: var(--ink-900);
       border: 1px solid var(--ink-700);
       border-radius: 10px;
@@ -211,6 +212,11 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 6px;
+      /*margin: 24px 0 0 0;*/
+    }
+    .file-menu-section p {
+      margin: 0;
+      width: 100%;
     }
     .file-menu-heading {
       width: 100%;
@@ -236,7 +242,7 @@
       background: var(--ink-800);
     }
     #links-menu-dropdown {
-      min-width: 129px;
+      min-width: 171px;
     }
     .wordmark {
       font-weight: 800;
@@ -1091,22 +1097,25 @@
             <button type="button" id="file-menu-btn">ARCHIVO ▾</button>
             <div class="file-menu-dropdown" id="file-menu-dropdown" hidden>
               <div class="file-menu-section">
-                <span class="file-menu-heading">Carpeta</span>
-                <button type="button" id="choose-folder">CARPETA</button>
+                <!--span class="file-menu-heading">Carpeta</span-->
+                <button type="button" id="choose-folder" title="Elige una carpeta de trabajo: guardar y exportar escriben ahí directamente, e importar abre un explorador dentro de la app. Solo Chrome/Edge.">CARPETA</button>
                 <span id="folder-status"></span>
-                <button type="button" id="clear-folder" style="display: none">
+                <button type="button" id="clear-folder" style="display: none" title="Deja de usar la carpeta de trabajo: guardar y exportar vuelven a descargar por el navegador.">
                   QUITAR CARPETA
                 </button>
               </div>
               <div class="file-menu-section">
-                <span class="file-menu-heading">Proyecto</span>
-                <button type="button" id="save-project">
+                <!--span class="file-menu-heading">Proyecto</span-->
+                <p>
+                <button type="button" id="save-project" title="Guarda el proyecto completo como project.json. No incluye el crop ni los ajustes de color.">
                   GUARDAR PROYECTO
                 </button>
-                <button type="button" id="save-project-as">
+                </p><p>
+                <button type="button" id="save-project-as" title="Guarda el proyecto con el nombre que elijas. No incluye el crop ni los ajustes de color.">
                   GUARDAR PROYECTO COMO...
                 </button>
-                <button type="button" id="import-project-btn">
+                </p><p>
+                <button type="button" id="import-project-btn" title="Abre un proyecto .json guardado. Reemplaza el proyecto actual.">
                   ABRIR PROYECTO
                 </button>
                 <input
@@ -1115,89 +1124,126 @@
                   accept="application/json,.json"
                   style="display: none"
                 />
+                </p>
               </div>
               <div class="file-menu-section">
-                <span class="file-menu-heading">Importar</span>
-                <button type="button" id="import-image-btn">
-                  IMPORTAR IMAGEN
-                </button>
-                <input
-                  type="file"
-                  id="import-image"
-                  accept="image/*"
-                  style="display: none"
-                />
-                <label
-                  ><input type="checkbox" id="import-replace" /> Reemplazar
-                  frame actual (en vez de insertar uno nuevo)</label
-                >
-                <button type="button" id="import-batch-btn">
-                  IMPORTAR BATCH
-                </button>
-                <input
-                  type="file"
-                  id="import-batch"
-                  accept="image/*"
-                  multiple
-                  style="display: none"
-                />
-                <input
-                  type="file"
-                  id="import-batch"
-                  accept="image/*"
-                  multiple
-                  style="display: none"
-                />
-                <label
-                  ><input type="checkbox" id="import-batch-active" /> Agregar a
-                  la capa activa (en vez de crear una capa nueva)</label
-                >
-                <button type="button" id="import-audio-btn">
-                  IMPORTAR AUDIO
-                </button>
-                <input
-                  type="file"
-                  id="import-audio"
-                  accept="audio/*"
-                  style="display: none"
-                />
+                <!--span class="file-menu-heading">Importar</span-->
+                <p>
+                  <button type="button" id="import-image-btn" title="Importa una imagen como frame, escalada para caber en el lienzo sin deformarse.">
+                    IMPORTAR IMAGEN
+                  </button>
+                  <input
+                    type="file"
+                    id="import-image"
+                    accept="image/*"
+                    style="display: none"
+                  />
+                  <label
+                    title="Marcado: la imagen reemplaza el contenido del frame activo. Desmarcado: se inserta como un frame nuevo después del actual."
+                    ><input type="checkbox" id="import-replace" /> Reemplazar
+                    frame actual</label
+                  >
+                </p>
+                <p>
+                  <button type="button" id="import-batch-btn" title="Importa varias imágenes como una secuencia de frames, ordenadas por nombre de archivo (frame2 antes que frame10).">
+                    IMPORTAR BATCH
+                  </button>
+                  <input
+                    type="file"
+                    id="import-batch"
+                    accept="image/*"
+                    multiple
+                    style="display: none"
+                  />
+                  <input
+                    type="file"
+                    id="import-batch"
+                    accept="image/*"
+                    multiple
+                    style="display: none"
+                  />
+                  <label
+                    title="Marcado: las imágenes se insertan en la capa activa a partir del frame actual. Desmarcado: se crea una capa nueva."
+                    ><input type="checkbox" id="import-batch-active" /> Agregar
+                    a la capa activa</label
+                  >
+                </p>
+                <p>
+                  <button type="button" id="import-audio-btn" title="Carga una pista de audio: su forma de onda aparece en el xsheet y suena sincronizada al reproducir.">
+                    IMPORTAR AUDIO
+                  </button>
+                  <input
+                    type="file"
+                    id="import-audio"
+                    accept="audio/*"
+                    style="display: none"
+                  />
+                </p>
               </div>
               <div class="file-menu-section">
-                <span class="file-menu-heading">Exportar</span>
-                <label for="export-prefix">Prefijo:</label>
-                <input type="text" id="export-prefix" value="frame" />
-                <label
-                  ><input type="checkbox" id="export-bg-toggle" checked />
-                  Fondo</label
-                >
-                <input type="color" id="export-bg-color" value="#ffffff" />
-                <button type="button" id="export-png">EXPORT PNG</button>
-                <label
-                  ><input type="checkbox" id="export-zip-toggle" /> Zip</label
-                >
-                <label
-                  ><input type="checkbox" id="export-expand-toggle" checked />
-                  Por hold</label
-                >
-                <button type="button" id="export-sequence">
-                  EXPORT SEQUENCE
-                </button>
-                <button type="button" id="export-video">EXPORT WEBM</button>
-                <label for="export-woven-sheets">Hojas:</label>
-                <input
-                  type="number"
-                  id="export-woven-sheets"
-                  min="1"
-                  value="8"
-                />
-                <button type="button" id="export-woven">
-                  EXPORT CICLO TEJIDO
-                </button>
-                <button type="button" id="export-woven-progressive">
-                  EXPORT CICLO TEJIDO PROGRESIVO
-                </button>
+                <!--span class="file-menu-heading">Exportar</span-->
+                <p>
+                  <input type="text" id="export-prefix" value="frame" title="Inicio del nombre de los archivos exportados (p. ej. frame-01.png, frame-animation.mp4)." />
+                  <label for="export-prefix" title="Inicio del nombre de los archivos exportados (p. ej. frame-01.png, frame-animation.mp4).">Prefijo</label>
+                </p><p>
+                  <input type="color" id="export-bg-color" value="#ffffff" title="Color de fondo para exportar. También se usa como fondo del lienzo en pantalla." style="    border-radius: 8px;
+    width: 60px;
+    height: 30px;
+    border: 1px solid var(--ink-700);"/>
+                  <label
+                    title="Marcado: se exporta con el color de fondo. Desmarcado: PNG con transparencia (el vídeo siempre usa fondo opaco)."
+                    ><input type="checkbox" id="export-bg-toggle" checked />
+                    Fondo</label
+                  >
+                  
+                </p>
+                <p>
+                  <button type="button" id="export-png" title="Exporta el frame actual como PNG, con crop y ajustes de color.">EXPORT PNG</button>
+                  <label
+                    title="Entrega la secuencia o el ciclo tejido como un único .zip en vez de un PNG por archivo."
+                    ><input type="checkbox" id="export-zip-toggle" /> Zip</label
+                  >
+                  <label
+                    title="Marcado: un archivo o cuadro por tick (los holds se repiten). Desmarcado: solo los dibujos distintos. Afecta a la secuencia, al vídeo y al comando ffmpeg."
+                    ><input type="checkbox" id="export-expand-toggle" checked />
+                    Por hold</label
+                  >
+                </p>
+                <p>
+                  <button type="button" id="export-sequence" title="Exporta como PNG todos los frames del rango de reproducción.">
+                    EXPORT SEQUENCE
+                  </button>
+                </p>
+                <p>
+                  <button type="button" id="export-woven" title="Reparte los frames del rango entre N hojas por turno (1→hoja 1, 2→hoja 2…) y exporta cada hoja con sus frames superpuestos.">
+                    EXPORT CICLO TEJIDO
+                  </button>
+                  <label for="export-woven-sheets" title="Cantidad de hojas entre las que se reparten los frames del ciclo tejido.">Hojas:</label>
+                  <input
+                    type="number"
+                    id="export-woven-sheets"
+                    title="Cantidad de hojas entre las que se reparten los frames del ciclo tejido."
+                    min="1"
+                    value="8"
+                  />
+                  </p>
+                  <p>
+                  <button type="button" id="export-woven-progressive" title="Como CICLO TEJIDO, pero exporta el estado de todas las hojas después de cada vuelta completa.">
+                    EXPORT CICLO TEJIDO PROGRESIVO
+                  </button>
+                </p>
+                <p>
+                  <button type="button" id="export-media-bunny" title="Exporta el rango de reproducción como vídeo, con fondo opaco. Con “Por hold” desmarcado, cada dibujo dura lo que su hold.">
+                    EXPORT VIDEO
+                  </button>
+                  <select id="export-video-format" title="MP4 (H.264): se reproduce en casi cualquier lugar. WebM (VP9): formato abierto, ideal para la web.">
+                    <option value="mp4">MP4</option>
+                    <option value="webm">WebM</option>
+                  </select>
+                </p>
+                <p>
                 <span id="export-video-status"></span>
-                <button type="button" id="ffmpeg-cmd-btn">
+                <button type="button" id="ffmpeg-cmd-btn" title="Genera un comando de ffmpeg para armar un MP4 a partir de la secuencia exportada con “Por hold” marcado.">
                   COMANDO FFMPEG
                 </button>
                 <div id="ffmpeg-cmd-box" style="display: none">
@@ -1209,23 +1255,29 @@
                   />
                   <div id="ffmpeg-cmd-hint" style="font-size: 12px"></div>
                 </div>
+                </p>
               </div>
               <div class="file-menu-section">
-                <span class="file-menu-heading">Atajos</span>
-                <button type="button" id="shortcuts-config-btn">
+                <!--span class="file-menu-heading">Atajos</span-->
+                <p>
+                <button type="button" id="shortcuts-config-btn" title="Cambia las teclas asignadas a cada acción.">
                   CONFIGURAR ATAJOS
                 </button>
+                </p>
               </div>
               <div class="file-menu-section">
-                <span class="file-menu-heading">Undo</span>
-                <label for="undo-max-levels">Niveles de undo:</label>
+                <!--span class="file-menu-heading">Undo</span-->
+                <p>
+                <label for="undo-max-levels" title="Cuántos pasos de deshacer se guardan. Cada nivel guarda una copia del frame, así que más niveles usan más memoria.">Niveles de undo:</label>
                 <input
                   type="number"
                   id="undo-max-levels"
+                  title="Cuántos pasos de deshacer se guardan. Cada nivel guarda una copia del frame, así que más niveles usan más memoria."
                   min="1"
                   value="1"
                   style="width: 60px"
                 />
+                </p>
               </div>
             </div>
           </div>
@@ -1272,6 +1324,13 @@
                   >User's Manual</a
                 >
                 <a href="LICENSE" target="_blank" rel="noopener">License</a>
+                <a
+                    href="https://github.com/Vanilagy/mediabunny/tree/v1.62.0"
+                    target="_blank"
+                    rel="noopener"
+                    title="Mediabunny v1.62.0 (exportación de vídeo), © Vanilagy y colaboradores, bajo licencia MPL-2.0. Código fuente y licencia en este enlace."
+                    >Mediabunny (MPL-2.0)</a
+                  >
                 <a
                   href="https://www.patreon.com/cw/2danimationoss"
                   target="_blank"
@@ -2070,6 +2129,14 @@
         <div class="xsheet" id="xsheet"></div>
       </div>
     </div>
+    <!--
+        Mediabunny v1.62.0 — © Vanilagy y colaboradores.
+        Licencia: Mozilla Public License 2.0 (https://mozilla.org/MPL/2.0/).
+        Este archivo no fue modificado. Código fuente:
+        https://github.com/Vanilagy/mediabunny/tree/v1.62.0
+        El resto de xsheet se distribuye bajo AGPL-3.0 (ver la cabecera de este archivo).
+      -->
+    <script src="mediabunny.cjs"></script>
     <script src="dibujo.js"></script>
 
     <script src="onion.js"></script>

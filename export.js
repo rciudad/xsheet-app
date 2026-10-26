@@ -219,7 +219,7 @@ function drawWovenSourceFrame(destCtx, tick) {
     0,
     0,
     cropRect.w,
-    cropRect.h
+    cropRect.h,
   );
   if (hasColorAdjustments())
     applyColorAdjustments(exportCropCtx, cropRect.w, cropRect.h);
@@ -267,7 +267,7 @@ document.getElementById("export-woven").addEventListener("click", function () {
   syncActiveToStorage();
   const N = Math.max(
     1,
-    Math.round(+document.getElementById("export-woven-sheets").value) || 1
+    Math.round(+document.getElementById("export-woven-sheets").value) || 1,
   );
   const frames = buildWovenFrames(N);
   const prefix = exportPrefix();
@@ -297,7 +297,7 @@ document
     syncActiveToStorage();
     const N = Math.max(
       1,
-      Math.round(+document.getElementById("export-woven-sheets").value) || 1
+      Math.round(+document.getElementById("export-woven-sheets").value) || 1,
     );
     const frames = buildWovenProgressiveFrames(N);
     const prefix = exportPrefix();
@@ -319,106 +319,13 @@ document
       canvas.toBlob(function (blob) {
         deliverFile(
           prefix + "-woven-prog-" + padNum(i + 1, total) + ".png",
-          blob
+          blob,
         );
       });
     });
   });
 
-var exportVideoBtn = document.getElementById("export-video");
 var exportVideoStatusEl = document.getElementById("export-video-status");
-
-exportVideoBtn.addEventListener("click", function () {
-  if (playing) stopPlay();
-  syncActiveToStorage();
-  if (!("MediaRecorder" in window)) {
-    exportVideoStatusEl.textContent = "Vídeo no soportado en este navegador.";
-    return;
-  }
-
-  var rec = document.createElement("canvas");
-  rec.width = cropRect.w;
-  rec.height = cropRect.h;
-  var rctx = rec.getContext("2d");
-
-  var tick = rangeStart;
-  function compositeExportFrame() {
-    drawExportFrame(rctx, tick, true);
-  }
-  compositeExportFrame();
-
-  // Preferimos capturar cuadro a cuadro a mano (requestFrame()) en vez de
-  // dejar que captureStream(fps) muestree con su propio reloj: si el reloj
-  // del muestreo y el setTimeout de abajo se desincronizan (máquina lenta,
-  // pestaña en segundo plano), el video puede terminar con menos frames
-  // efectivos que los ticks reales. Pedir un frame exacto por tick compuesto
-  // garantiza esa correspondencia 1 a 1.
-  var stream, track;
-  var manualCapture = false;
-  try {
-    stream = rec.captureStream(0);
-    track = stream.getVideoTracks()[0];
-    manualCapture = !!(track && typeof track.requestFrame === "function");
-    if (!manualCapture) stream = rec.captureStream(fps);
-  } catch (err) {
-    exportVideoStatusEl.textContent = "Vídeo no soportado en este navegador.";
-    return;
-  }
-
-  var mime =
-    window.MediaRecorder.isTypeSupported &&
-    MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9"
-      : "video/webm";
-  var recorder;
-  try {
-    recorder = new MediaRecorder(stream, { mimeType: mime });
-  } catch (err) {
-    exportVideoStatusEl.textContent = "Vídeo no soportado en este navegador.";
-    return;
-  }
-
-  var chunks = [];
-  recorder.ondataavailable = function (e) {
-    if (e.data && e.data.size) chunks.push(e.data);
-  };
-  var stopped = new Promise(function (resolve) {
-    recorder.onstop = resolve;
-  });
-
-  exportVideoBtn.disabled = true;
-  exportVideoStatusEl.textContent = "Grabando...";
-  recorder.start();
-  if (manualCapture) track.requestFrame();
-
-  var frameDelay = 1000 / fps;
-  function step() {
-    if (tick < rangeEnd) {
-      tick++;
-      compositeExportFrame();
-      if (manualCapture) track.requestFrame();
-      setTimeout(step, frameDelay);
-    } else {
-      setTimeout(function () {
-        recorder.stop();
-        stopped.then(function () {
-          var blob = new Blob(chunks, { type: "video/webm" });
-          deliverFile(exportPrefix() + "-animation.webm", blob)
-            .then(function () {
-              exportVideoBtn.disabled = false;
-              exportVideoStatusEl.textContent = "";
-            })
-            .catch(function (err) {
-              exportVideoBtn.disabled = false;
-              exportVideoStatusEl.textContent =
-                "Error al exportar vídeo: " + err.message;
-            });
-        });
-      }, frameDelay);
-    }
-  }
-  step();
-});
 
 var ffmpegCmdBtn = document.getElementById("ffmpeg-cmd-btn");
 var ffmpegCmdBox = document.getElementById("ffmpeg-cmd-box");
@@ -476,3 +383,101 @@ ffmpegCmdBtn.addEventListener("click", function () {
 document
   .getElementById("export-expand-toggle")
   .addEventListener("change", refreshFfmpegCmd);
+
+var exportMediabunnyBtn = document.getElementById("export-media-bunny");
+var exportVideoFormatSelect = document.getElementById("export-video-format");
+
+// Códecs por formato, en orden de preferencia: el primero que el navegador
+// pueda codificar es el que se usa. avc (H.264) primero en MP4 porque es el
+// que reproduce cualquier reproductor/editor.
+var VIDEO_FORMATS = {
+  mp4: {
+    format: () => new Mediabunny.Mp4OutputFormat(),
+    codecs: ["avc", "hevc", "av1"],
+  },
+  webm: {
+    format: () => new Mediabunny.WebMOutputFormat(),
+    codecs: ["vp9", "vp8", "av1"],
+  },
+};
+
+exportMediabunnyBtn.addEventListener("click", async function () {
+  if (playing) stopPlay();
+  syncActiveToStorage();
+
+  const {
+    Output,
+    BufferTarget,
+    CanvasSource,
+    Quality,
+    getFirstEncodableVideoCodec,
+  } = Mediabunny;
+
+  const choice = VIDEO_FORMATS[exportVideoFormatSelect.value];
+  const format = choice.format();
+
+  // H.264/HEVC (4:2:0) exigen dimensiones pares: se redondea hacia arriba y
+  // la fila/columna extra queda con el color de fondo.
+  const w = cropRect.w + (cropRect.w % 2);
+  const h = cropRect.h + (cropRect.h % 2);
+
+  const codec = await getFirstEncodableVideoCodec(choice.codecs, {
+    width: w,
+    height: h,
+  });
+  if (!codec) {
+    exportVideoStatusEl.textContent =
+      format.name + " no soportado en este navegador.";
+    return;
+  }
+
+  // Con "Por hold" un cuadro por tick; sin él, un cuadro por dibujo distinto
+  // con la duración real de su hold (mismos bordes que la secuencia PNG).
+  const expand = document.getElementById("export-expand-toggle").checked;
+  const jobs = buildSequenceJobs(expand);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  // drawExportFrame() solo pinta cropRect.w × cropRect.h, así que el relleno
+  // del borde de paridad se hace una vez y se conserva entre cuadros.
+  ctx.fillStyle = exportBgEnabled ? exportBgColor : "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+
+  const output = new Output({ format: format, target: new BufferTarget() });
+  const source = new CanvasSource(canvas, {
+    codec: codec,
+    quality: new Quality("high"),
+  });
+  output.addVideoTrack(source, { frameRate: fps });
+
+  exportMediabunnyBtn.disabled = true;
+  try {
+    await output.start();
+    for (let i = 0; i < jobs.length; i++) {
+      const tick = jobs[i].tick;
+      const nextTick = i + 1 < jobs.length ? jobs[i + 1].tick : rangeEnd + 1;
+      drawExportFrame(ctx, tick, true);
+      await source.add((tick - rangeStart) / fps, (nextTick - tick) / fps);
+      exportVideoStatusEl.textContent = `Codificando ${i + 1} de ${jobs.length} cuadros (${codec})...`;
+    }
+    await output.finalize();
+
+    const blob = new Blob([output.target.buffer], { type: format.mimeType });
+    await deliverFile(
+      exportPrefix() + "-animation" + format.fileExtension,
+      blob,
+    );
+    exportVideoStatusEl.textContent = "";
+  } catch (err) {
+    if (output.state !== "finalized") {
+      try {
+        await output.cancel();
+      } catch (e) {}
+    }
+    exportVideoStatusEl.textContent = "Error al exportar vídeo: " + err.message;
+  } finally {
+    exportMediabunnyBtn.disabled = false;
+  }
+});
